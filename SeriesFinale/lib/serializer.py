@@ -1,27 +1,38 @@
+# -*- coding: utf-8 -*-
+
+###########################################################################
+#    SeriesFinale
+#    Copyright (C) 2009 Joaquim Rocha <jrocha@igalia.com>
+# 
+#    This program is free software: you can redistribute it and/or modify
+#    it under the terms of the GNU General Public License as published by
+#    the Free Software Foundation, either version 3 of the License, or
+#    (at your option) any later version.
+#
+#    This program is distributed in the hope that it will be useful,
+#    but WITHOUT ANY WARRANTY; without even the implied warranty of
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#    GNU General Public License for more details.
+#
+#    You should have received a copy of the GNU General Public License
+#    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+###########################################################################
+
+import jsonpickle
 from xml.etree import ElementTree as ET
 
-def serialize(obj):
-    root = ET.Element(obj.__class__)
-    for var, value in var(obj):
-        var_element = ET.SubElement(root, var)
-        if type(value) == dict:
-            sub_element = ET.SubElement(var_element, serialize(value))
-            sub_element.set('class', 'object')
-        else:
-            sub_element = ET.SubElement(var_element, str(value))
-            sub_element.set('class', 'str')
-    return root
+def serialize(show_list):
+    for show in show_list:
+        for episode in show.episode_list:
+            episode.show = show.id
+    return jsonpickle.encode(show_list)
 
-def unserialize(xml_file):
-    tree = ET.parse(xml_file)
-    root = tree.get_root()
-    args = {}
-    for child in root.getchildren():
-        child_class = child.get('class')
-        child_object = None
-        if child_class == 'object':
-            args[child.tag] = unserialize(child)
-        else:
-            args[child.tag] = child.text
-    root_object = eval('%s(**args)') % root.tag
-    return root_object
+def deserialize(shows_file_path):
+    shows_file = open(shows_file_path, 'r')
+    contents = shows_file.read()
+    shows_file.close()
+    shows_list = jsonpickle.decode(contents)
+    for show in shows_list:
+        for episode in show.episode_list:
+            episode.show = show
+    return shows_list
