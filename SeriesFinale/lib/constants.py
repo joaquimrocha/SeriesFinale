@@ -24,3 +24,5 @@ SF_NAME = 'Series Finale'
 SF_COMPACT_NAME = 'seriesfinale'
 
 SF_CONF_FILE = os.getenv('HOME') + '/.%s/%s' % (SF_COMPACT_NAME, 'series.db')
+
+TVDB_API_KEY = 'FAD75AF31E1B1577'

@@ -23,10 +23,9 @@ import gobject
 from lib import thetvdbapi, serializer
 from xml.etree import ElementTree as ET
 from asyncworker import AsyncWorker
+from lib.constants import TVDB_API_KEY
 from datetime import datetime
 import gettext
-
-TVDB_API_KEY = 'FAD75AF31E1B1577'
 
 _ = gettext.gettext
 
@@ -105,7 +104,7 @@ class Episode(object):
     
     def _get_episode_number(self):
         return self._episode_number
-    
+
     def _set_episode_number(self, number):
         try:
             self._episode_number = int(number)

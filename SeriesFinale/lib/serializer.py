@@ -35,4 +35,7 @@ def deserialize(shows_file_path):
     for show in shows_list:
         for episode in show.episode_list:
             episode.show = show
+            # IMPORTANT: The code below if here so the episode_number
+            # is set using the right Episode object's property
+            episode.episode_number = episode.episode_number
     return shows_list
