@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
 ###########################################################################
@@ -18,11 +19,24 @@
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ###########################################################################
 
-import os
+import gtk
+import sys
 
-SF_NAME = 'Series Finale'
-SF_COMPACT_NAME = 'seriesfinale'
+try:
+    from SeriesFinale.gui import MainWindow
+except:
+    sys.path.append('src')
+    sys.path.append('src/SeriesFinale')
+    from SeriesFinale.gui import MainWindow
+else:
+    sys.path.append('SeriesFinale')
+    
 
-SF_CONF_FILE = os.getenv('HOME') + '/.%s/%s' % (SF_COMPACT_NAME, 'series.db')
-
-TVDB_API_KEY = 'FAD75AF31E1B1577'
+if __name__ == '__main__':
+    
+    seriesfinale_launcher = sys.argv[0]
+    
+    
+    main_window = MainWindow()
+    main_window.show_all()
+    gtk.main()

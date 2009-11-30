@@ -18,10 +18,14 @@
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ###########################################################################
 
-import gtk
-from gui import MainWindow
+import os
 
-if __name__ == '__main__':
-    main_window = MainWindow()
-    main_window.show_all()
-    gtk.main()
+SF_NAME = 'SeriesFinale'
+SF_COMPACT_NAME = 'seriesfinale'
+SF_VERSION = '0.1'
+SF_DESCRIPTION = 'SeriesFinale is a TV series browser and tracker application'
+SF_URL = 'http://www.igalia.com'
+
+SF_CONF_FILE = os.getenv('HOME') + '/.%s/%s' % (SF_COMPACT_NAME, 'series.db')
+
+TVDB_API_KEY = 'FAD75AF31E1B1577'
