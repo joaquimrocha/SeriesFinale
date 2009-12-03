@@ -1,0 +1,17 @@
+Source: seriesfinale
+Section: user/utilities
+Priority: extra
+Maintainer: Joaquim Rocha <jrocha@igalia.com>
+Build-Depends: debhelper (>=5), python-support (>= 0.9), cdbs (>= 0.4.52), python-runtime | python2.5-runtime
+Standards-Version: 3.7.2
+
+Package: seriesfinale
+Architecture: all
+Depends: ${python:Depends}, ${misc:Depends}, python-hildon | 
+ python2.5-hildon, python-gtk2, python-gobject, python-simplejson (>= 2.0.9)
+XB-Maemo-Display-Name: SeriesFinale
+Description: SeriesFinale is a TV series browser and tracker application
+ Its goal is to help you manage the TV shows you watch regularly and
+ keep track of the episodes you have seen so far. The shows and episodes
+ can be retrieved automatically by using the “TheTVDB API” to help you
+ get to the "series finale" with the least effort.
