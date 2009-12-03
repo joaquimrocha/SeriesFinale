@@ -34,9 +34,6 @@ else:
 
 if __name__ == '__main__':
     
-    seriesfinale_launcher = sys.argv[0]
-    
-    
     main_window = MainWindow()
     main_window.show_all()
     gtk.main()
