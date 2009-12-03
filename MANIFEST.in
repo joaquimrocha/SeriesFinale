@@ -1,0 +1,2 @@
+include seriesfinale
+recursive-include data *
