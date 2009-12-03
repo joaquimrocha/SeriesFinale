@@ -20,7 +20,6 @@
 
 from threading import Thread
 import gobject
-import glib
 
 class AsyncWorker(Thread):
     
