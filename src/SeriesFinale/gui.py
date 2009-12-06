@@ -301,6 +301,11 @@ class SeasonsView(hildon.StackableWindow):
         edit_series_dialog.destroy()
         if response == gtk.RESPONSE_ACCEPT:
             self.show.name = info['name']
+            self.show.overview = info['overview']
+            self.show.genre = info['genre']
+            self.show.network = info['network']
+            self.show.rating = info['rating']
+            self.show.actors = info['actors']
         self.set_title(self.show.name)
     
     def _new_episode_cb(self, button):
