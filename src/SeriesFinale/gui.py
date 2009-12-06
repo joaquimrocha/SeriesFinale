@@ -858,7 +858,7 @@ class SearchShowsDialog(gtk.Dialog):
         
         shows_area = hildon.PannableArea()
         shows_area.add(self.shows_view)
-        shows_area.set_size_request(-1, 250)
+        shows_area.set_size_request(-1, 400)
         self.vbox.add(shows_area)
         
         self.action_area.set_sensitive(False)
