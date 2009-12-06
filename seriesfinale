@@ -21,16 +21,14 @@
 
 import gtk
 import sys
+import os
 
-try:
-    from SeriesFinale.gui import MainWindow
-except:
-    sys.path.append('src')
-    sys.path.append('src/SeriesFinale')
-    from SeriesFinale.gui import MainWindow
-else:
-    sys.path.append('SeriesFinale')
-    
+local_src = os.path.dirname(__file__) + '/src'
+if os.path.exists(local_src):
+    sys.path.append(local_src)
+    sys.path.append(local_src + '/SeriesFinale')
+
+from SeriesFinale.gui import MainWindow    
 
 if __name__ == '__main__':
     
