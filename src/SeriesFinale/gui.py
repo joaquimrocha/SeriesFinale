@@ -54,7 +54,7 @@ class MainWindow(hildon.StackableWindow):
         self.add(area)
         
         self.connect('delete-event', self._exit_cb)
-        
+        self._update_delete_menu_visibility()
     
     def _create_menu(self):
         menu = hildon.AppMenu()
@@ -64,10 +64,10 @@ class MainWindow(hildon.StackableWindow):
         button.connect('clicked', self._add_shows_cb)
         menu.append(button)
         
-        button = hildon.GtkButton(gtk.HILDON_SIZE_FINGER_HEIGHT)
-        button.set_label(_('Delete Shows'))
-        button.connect('clicked', self._delete_shows_cb)
-        menu.append(button)
+        self.delete_menu = hildon.GtkButton(gtk.HILDON_SIZE_FINGER_HEIGHT)
+        self.delete_menu.set_label(_('Delete Shows'))
+        self.delete_menu.connect('clicked', self._delete_shows_cb)
+        menu.append(self.delete_menu)
         
         menu.show_all()
         return menu
@@ -108,6 +108,7 @@ class MainWindow(hildon.StackableWindow):
                                  _('An error occurred.%s') % error_message)
         else:
             self.shows_view.set_shows(self.series_manager.series_list)
+            self._update_delete_menu_visibility()
         hildon.hildon_gtk_window_set_progress_indicator(self, False)
     
     def _row_activated_cb(self, view, path, column):
@@ -138,7 +139,14 @@ class MainWindow(hildon.StackableWindow):
 
     def _show_list_changed_cb(self, series_manager):
         self.shows_view.set_shows(self.series_manager.series_list)
+        self._update_delete_menu_visibility()
         return False
+    
+    def _update_delete_menu_visibility(self):
+        if len(self.series_manager.series_list):
+            self.delete_menu.show()
+        else:
+            self.delete_menu.hide()
 
 class DeleteView(hildon.StackableWindow):
     
