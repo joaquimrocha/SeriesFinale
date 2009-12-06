@@ -856,19 +856,21 @@ class SearchShowsDialog(gtk.Dialog):
         self.search_button.set_label(_('Search'))
         self.search_button.connect('clicked', self._search_button_clicked)
         self.search_button.set_sensitive(False)
+        self.search_button.set_size_request(150, -1)
         search_contents = gtk.HBox(False, 0)
         search_contents.pack_start(self.search_entry, True, True, 0)
         search_contents.pack_start(self.search_button, False, False, 0)
-        self.vbox.add(search_contents)
+        self.vbox.pack_start(search_contents, False, False, 0)
         
         shows_area = hildon.PannableArea()
         shows_area.add(self.shows_view)
-        shows_area.set_size_request(-1, 400)
+        shows_area.set_size_request_policy(hildon.SIZE_REQUEST_CHILDREN)
         self.vbox.add(shows_area)
         
         self.action_area.set_sensitive(False)
         
         self.vbox.show_all()
+        self.set_size_request(-1, 400)
     
     def _search_entry_changed_cb(self, entry):
         enable = self.search_entry.get_text().strip()
