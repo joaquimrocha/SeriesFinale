@@ -244,6 +244,7 @@ class SeasonsView(hildon.StackableWindow):
         season = self.seasons_select_view.get_season_from_path(path)
         episodes_view = EpisodesView(self.show, season)
         episodes_view.connect('delete-event', self._update_series_list_cb)
+        episodes_view.connect('episode-list-changed', self._update_series_list_cb)
         episodes_view.show_all()
     
     def _update_series_list_cb(self, widget, event = None):
@@ -556,6 +557,13 @@ class EditEpisodeDialog(NewEpisodeDialog):
 
 class EpisodesView(hildon.StackableWindow):
     
+    EPISODES_LIST_CHANGED_SIGNAL = 'episode-list-changed'
+    
+    __gsignals__ = {EPISODES_LIST_CHANGED_SIGNAL: (gobject.SIGNAL_RUN_LAST,
+                                                   gobject.TYPE_NONE,
+                                                   ()),
+                   }
+    
     def __init__(self, show, season_number = None):
         super(EpisodesView, self).__init__()
         
@@ -589,6 +597,16 @@ class EpisodesView(hildon.StackableWindow):
         button.set_label(_('Z-A'))
         button.connect('clicked', self._sort_descending_cb)
         menu.add_filter(button)
+        
+        button = hildon.GtkButton(gtk.HILDON_SIZE_FINGER_HEIGHT)
+        button.set_label(_('Mark All'))
+        button.connect('clicked', self._select_all_cb)
+        menu.append(button)
+        
+        button = hildon.GtkButton(gtk.HILDON_SIZE_FINGER_HEIGHT)
+        button.set_label(_('Mark None'))
+        button.connect('clicked', self._select_none_cb)
+        menu.append(button)
 
         button = hildon.GtkButton(gtk.HILDON_SIZE_FINGER_HEIGHT)
         button.set_label(_('Delete Episodes'))
@@ -606,6 +624,12 @@ class EpisodesView(hildon.StackableWindow):
                                              self._update_episodes_list_cb)
         delete_episodes_view.show_all()
     
+    def _select_all_cb(self, button):
+        self.episodes_check_view.select_all()
+    
+    def _select_none_cb(self, button):
+        self.episodes_check_view.select_none()
+    
     def _row_activated_cb(self, view, path, column):
         episode = self.episodes_check_view.get_episode_from_path(path)
         if self.episodes_check_view.get_column(1) == column:
@@ -614,7 +638,12 @@ class EpisodesView(hildon.StackableWindow):
             episodes_view.show_all()
     
     def _update_episodes_list_cb(self, widget, event = None):
-        self.episodes_check_view.set_episodes(self.show.get_episodes_by_season(self.season_number))
+        self.emit(self.EPISODES_LIST_CHANGED_SIGNAL)
+        episodes = self.show.get_episodes_by_season(self.season_number)
+        if episodes:
+            self.episodes_check_view.set_episodes(episodes)
+        else:
+            self.destroy()
         return False
     
     def _watched_renderer_toggled_cb(self, renderer, path, model):
@@ -670,6 +699,14 @@ class EpisodesCheckView(gtk.TreeView):
     
     def sort_ascending(self):
         self.get_model().set_sort_column_id(2, gtk.SORT_ASCENDING)
+    
+    def select_all(self):
+        for path in self.get_model():
+            path[0] = path[2].watched = True
+    
+    def select_none(self):
+        for path in self.get_model() or []:
+            path[0] = path[2].watched = False
 
 class EpisodeView(hildon.StackableWindow):
     
