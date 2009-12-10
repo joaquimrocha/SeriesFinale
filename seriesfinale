@@ -25,8 +25,7 @@ import os
 
 local_src = os.path.dirname(__file__) + '/src'
 if os.path.exists(local_src):
-    sys.path.append(local_src)
-    sys.path.append(local_src + '/SeriesFinale')
+    sys.path = [local_src] + sys.path
 
 from SeriesFinale.gui import MainWindow    
 
