@@ -2,7 +2,6 @@ PYTHON=/usr/bin/python2.5
 DESTDIR=/
 BUILDIR=$(CURDIR)/debian/seriesfinale
 PROJECT=ocrfeeder
-VERSION=0.4
 
 all:
 	@echo "make source   - Create source package"
