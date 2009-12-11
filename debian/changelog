@@ -1,5 +1,21 @@
+seriesfinale (0.2.1-1) unstable; urgency=low
+
+  * Fixed Debian package generation
+
+ -- Joaquim Rocha <jrocha@igalia.com>  Fri, 11 Dec 2009 12:59:48 +0100
+
 seriesfinale (0.2-1) unstable; urgency=low
 
-  * Initial release (Closes: #nnnn)  <nnnn is the bug number of your ITP>
+  * Added mark all/none menus to the episodes list view
+  * Corrected sys path for local sources precedence
+  * Conf folder now lies under ~/.osso
+  * Added icon base64 encryption to debian/control
+  * Added -sa option to deb building
+
+ -- Joaquim Rocha <jrocha@igalia.com>  Fri, 11 Dec 2009 12:59:48 +0100
+
+seriesfinale (0.1-1) unstable; urgency=low
+
+  * Initial release.
 
  -- Joaquim Rocha <jrocha@igalia.com>  Fri, 11 Dec 2009 12:59:48 +0100
