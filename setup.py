@@ -5,7 +5,7 @@ sys.path.append('src')
 from distutils.core import setup
 from SeriesFinale.lib import constants
 
-setup(name = constants.SF_NAME,
+setup(name = constants.SF_NAME.lower(),
      version = constants.SF_VERSION,
      description = constants.SF_DESCRIPTION,
      author = 'Joaquim Rocha',

@@ -1,2 +1,5 @@
 include seriesfinale
+include Makefile
+include MANIFEST.in
 recursive-include data *
+recursive-include debian changelog  compat  control  copyright  files  rules seriesfinale.postinst

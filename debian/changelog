@@ -1,5 +1,5 @@
 seriesfinale (0.2-1) unstable; urgency=low
 
-  * Initial release.
+  * Initial release (Closes: #nnnn)  <nnnn is the bug number of your ITP>
 
- -- Joaquim Manuel Pereira Rocha <jrocha@igalia.com>  Dec,  6 Dec 2009 18:09:06 +0100
+ -- Joaquim Rocha <jrocha@igalia.com>  Fri, 11 Dec 2009 12:59:48 +0100
