@@ -81,9 +81,14 @@ class MainWindow(hildon.Window):
             self._new_show_dialog()
     
     def _delete_shows_cb(self, button):
-        delete_shows_view = ShowsDeleteView(self.series_manager)
-        delete_shows_view.shows_select_view.set_shows(self.series_manager.series_list)
-        delete_shows_view.show_all()
+        selection = self.shows_view.get_selection()
+        selected_rows = selection.get_selected_rows()
+        model, paths = selected_rows
+        if not paths:
+            show_information(self, _('Please select one or more shows'))
+            return
+        for path in paths:
+            self.series_manager.delete_show(model[path][1])
     
     def _launch_search_shows_dialog(self):
         search_dialog = SearchShowsDialog(self, self.series_manager)
@@ -168,28 +173,6 @@ class DeleteView(hildon.Window):
         self.set_edit_toolbar(self.toolbar)
 
         self.fullscreen()
-
-class ShowsDeleteView(DeleteView):
-    
-    def __init__(self, series_manager):
-        self.shows_select_view = ShowsSelectView()
-        super(ShowsDeleteView, self).__init__(self.shows_select_view,
-                                               _('Delete Series'),
-                                               _('Delete'))
-        self.series_manager = series_manager
-        self.toolbar.connect('button-clicked',
-                             self._button_clicked_cb)
-
-    def _button_clicked_cb(self, button):
-        selection = self.shows_select_view.get_selection()
-        selected_rows = selection.get_selected_rows()
-        model, paths = selected_rows
-        if not paths:
-            show_information(self, _('Please select one or more shows'))
-            return
-        for path in paths:
-            self.series_manager.delete_show(model[path][1])
-        self.destroy()
 
 class ShowsSelectView(gtk.TreeView):
     
