@@ -96,9 +96,8 @@ class MainWindow(hildon.Window):
         show = None
         if response == gtk.RESPONSE_ACCEPT:
             if search_dialog.chosen_show:
-                #hildon.hildon_gtk_window_set_progress_indicator(self, True)
-                show_information(self,
-                                 _('Gathering show information. Please wait...'))
+                self.progress = show_progress(self,
+                                              _('Gathering show information. Please wait...'))
                 self.series_manager.get_complete_show(search_dialog.chosen_show)
         search_dialog.destroy()
         
@@ -113,7 +112,7 @@ class MainWindow(hildon.Window):
         else:
             self.shows_view.set_shows(self.series_manager.series_list)
             self._update_delete_menu_visibility()
-        #hildon.hildon_gtk_window_set_progress_indicator(self, False)
+        self.progress.destroy()
     
     def _row_activated_cb(self, view, path, column):
         show = self.shows_view.get_show_from_path(path)
@@ -259,9 +258,8 @@ class SeasonsView(hildon.Window):
     
     def _update_series_cb(self, button):
         self.series_manager.update_show_episodes(self.show)
-        #hildon.hildon_gtk_window_set_progress_indicator(self, True)
+        self.progress = show_progress(self, _('Updating show. Please wait...'))
         self.set_sensitive(False)
-        show_information(self, _('Updating show. Please wait...'))
     
     def _show_info_cb(self, button):
         dialog = gtk.Dialog(parent = self)
@@ -330,7 +328,7 @@ class SeasonsView(hildon.Window):
             if model:
                 model.clear()
                 self.seasons_select_view.set_seasons(seasons)
-        #hildon.hildon_gtk_window_set_progress_indicator(self, False)
+        self.progress.destroy()
         self.set_sensitive(True)
     
 class SeasonSelectView(gtk.TreeView):
@@ -896,7 +894,7 @@ class SearchShowsDialog(gtk.Dialog):
     
     def _search_button_clicked(self, button):
         self._set_controls_sensitive(False)
-        #hildon.hildon_gtk_window_set_progress_indicator(self, True)
+        self.progress = show_progress(self, _('Searching...'));
         search_terms = self.search_entry.get_text()
         if not self.search_entry.get_text():
             return
@@ -920,7 +918,7 @@ class SearchShowsDialog(gtk.Dialog):
                 self.action_area.set_sensitive(True)
             else:
                 self.action_area.set_sensitive(False)
-        #hildon.hildon_gtk_window_set_progress_indicator(self, False)
+        self.progress.destroy()
         self._set_controls_sensitive(True)
     
     def _set_controls_sensitive(self, sensitive):
@@ -939,3 +937,8 @@ def show_information(parent, message):
     hildon.hildon_banner_show_information(parent,
                                           None,
                                           message)
+
+def show_progress(parent, message):
+    return hildon.hildon_banner_show_animation(parent,
+                                               None,
+                                               message)
