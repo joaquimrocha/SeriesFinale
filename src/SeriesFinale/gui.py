@@ -800,7 +800,7 @@ class EpisodesSelectView(gtk.TreeView):
         episode = model.get_value(iter, 1)
         return episode
 
-class InfoTextView(hildon.TextView):
+class InfoTextView(gtk.TextView):
     
     def __init__(self):
         super(InfoTextView, self).__init__()
