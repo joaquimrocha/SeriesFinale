@@ -33,7 +33,7 @@ _ = gettext.gettext
 
 gtk.gdk.threads_init()
 
-class MainWindow(hildon.StackableWindow):
+class MainWindow(hildon.Window):
     
     def __init__(self):
         super(MainWindow, self).__init__()
@@ -148,7 +148,7 @@ class MainWindow(hildon.StackableWindow):
         else:
             self.delete_menu.hide()
 
-class DeleteView(hildon.StackableWindow):
+class DeleteView(hildon.Window):
     
     def __init__(self,
                  tree_view,
@@ -218,7 +218,7 @@ class ShowsSelectView(gtk.TreeView):
     def sort_ascending(self):
         self.get_model().set_sort_column_id(0, gtk.SORT_ASCENDING)
 
-class SeasonsView(hildon.StackableWindow):
+class SeasonsView(hildon.Window):
     
     def __init__(self, series_manager, show):
         super(SeasonsView, self).__init__()
@@ -555,7 +555,7 @@ class EditEpisodeDialog(NewEpisodeDialog):
         self.episode_rating.set_text(episode.rating)
         self.episode_guest_stars.set_text(str(episode.guest_stars))
 
-class EpisodesView(hildon.StackableWindow):
+class EpisodesView(hildon.Window):
     
     EPISODES_LIST_CHANGED_SIGNAL = 'episode-list-changed'
     
@@ -708,7 +708,7 @@ class EpisodesCheckView(gtk.TreeView):
         for path in self.get_model() or []:
             path[0] = path[2].watched = False
 
-class EpisodeView(hildon.StackableWindow):
+class EpisodeView(hildon.Window):
     
     def __init__(self, episode):
         super(EpisodeView, self).__init__()
