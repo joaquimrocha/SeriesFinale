@@ -49,9 +49,10 @@ class MainWindow(hildon.Window):
         self.shows_view.set_shows(self.series_manager.series_list)
         self.set_title(constants.SF_NAME)
         self.set_menu(self._create_menu())
-        area = hildon.PannableArea()
-        area.add(self.shows_view)
-        self.add(area)
+        #area = hildon.PannableArea()
+        #area.add(self.shows_view)
+        #self.add(area)
+	self.add(self.shows_view)
         
         self.connect('delete-event', self._exit_cb)
         self._update_delete_menu_visibility()
@@ -234,9 +235,10 @@ class SeasonsView(hildon.Window):
         self.seasons_select_view.set_seasons(seasons)
         self.seasons_select_view.connect('row-activated', self._row_activated_cb)
         
-        seasons_area = hildon.PannableArea()
-        seasons_area.add(self.seasons_select_view)
-        self.add(seasons_area)
+        #seasons_area = hildon.PannableArea()
+        #seasons_area.add(self.seasons_select_view)
+        #self.add(seasons_area)
+	self.add(self.seasons_select_view)
     
     def _row_activated_cb(self, view, path, column):
         season = self.seasons_select_view.get_season_from_path(path)
@@ -571,9 +573,10 @@ class EpisodesView(hildon.Window):
                                                           self.episodes_check_view.get_model())
         self.episodes_check_view.connect('row-activated', self._row_activated_cb)
         
-        episodes_area = hildon.PannableArea()
-        episodes_area.add(self.episodes_check_view)
-        self.add(episodes_area)
+        #episodes_area = hildon.PannableArea()
+        #episodes_area.add(self.episodes_check_view)
+        #self.add(episodes_area)
+	self.add(self.episodes_check_view)
         self.set_menu(self._create_menu())
         self._sort_descending_cb(None)
     
@@ -702,9 +705,9 @@ class EpisodeView(hildon.Window):
         
         self.set_title(str(self.episode))
         
-        contents_area = hildon.PannableArea()
+        #contents_area = hildon.PannableArea()
         contents = gtk.VBox(False, 0)
-        contents_area.add_with_viewport(contents)
+        #contents_area.add_with_viewport(contents)
         
         self.infotextview = InfoTextView()
         self._update_info_text_view()
@@ -712,7 +715,8 @@ class EpisodeView(hildon.Window):
         
         self.set_menu(self._create_menu())
         
-        self.add(contents_area)
+        #self.add(contents_area)
+	self.add(contents)
     
     def _update_info_text_view(self):
         self.infotextview.clear()
@@ -892,10 +896,11 @@ class SearchShowsDialog(gtk.Dialog):
         search_contents.pack_start(self.search_button, False, False, 0)
         self.vbox.pack_start(search_contents, False, False, 0)
         
-        shows_area = hildon.PannableArea()
-        shows_area.add(self.shows_view)
-        shows_area.set_size_request_policy(hildon.SIZE_REQUEST_CHILDREN)
-        self.vbox.add(shows_area)
+        #shows_area = hildon.PannableArea()
+        #shows_area.add(self.shows_view)
+        #shows_area.set_size_request_policy(hildon.SIZE_REQUEST_CHILDREN)
+        #self.vbox.add(shows_area)
+	self.vbox.add(self.shows_view)
         
         self.action_area.set_sensitive(False)
         
