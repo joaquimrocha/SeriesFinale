@@ -937,5 +937,5 @@ class SearchShowsDialog(gtk.Dialog):
 
 def show_information(parent, message):
     hildon.hildon_banner_show_information(parent,
-                                          '',
+                                          None,
                                           message)
