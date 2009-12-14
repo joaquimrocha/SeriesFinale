@@ -48,7 +48,7 @@ class MainWindow(hildon.Window):
         self.shows_view.connect('row-activated', self._row_activated_cb)
         self.shows_view.set_shows(self.series_manager.series_list)
         self.set_title(constants.SF_NAME)
-        self.set_app_menu(self._create_menu())
+        self.set_menu(self._create_menu())
         area = hildon.PannableArea()
         area.add(self.shows_view)
         self.add(area)
@@ -57,16 +57,14 @@ class MainWindow(hildon.Window):
         self._update_delete_menu_visibility()
     
     def _create_menu(self):
-        menu = hildon.AppMenu()
+        menu = gtk.Menu()
         
-        button = hildon.GtkButton(gtk.HILDON_SIZE_FINGER_HEIGHT)
-        button.set_label(_('Add Shows'))
-        button.connect('clicked', self._add_shows_cb)
-        menu.append(button)
+        menuitem = gtk.MenuItem(_('Add Shows'))
+        menuitem.connect('activate', self._add_shows_cb)
+        menu.append(menuitem)
         
-        self.delete_menu = hildon.GtkButton(gtk.HILDON_SIZE_FINGER_HEIGHT)
-        self.delete_menu.set_label(_('Delete Shows'))
-        self.delete_menu.connect('clicked', self._delete_shows_cb)
+        self.delete_menu = gtk.MenuItem(_('Delete Shows'))
+        self.delete_menu.connect('activate', self._delete_shows_cb)
         menu.append(self.delete_menu)
         
         menu.show_all()
@@ -228,7 +226,7 @@ class SeasonsView(hildon.Window):
         self.series_manager.connect('update-show-episodes-complete',
                                     self._update_show_episodes_complete_cb)
         self.show = show
-        self.set_app_menu(self._create_menu())
+        self.set_menu(self._create_menu())
         self.set_title(show.name)
 
         self.seasons_select_view = SeasonSelectView()
@@ -252,28 +250,24 @@ class SeasonsView(hildon.Window):
         self.seasons_select_view.set_seasons(seasons)
     
     def _create_menu(self):
-        menu = hildon.AppMenu()
+        menu = gtk.Menu()
         
-        button = hildon.GtkButton(gtk.HILDON_SIZE_FINGER_HEIGHT)
-        button.set_label(_('Info'))
-        button.connect('clicked', self._show_info_cb)
-        menu.append(button)
+        menuitem = gtk.MenuItem(_('Info'))
+        menuitem.connect('activate', self._show_info_cb)
+        menu.append(menuitem)
         
-        button = hildon.GtkButton(gtk.HILDON_SIZE_FINGER_HEIGHT)
-        button.set_label(_('Edit Info'))
-        button.connect('clicked', self._edit_show_info)
-        menu.append(button)
+        menuitem= gtk.MenuItem(_('Edit Info'))
+        menuitem.connect('activate', self._edit_show_info)
+        menu.append(menuitem)
         
         if str(self.show.thetvdb_id) != '-1':
-            button = hildon.GtkButton(gtk.HILDON_SIZE_FINGER_HEIGHT)
-            button.set_label(_('Update Show'))
-            button.connect('clicked', self._update_series_cb)
-            menu.append(button)
+            menuitem = gtk.MenuItem(_('Update Show'))
+            menuitem.connect('activate', self._update_series_cb)
+            menu.append(menuitem)
         
-        button = hildon.GtkButton(gtk.HILDON_SIZE_FINGER_HEIGHT)
-        button.set_label(_('New Episode'))
-        button.connect('clicked', self._new_episode_cb)
-        menu.append(button)
+        menuitem = gtk.MenuItem(_('New Episode'))
+        menuitem.connect('activate', self._new_episode_cb)
+        menu.append(menuitem)
         
         menu.show_all()
         return menu
@@ -580,38 +574,30 @@ class EpisodesView(hildon.Window):
         episodes_area = hildon.PannableArea()
         episodes_area.add(self.episodes_check_view)
         self.add(episodes_area)
-        self.set_app_menu(self._create_menu())
+        self.set_menu(self._create_menu())
         self._sort_descending_cb(None)
     
     def _create_menu(self):
-        menu = hildon.AppMenu()
+        menu = gtk.Menu()
         
-        button = hildon.GtkRadioButton(gtk.HILDON_SIZE_FINGER_HEIGHT)
-        button.set_mode(False)
-        button.set_label(_('A-Z'))
-        button.connect('clicked', self._sort_ascending_cb)
-        menu.add_filter(button)
-        button = hildon.GtkRadioButton(gtk.HILDON_SIZE_FINGER_HEIGHT, group = button)
-        button.set_active(True)
-        button.set_mode(False)
-        button.set_label(_('Z-A'))
-        button.connect('clicked', self._sort_descending_cb)
-        menu.add_filter(button)
+        menuitem= gtk.RadioMenuItem(label = _('A-Z'))
+        menuitem.connect('activate', self._sort_ascending_cb)
+        menu.append(menuitem)
+        menuitem = gtk.RadioMenuItem(label = _('Z-A'), group = menuitem)
+        menuitem.connect('activate', self._sort_descending_cb)
+        menu.append(menuitem)
         
-        button = hildon.GtkButton(gtk.HILDON_SIZE_FINGER_HEIGHT)
-        button.set_label(_('Mark All'))
-        button.connect('clicked', self._select_all_cb)
-        menu.append(button)
+        menuitem = gtk.MenuItem(_('Mark All'))
+        menuitem.connect('activate', self._select_all_cb)
+        menu.append(menuitem)
         
-        button = hildon.GtkButton(gtk.HILDON_SIZE_FINGER_HEIGHT)
-        button.set_label(_('Mark None'))
-        button.connect('clicked', self._select_none_cb)
-        menu.append(button)
+        menuitem= gtk.MenuItem(_('Mark None'))
+        menuitem.connect('activate', self._select_none_cb)
+        menu.append(menuitem)
 
-        button = hildon.GtkButton(gtk.HILDON_SIZE_FINGER_HEIGHT)
-        button.set_label(_('Delete Episodes'))
-        button.connect('clicked', self._delete_episodes_cb)
-        menu.append(button)
+        menuitem = gtk.MenuItem(_('Delete Episodes'))
+        menuitem.connect('activate', self._delete_episodes_cb)
+        menu.append(menuitem)
 
         menu.show_all()
         return menu
@@ -724,7 +710,7 @@ class EpisodeView(hildon.Window):
         self._update_info_text_view()
         contents.add(self.infotextview)
         
-        self.set_app_menu(self._create_menu())
+        self.set_menu(self._create_menu())
         
         self.add(contents_area)
     
@@ -740,12 +726,11 @@ class EpisodeView(hildon.Window):
         self.set_title(self.episode.name)
     
     def _create_menu(self):
-        menu = hildon.AppMenu()
+        menu = gtk.Menu()
         
-        button = hildon.GtkButton(gtk.HILDON_SIZE_FINGER_HEIGHT)
-        button.set_label(_('Edit Info'))
-        button.connect('clicked', self._edit_episode_cb)
-        menu.append(button)
+        menuitem = gtk.MenuItem(_('Edit Info'))
+        menuitem.connect('activate', self._edit_episode_cb)
+        menu.append(menuitem)
         
         menu.show_all()
         return menu
