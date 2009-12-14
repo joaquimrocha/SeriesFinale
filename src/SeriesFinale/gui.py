@@ -237,10 +237,12 @@ class SeasonsView(hildon.Window):
         menu = gtk.Menu()
         
         menuitem = gtk.MenuItem(_('Info'))
+        menuitem.set_sensitive(False)
         menuitem.connect('activate', self._show_info_cb)
         menu.append(menuitem)
         
-        menuitem= gtk.MenuItem(_('Edit Info'))
+        menuitem = gtk.MenuItem(_('Edit Info'))
+        menuitem.set_sensitive(False)
         menuitem.connect('activate', self._edit_show_info)
         menu.append(menuitem)
         
@@ -250,6 +252,7 @@ class SeasonsView(hildon.Window):
             menu.append(menuitem)
         
         menuitem = gtk.MenuItem(_('New Episode'))
+        menuitem.set_sensitive(False)
         menuitem.connect('activate', self._new_episode_cb)
         menu.append(menuitem)
         
@@ -580,6 +583,7 @@ class EpisodesView(hildon.Window):
         menu.append(menuitem)
 
         menuitem = gtk.MenuItem(_('Delete Episodes'))
+        menuitem.set_sensitive(False)
         menuitem.connect('activate', self._delete_episodes_cb)
         menu.append(menuitem)
 
@@ -714,6 +718,7 @@ class EpisodeView(hildon.Window):
         menu = gtk.Menu()
         
         menuitem = gtk.MenuItem(_('Edit Info'))
+        menuitem.set_sensitive(False)
         menuitem.connect('activate', self._edit_episode_cb)
         menu.append(menuitem)
         
@@ -833,6 +838,7 @@ class NewShowsDialog(gtk.Dialog):
         self.search_shows_button.connect('clicked', self._button_clicked_cb)        
         self.manual_add_button = gtk.Button()
         self.manual_add_button.set_label(_('Add Manually'))
+        self.manual_add_button.set_sensitive(False)
         self.manual_add_button.connect('clicked', self._button_clicked_cb)
         contents.add(self.search_shows_button)
         contents.add(self.manual_add_button)
