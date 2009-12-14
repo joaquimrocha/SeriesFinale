@@ -878,7 +878,7 @@ class SearchShowsDialog(gtk.Dialog):
         
         self.chosen_show = None
         
-        self.shows_view = hildon.GtkTreeView(gtk.HILDON_UI_MODE_EDIT)
+        self.shows_view = gtk.TreeView()
         model = gtk.ListStore(str)
         self.shows_view.set_model(model)
         column = gtk.TreeViewColumn('Name', gtk.CellRendererText(), text = 0)
