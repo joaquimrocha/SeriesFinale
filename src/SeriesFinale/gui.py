@@ -384,14 +384,14 @@ class NewShowDialog(gtk.Dialog):
         
         self.set_title(_('Edit Show'))
         
-        self.show_name = hildon.Entry(gtk.HILDON_SIZE_FINGER_HEIGHT)
+        self.show_name = gtk.Entry()
         self.show_overview = hildon.TextView()
         self.show_overview.set_placeholder(_('Overview'))
         self.show_overview.set_wrap_mode(gtk.WRAP_WORD)
-        self.show_genre = hildon.Entry(gtk.HILDON_SIZE_FINGER_HEIGHT)
-        self.show_network = hildon.Entry(gtk.HILDON_SIZE_FINGER_HEIGHT)
-        self.show_rating = hildon.Entry(gtk.HILDON_SIZE_FINGER_HEIGHT)
-        self.show_actors = hildon.Entry(gtk.HILDON_SIZE_FINGER_HEIGHT)
+        self.show_genre = gtk.Entry()
+        self.show_network = gtk.Entry()
+        self.show_rating = gtk.Entry()
+        self.show_actors = gtk.Entry()
         
         contents = gtk.VBox(False, 0)
         
@@ -456,7 +456,7 @@ class NewEpisodeDialog(gtk.Dialog):
         
         self.set_title(_('New Episode'))
         
-        self.episode_name = hildon.Entry(gtk.HILDON_SIZE_FINGER_HEIGHT)
+        self.episode_name = gtk.Entry()
         self.episode_overview = hildon.TextView()
         self.episode_overview.set_placeholder(_('Overview'))
         self.episode_overview.set_wrap_mode(gtk.WRAP_WORD)
@@ -484,10 +484,10 @@ class NewEpisodeDialog(gtk.Dialog):
             selector.append_text('1')
             self.episode_season.set_active(0)
         
-        self.episode_director = hildon.Entry(gtk.HILDON_SIZE_FINGER_HEIGHT)
-        self.episode_writer = hildon.Entry(gtk.HILDON_SIZE_FINGER_HEIGHT)
-        self.episode_rating = hildon.Entry(gtk.HILDON_SIZE_FINGER_HEIGHT)
-        self.episode_guest_stars = hildon.Entry(gtk.HILDON_SIZE_FINGER_HEIGHT)
+        self.episode_director = gtk.Entry()
+        self.episode_writer = gtk.Entry()
+        self.episode_rating = gtk.Entry()
+        self.episode_guest_stars = gtk.Entry()
         
         contents = gtk.VBox(False, 0)
         
@@ -884,7 +884,7 @@ class SearchShowsDialog(gtk.Dialog):
         column = gtk.TreeViewColumn('Name', gtk.CellRendererText(), text = 0)
         self.shows_view.append_column(column)
         
-        self.search_entry = hildon.Entry(gtk.HILDON_SIZE_FINGER_HEIGHT)
+        self.search_entry = gtk.Entry()
         self.search_entry.connect('changed', self._search_entry_changed_cb)
         self.search_button = gtk.Button()
         self.search_button.set_label(_('Search'))
