@@ -583,7 +583,6 @@ class EpisodesView(hildon.Window):
         menu.append(menuitem)
 
         menuitem = gtk.MenuItem(_('Delete Episodes'))
-        menuitem.set_sensitive(False)
         menuitem.connect('activate', self._delete_episodes_cb)
         menu.append(menuitem)
 
@@ -591,12 +590,15 @@ class EpisodesView(hildon.Window):
         return menu
     
     def _delete_episodes_cb(self, button):
-        delete_episodes_view = EpisodesDeleteView(self.show)
-        episodes = self.show.get_episodes_by_season(self.season_number)
-        delete_episodes_view.episodes_select_view.set_episodes(episodes)
-        delete_episodes_view.toolbar.connect('button-clicked',
-                                             self._update_episodes_list_cb)
-        delete_episodes_view.show_all()
+        selection = self.episodes_check_view.get_selection()
+        selected_rows = selection.get_selected_rows()
+        model, paths = selected_rows
+        if not paths:
+            show_information(self, _('Please select one or more episodes'))
+            return
+        for path in paths:
+            self.show.delete_episode(model[path][2])
+        self._update_episodes_list_cb(None, None);
     
     def _select_all_cb(self, button):
         self.episodes_check_view.select_all()
