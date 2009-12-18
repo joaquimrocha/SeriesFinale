@@ -810,7 +810,8 @@ class SearchShowsDialog(gtk.Dialog):
     
     def __init__(self, parent, series_manager):
         super(SearchShowsDialog, self).__init__(parent = parent,
-                                                 buttons = (gtk.STOCK_OK, gtk.RESPONSE_ACCEPT))
+                                                 buttons = (gtk.STOCK_OK, gtk.RESPONSE_ACCEPT,
+                                                            gtk.STOCK_CANCEL, gtk.RESPONSE_REJECT))
         self.set_title(_('Search shows'))
         
         self.series_manager = series_manager
