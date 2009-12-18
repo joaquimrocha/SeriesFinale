@@ -151,28 +151,6 @@ class MainWindow(hildon.Window):
         else:
             self.delete_menu.hide()
 
-class DeleteView(hildon.Window):
-    
-    def __init__(self,
-                 tree_view,
-                 toolbar_title = _('Delete'),
-                 button_label = _('Delete')):
-        super(DeleteView, self).__init__()
-        self.tree_view = tree_view
-        hildon.hildon_gtk_tree_view_set_ui_mode(self.tree_view, gtk.HILDON_UI_MODE_EDIT)
-        self.tree_view.get_selection().set_mode(gtk.SELECTION_MULTIPLE)
-        shows_area = hildon.PannableArea()
-        shows_area.add(self.tree_view)
-        self.add(shows_area)
-
-        self.toolbar = hildon.EditToolbar()
-        self.toolbar.set_label(toolbar_title)
-        self.toolbar.set_button_label(button_label)
-        self.toolbar.connect('arrow-clicked', lambda toolbar: self.destroy())
-        self.set_edit_toolbar(self.toolbar)
-
-        self.fullscreen()
-
 class ShowsSelectView(gtk.TreeView):
     
     def __init__(self):
@@ -740,28 +718,6 @@ class EpisodeView(hildon.Window):
             self.episode.guest_stars = episode_info['guest_stars']
             self._update_info_text_view()
         edit_episode_dialog.destroy()
-
-class EpisodesDeleteView(DeleteView):
-    
-    def __init__(self, show):
-        self.episodes_select_view = EpisodesSelectView()
-        super(EpisodesDeleteView, self).__init__(self.episodes_select_view,
-                                                 _('Delete Episodes'),
-                                                 _('Delete'))
-        self.show = show
-        self.toolbar.connect('button-clicked',
-                             self._button_clicked_cb)
-
-    def _button_clicked_cb(self, button):
-        selection = self.episodes_select_view.get_selection()
-        selected_rows = selection.get_selected_rows()
-        model, paths = selected_rows
-        if not paths:
-            show_information(self, _('Please select one or more episodes'))
-            return
-        for path in paths:
-            self.show.delete_episode(model[path][1])
-        self.destroy()
 
 class EpisodesSelectView(gtk.TreeView):
     
