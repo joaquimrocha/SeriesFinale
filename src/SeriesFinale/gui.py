@@ -237,7 +237,6 @@ class SeasonsView(hildon.Window):
         menu = gtk.Menu()
         
         menuitem = gtk.MenuItem(_('Info'))
-        menuitem.set_sensitive(False)
         menuitem.connect('activate', self._show_info_cb)
         menu.append(menuitem)
         
@@ -275,10 +274,11 @@ class SeasonsView(hildon.Window):
         infotextview.add_field (self.show.network, _('Network'))
         infotextview.add_field (self.show.actors, _('Actors'))
         infotextview.add_field (self.show.rating, _('Rating'))
-        info_area = hildon.PannableArea()
-        info_area.add_with_viewport(infotextview)
-        info_area.set_size_request_policy(hildon.SIZE_REQUEST_CHILDREN)
-        dialog.vbox.add(info_area)
+        #info_area = hildon.PannableArea()
+        #info_area.add_with_viewport(infotextview)
+        #info_area.set_size_request_policy(hildon.SIZE_REQUEST_CHILDREN)
+        #dialog.vbox.add(info_area)
+        dialog.vbox.add(infotextview)
         dialog.vbox.show_all()
         dialog.run()
         dialog.destroy()
