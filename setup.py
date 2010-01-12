@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 import sys
-sys.path.append('src')
+sys.path = ['src'] + sys.path
 from distutils.core import setup
 from SeriesFinale.lib import constants
 
