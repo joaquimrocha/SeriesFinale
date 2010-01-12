@@ -1,0 +1,237 @@
+# Portuguese translations for SeriesFinale package.
+# Copyright (C) 2010 Joaquim Rocha <jrocha@igalia.com>
+# This file is distributed under the same license as the SeriesFinale package.
+# Joaquim Rocha <jrocha@igalia.com>, 2010.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2010-01-12 17:49+0100\n"
+"PO-Revision-Date: 2010-01-12 00:01+0100\n"
+"Last-Translator: Joaquim Rocha <jrocha@igalia.com>\n"
+"Language-Team: Portuguese\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#: gui.py:83 gui.py:977
+msgid "Add Shows"
+msgstr "Adicionar Programas"
+
+#: gui.py:88 gui.py:199
+msgid "Delete Shows"
+msgstr "Apagar Programas"
+
+#: gui.py:117
+msgid "Gathering show information. Please wait..."
+msgstr "A obter a informação do program. Por favor aguarde..."
+
+#: gui.py:125 gui.py:405 gui.py:1054
+msgid "Please verify your internet connection is available"
+msgstr "Por favor verifique que a sua conexão à internet está disponível"
+
+#: gui.py:128 gui.py:1056
+#, python-format
+msgid "An error occurred.%s"
+msgstr "Ocorreu um erro.%s"
+
+#: gui.py:176 gui.py:177 gui.py:200 gui.py:892
+msgid "Delete"
+msgstr "Apagar"
+
+#: gui.py:210
+msgid "Please select one or more shows"
+msgstr "Por favor seleccione um ou mais programas"
+
+#: gui.py:257
+#, python-format
+msgid "%s season"
+msgid_plural "%s seasons"
+msgstr[0] "%s temporada"
+msgstr[1] "%s temporadas"
+
+#: gui.py:260 gui.py:466
+msgid "Completely watched"
+msgstr "Completamente visto"
+
+#: gui.py:265 gui.py:469
+#, python-format
+msgid "%s episode not watched"
+msgid_plural "%s episodes not watched"
+msgstr[0] "%s episódio não visto"
+msgstr[1] "%s episódios não vistos"
+
+#: gui.py:270
+msgid "No episodes to watch"
+msgstr "Sem episódios para ver"
+
+#: gui.py:318
+msgid "Info"
+msgstr "Info"
+
+#: gui.py:323 gui.py:862
+msgid "Edit Info"
+msgstr "Editar Info"
+
+#: gui.py:329
+msgid "Update Show"
+msgstr "Actualizar Programa"
+
+#: gui.py:334 gui.py:567
+msgid "New Episode"
+msgstr "Novo Episódio"
+
+#: gui.py:345
+msgid "Updating show. Please wait..."
+msgstr "A actualizar programa. Por favor aguarde..."
+
+#: gui.py:349
+msgid "Show Details"
+msgstr "Detalhes do Programa"
+
+#: gui.py:354
+msgid "Genre"
+msgstr "Género"
+
+#: gui.py:355
+msgid "Network"
+msgstr "Estação"
+
+#: gui.py:356
+msgid "Actors"
+msgstr "Actores"
+
+#: gui.py:357 gui.py:855
+msgid "Rating"
+msgstr "Classificação"
+
+#: gui.py:438 gui.py:455
+msgid "Special"
+msgstr "Especial"
+
+#: gui.py:440 gui.py:457
+#, python-format
+msgid "Season %s"
+msgstr "%sª temporada"
+
+#: gui.py:481
+#, python-format
+msgid "<i>Next to watch:</i> %s"
+msgstr "<i>Próx. a ver:</i> %s"
+
+#: gui.py:495
+msgid "Edit Show"
+msgstr "Editar Programa"
+
+#: gui.py:499 gui.py:571
+msgid "Overview"
+msgstr "Apresentação"
+
+#: gui.py:509 gui.py:605
+msgid "Name:"
+msgstr "Nome:"
+
+#: gui.py:514
+msgid "Genre:"
+msgstr "Género:"
+
+#: gui.py:515
+msgid "Network:"
+msgstr "Estação:"
+
+#: gui.py:516 gui.py:616
+msgid "Rating:"
+msgstr "Classificação:"
+
+#: gui.py:517
+msgid "Actors:"
+msgstr "Actores:"
+
+#: gui.py:577
+msgid "Number:"
+msgstr "Número:"
+
+#: gui.py:586
+msgid "Season:"
+msgstr "Temporada:"
+
+#: gui.py:614
+msgid "Director:"
+msgstr "Realizador:"
+
+#: gui.py:615
+msgid "Writer:"
+msgstr "Escritor:"
+
+#: gui.py:617
+msgid "Guest Stars:"
+msgstr "Estrelas Convidadas:"
+
+#: gui.py:702
+msgid "A-Z"
+msgstr ""
+
+#: gui.py:707
+msgid "Z-A"
+msgstr ""
+
+#: gui.py:716
+msgid "Mark All"
+msgstr "Marcar Todos"
+
+#: gui.py:721
+msgid "Mark None"
+msgstr "Marcar Nenhum"
+
+#: gui.py:726 gui.py:891
+msgid "Delete Episodes"
+msgstr "Apagar Episódios"
+
+#: gui.py:852
+msgid "Director"
+msgstr "Realizador"
+
+#: gui.py:853
+msgid "Writer"
+msgstr "Escritor:"
+
+#: gui.py:854
+msgid "Guest Stars"
+msgstr "Estrelas Convidadas"
+
+#: gui.py:902
+msgid "Please select one or more episodes"
+msgstr "Por favor seleccione um ou mais episódios"
+
+#: gui.py:958
+#, python-format
+msgid ""
+"\n"
+"%(label)s: %(contents)s"
+msgstr ""
+"\n"
+"%(label)s: %(contents)s"
+
+#: gui.py:980
+msgid "Search Shows"
+msgstr "Pesquisar Programas"
+
+#: gui.py:983
+msgid "Add Manually"
+msgstr "Adicionar Manualmente"
+
+#: gui.py:1001
+msgid "Search shows"
+msgstr "Pesquisar programas"
+
+#: gui.py:1019
+msgid "Search"
+msgstr "Pesquisar"
+
+#: series.py:100
+#, python-format
+msgid "Ep. %(number)s: %(name)s"
+msgstr ""
+
