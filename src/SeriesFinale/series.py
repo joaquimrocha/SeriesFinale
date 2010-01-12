@@ -70,6 +70,12 @@ class Show(object):
             if self.episode_list[i] == episode:
                 del self.episode_list[i]
                 break
+    
+    def is_completely_watched(self):
+        for episode in self.episode_list:
+            if not episode.watched:
+                return False
+        return True
 
     def __str__(self):
         return self.name

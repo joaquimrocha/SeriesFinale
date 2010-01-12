@@ -29,3 +29,5 @@ SF_URL = 'http://www.igalia.com'
 SF_CONF_FILE = os.getenv('HOME') + '/.osso/%s/%s' % (SF_COMPACT_NAME, 'series.db')
 
 TVDB_API_KEY = 'FAD75AF31E1B1577'
+
+SECONDARY_TEXT_COLOR = '#AFAFAF'
