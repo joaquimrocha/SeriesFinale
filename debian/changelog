@@ -1,3 +1,15 @@
+seriesfinale (0.3-1) unstable; urgency=low
+
+  * Added extra information to tree views
+  * Added configuration file handling and episodes order recall
+  * Added local dirs to sys path for easier development
+  * Corrected translation strings
+  * Added pot file
+  * Added Portuguese translation
+  * Added support for i18n
+
+ -- Joaquim Rocha <jrocha@igalia.com>  Tue, 12 Jan 2010 12:59:48 +0100
+
 seriesfinale (0.2.1-1) unstable; urgency=low
 
   * Fixed Debian package generation
