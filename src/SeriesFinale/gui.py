@@ -28,6 +28,7 @@ import locale
 import pango
 from series import SeriesManager, Show, Episode
 from lib import constants
+from settings import Settings
 
 _ = gettext.gettext
 
@@ -38,11 +39,14 @@ class MainWindow(hildon.StackableWindow):
     def __init__(self):
         super(MainWindow, self).__init__()
         self.series_manager = SeriesManager()
-        self.series_manager.load(constants.SF_CONF_FILE)
+        self.series_manager.load(constants.SF_DB_FILE)
         self.series_manager.connect('show-list-changed',
                                     self._show_list_changed_cb)
         self.series_manager.connect('get-full-show-complete',
                                     self._get_show_complete_cb)
+        
+        self.settings = Settings()
+        self.settings.load(constants.SF_CONF_FILE)
 
         self.shows_view = ShowsSelectView()
         self.shows_view.connect('row-activated', self._row_activated_cb)
@@ -113,7 +117,7 @@ class MainWindow(hildon.StackableWindow):
     
     def _row_activated_cb(self, view, path, column):
         show = self.shows_view.get_show_from_path(path)
-        seasons_view = SeasonsView(self.series_manager, show)
+        seasons_view = SeasonsView(self.settings, self.series_manager, show)
         seasons_view.connect('delete-event',
                      lambda w, e:
                         self.shows_view.set_shows(self.series_manager.series_list))
@@ -134,7 +138,8 @@ class MainWindow(hildon.StackableWindow):
         new_show_dialog.destroy()
     
     def _exit_cb(self, window, event):
-        self.series_manager.save(constants.SF_CONF_FILE)
+        self.series_manager.save(constants.SF_DB_FILE)
+        self.settings.save(constants.SF_CONF_FILE)
         gtk.main_quit()
 
     def _show_list_changed_cb(self, series_manager):
@@ -257,9 +262,11 @@ class ShowsSelectView(gtk.TreeView):
 
 class SeasonsView(hildon.StackableWindow):
     
-    def __init__(self, series_manager, show):
+    def __init__(self, settings, series_manager, show):
         super(SeasonsView, self).__init__()
         self.set_title(show.name)
+        
+        self.settings = settings
         
         self.series_manager = series_manager
         self.series_manager.connect('update-show-episodes-complete',
@@ -279,7 +286,7 @@ class SeasonsView(hildon.StackableWindow):
     
     def _row_activated_cb(self, view, path, column):
         season = self.seasons_select_view.get_season_from_path(path)
-        episodes_view = EpisodesView(self.show, season)
+        episodes_view = EpisodesView(self.settings, self.show, season)
         episodes_view.connect('delete-event', self._update_series_list_cb)
         episodes_view.connect('episode-list-changed', self._update_series_list_cb)
         episodes_view.show_all()
@@ -647,8 +654,10 @@ class EpisodesView(hildon.StackableWindow):
                                                    ()),
                    }
     
-    def __init__(self, show, season_number = None):
+    def __init__(self, settings, show, season_number = None):
         super(EpisodesView, self).__init__()
+        
+        self.settings = settings
         
         self.show = show
         self.season_number = season_number
@@ -664,7 +673,10 @@ class EpisodesView(hildon.StackableWindow):
         episodes_area.add(self.episodes_check_view)
         self.add(episodes_area)
         self.set_app_menu(self._create_menu())
-        self._sort_descending_cb(None)
+        if self.settings.episodes_order == self.settings.ASCENDING_ORDER:
+            self._sort_ascending_cb(None)
+        else:
+            self._sort_descending_cb(None)
     
     def _create_menu(self):
         menu = hildon.AppMenu()
@@ -675,11 +687,14 @@ class EpisodesView(hildon.StackableWindow):
         button.connect('clicked', self._sort_ascending_cb)
         menu.add_filter(button)
         button = hildon.GtkRadioButton(gtk.HILDON_SIZE_FINGER_HEIGHT, group = button)
-        button.set_active(True)
         button.set_mode(False)
         button.set_label(_('Z-A'))
         button.connect('clicked', self._sort_descending_cb)
         menu.add_filter(button)
+        if self.settings.episodes_order == self.settings.DESCENDING_ORDER:
+            button.set_active(True)
+        else:
+            button.set_active(False)
         
         button = hildon.GtkButton(gtk.HILDON_SIZE_FINGER_HEIGHT)
         button.set_label(_('Mark All'))
@@ -736,9 +751,11 @@ class EpisodesView(hildon.StackableWindow):
     
     def _sort_ascending_cb(self, button):
         self.episodes_check_view.sort_ascending()
+        self.settings.episodes_order = self.settings.ASCENDING_ORDER
     
     def _sort_descending_cb(self, button):
         self.episodes_check_view.sort_descending()
+        self.settings.episodes_order = self.settings.DESCENDING_ORDER
 
 class EpisodesCheckView(gtk.TreeView):
     

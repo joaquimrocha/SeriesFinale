@@ -26,7 +26,10 @@ SF_VERSION = '0.2.1'
 SF_DESCRIPTION = 'SeriesFinale is a TV series browser and tracker application'
 SF_URL = 'http://www.igalia.com'
 
-SF_CONF_FILE = os.getenv('HOME') + '/.osso/%s/%s' % (SF_COMPACT_NAME, 'series.db')
+HOME_PATH = os.getenv('HOME')
+SF_CONF_FOLDER = HOME_PATH + '/.osso/%s' % SF_COMPACT_NAME
+SF_CONF_FILE = SF_CONF_FOLDER + '/%s.conf' % SF_COMPACT_NAME
+SF_DB_FILE = SF_CONF_FOLDER + '/%s' % 'series.db'
 
 TVDB_API_KEY = 'FAD75AF31E1B1577'
 
