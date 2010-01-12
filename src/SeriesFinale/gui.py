@@ -196,7 +196,7 @@ class ShowsDeleteView(DeleteView):
     def __init__(self, series_manager):
         self.shows_select_view = ShowsSelectView()
         super(ShowsDeleteView, self).__init__(self.shows_select_view,
-                                               _('Delete Series'),
+                                               _('Delete Shows'),
                                                _('Delete'))
         self.series_manager = series_manager
         self.toolbar.connect('button-clicked',
@@ -350,7 +350,7 @@ class SeasonsView(hildon.StackableWindow):
         infotextview = InfoTextView()
         infotextview.set_title(self.show.name)
         infotextview.add_field (self.show.overview)
-        infotextview.add_field (_('\n'))
+        infotextview.add_field ('\n')
         infotextview.add_field (self.show.genre, _('Genre'))
         infotextview.add_field (self.show.network, _('Network'))
         infotextview.add_field (self.show.actors, _('Actors'))
@@ -955,7 +955,9 @@ class InfoTextView(hildon.TextView):
         if not contents:
             return
         if label:
-            contents = _('\n%s: %s') % (label, contents)
+            contents = _('\n%(label)s: %(contents)s') % {'label': label,
+                                                         'contents': contents,
+                                                        }
         self.get_buffer().insert(self.iter, contents)
     
     def clear(self):
@@ -975,7 +977,7 @@ class NewShowsDialog(gtk.Dialog):
         self.set_title(_('Add Shows'))
         contents = gtk.HBox(True, 0)
         self.search_shows_button = hildon.GtkButton(gtk.HILDON_SIZE_FINGER_HEIGHT)
-        self.search_shows_button.set_label(_('Search Series'))
+        self.search_shows_button.set_label(_('Search Shows'))
         self.search_shows_button.connect('clicked', self._button_clicked_cb)        
         self.manual_add_button = hildon.GtkButton(gtk.HILDON_SIZE_FINGER_HEIGHT)
         self.manual_add_button.set_label(_('Add Manually'))
