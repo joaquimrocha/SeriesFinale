@@ -38,6 +38,22 @@ class MainWindow(hildon.StackableWindow):
     
     def __init__(self):
         super(MainWindow, self).__init__()
+        
+        # i18n
+        languages = []
+        lc, encoding = locale.getdefaultlocale()
+        if lc:
+            languages = [lc]
+        languages += constants.DEFAULT_LANGUAGES
+        gettext.bindtextdomain(constants.SF_COMPACT_NAME,
+                               constants.LOCALE_DIR)
+        gettext.textdomain(constants.SF_COMPACT_NAME)
+        language = gettext.translation(constants.SF_COMPACT_NAME,
+                                       constants.LOCALE_DIR,
+                                       languages = languages,
+                                       fallback = True)
+        _ = language.gettext
+        
         self.series_manager = SeriesManager()
         self.series_manager.load(constants.SF_DB_FILE)
         self.series_manager.connect('show-list-changed',
