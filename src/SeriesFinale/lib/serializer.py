@@ -35,7 +35,14 @@ def deserialize(shows_file_path):
     for show in shows_list:
         for episode in show.episode_list:
             episode.show = show
-            # IMPORTANT: The code below if here so the episode_number
+            # IMPORTANT: The code below is here so the episode_number
             # is set using the right Episode object's property
             episode.episode_number = episode.episode_number
+            # This prevents errors when the
+            # stored objects still don't have
+            # the air date variable
+            try:
+                episode.air_date
+            except AttributeError:
+                episode.air_date = ''
     return shows_list

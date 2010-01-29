@@ -392,6 +392,7 @@ class SeasonsView(hildon.StackableWindow):
             episode.director = episode_info['director']
             episode.writer = episode_info['writer']
             episode.rating = episode_info['rating']
+            episode.air_date = episode_info['air_date']
             episode.guest_stars = episode_info['guest_stars']
             self.show.update_episode_list([episode])
             seasons = self.show.get_seasons()
@@ -596,6 +597,7 @@ class NewEpisodeDialog(gtk.Dialog):
         
         self.episode_director = hildon.Entry(gtk.HILDON_SIZE_FINGER_HEIGHT)
         self.episode_writer = hildon.Entry(gtk.HILDON_SIZE_FINGER_HEIGHT)
+        self.episode_air_date = hildon.Entry(gtk.HILDON_SIZE_FINGER_HEIGHT)
         self.episode_rating = hildon.Entry(gtk.HILDON_SIZE_FINGER_HEIGHT)
         self.episode_guest_stars = hildon.Entry(gtk.HILDON_SIZE_FINGER_HEIGHT)
         
@@ -613,6 +615,7 @@ class NewEpisodeDialog(gtk.Dialog):
         
         fields = [(_('Director:'), self.episode_director),
                   (_('Writer:'), self.episode_writer),
+                  (_('Original air date:'), self.episode_air_date),
                   (_('Rating:'), self.episode_rating),
                   (_('Guest Stars:'), self.episode_guest_stars),
                  ]
@@ -643,6 +646,7 @@ class NewEpisodeDialog(gtk.Dialog):
                 'number': self.episode_number.get_selector().get_entry().get_text(),
                 'director': self.episode_director.get_text(),
                 'writer': self.episode_writer.get_text(),
+                'air_date': self.episode_air_date.get_text(),
                 'rating': self.episode_rating.get_text(),
                 'guest_stars': self.episode_guest_stars.get_text()}
         return info
@@ -658,6 +662,7 @@ class EditEpisodeDialog(NewEpisodeDialog):
         self.episode_number.get_selector().get_entry().set_text(str(episode.episode_number))
         self.episode_director.set_text(episode.director)
         self.episode_writer.set_text(str(episode.writer))
+        self.episode_air_date.set_text(str(episode.air_date))
         self.episode_rating.set_text(episode.rating)
         self.episode_guest_stars.set_text(str(episode.guest_stars))
 
@@ -849,6 +854,7 @@ class EpisodeView(hildon.StackableWindow):
         self.infotextview.set_title(self.episode.name)
         self.infotextview.add_field(self.episode.overview)
         self.infotextview.add_field('\n')
+        self.infotextview.add_field(self.episode.air_date, _('Original air date'))
         self.infotextview.add_field(self.episode.director, _('Director'))
         self.infotextview.add_field(self.episode.writer, _('Writer'))
         self.infotextview.add_field(self.episode.guest_stars, _('Guest Stars'))
@@ -876,6 +882,7 @@ class EpisodeView(hildon.StackableWindow):
             self.episode.overview = episode_info['overview']
             self.episode.season_number = episode_info['season']
             self.episode.episode_number = episode_info['number']
+            self.episode.air_date = episode_info['air_date']
             self.episode.director = episode_info['director']
             self.episode.writer = episode_info['writer']
             self.episode.rating = episode_info['rating']

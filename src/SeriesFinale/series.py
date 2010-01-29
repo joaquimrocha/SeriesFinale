@@ -84,7 +84,8 @@ class Episode(object):
     
     def __init__(self, name, show, episode_number, season_number = '1',
                  overview = None, director = None, guest_stars = [],
-                 rating = None, writer = None, watched = False):
+                 rating = None, writer = None, watched = False,
+                 air_date = ''):
         self.id = -1
         self.name = name
         self.show = show
@@ -96,7 +97,8 @@ class Episode(object):
         self.rating = rating
         self.writer = writer
         self.watched = watched
-    
+        self.air_date = air_date
+
     def __repr__(self):
         return _('Ep. %s: %s') % (self.episode_number, self.name)
     
@@ -239,6 +241,7 @@ class SeriesManager(gobject.GObject):
         episode_obj.guest_stars = thetvdb_episode.guest_stars
         episode_obj.rating = thetvdb_episode.rating
         episode_obj.writer = thetvdb_episode.writer
+        episode_obj.air_date = thetvdb_episode.first_aired or ''
         return episode_obj
     
     def stop_request(self):
