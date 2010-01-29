@@ -62,7 +62,12 @@ class Show(object):
 
     def update_episode_list(self, episode_list):
         for episode in episode_list:
-            if not [ep for ep in self.episode_list if ep == episode]:
+            exists = False
+            for ep in self.episode_list:
+                if ep == episode:
+                    exists = True
+                    ep.merge_episode(episode)
+            if not exists:
                 self.episode_list.append(episode)
     
     def delete_episode(self, episode):
@@ -110,6 +115,19 @@ class Episode(object):
                self.season_number == episode.season_number and \
                self.name == episode.name
     
+    def merge_episode(self, episode):
+        self.name = self.name or episode.name
+        self.show = self.show or episode.show
+        self.episode_number = self.episode_number or episode.episode_number
+        self.season_number = self.season_number or episode.season_number
+        self.overview = self.overview or episode.overview
+        self.director = self.director or episode.director
+        self.guest_stars = self.guest_stars or episode.guest_stars
+        self.rating = self.rating or episode.rating
+        self.writer = self.writer or episode.writer
+        self.watched = self.watched or episode.watched
+        self.air_date = self.air_date or episode.air_date
+
     def _get_episode_number(self):
         return self._episode_number
 
