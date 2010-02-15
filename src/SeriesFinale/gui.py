@@ -253,7 +253,7 @@ class ShowsSelectView(gtk.TreeView):
             return
         seasons = len(show.get_seasons())
         if seasons:
-            show_info = '<small><span foreground="%s">' % constants.SECONDARY_TEXT_COLOR
+            show_info = '<small><span foreground="%s">' % get_color(constants.SECONDARY_TEXT_COLOR)
             show_info += gettext.ngettext('%s season', '%s seasons', seasons) \
                          % seasons
             if show.is_completely_watched():
@@ -460,10 +460,11 @@ class SeasonSelectView(gtk.TreeView):
         episodes_to_watch = [episode for episode in episodes \
                             if not episode.watched]
         season_info = ''
+        color = get_color(constants.SECONDARY_TEXT_COLOR)
         if not episodes_to_watch:
             if episodes:
                 name = '<span foreground="%s">%s</span>' % \
-                        (constants.SECONDARY_TEXT_COLOR, name)
+                        (get_color(constants.SECONDARY_TEXT_COLOR), name)
                 season_info = _('Completely watched')
         else:
             number_episodes_to_watch = len(episodes_to_watch)
@@ -479,11 +480,17 @@ class SeasonSelectView(gtk.TreeView):
                 if episode.episode_number == sorted_episodes_to_watch[0]:
                     next_episode = episode
                     break
-            season_info += ' | ' + _('<i>Next to watch:</i> %s') % episode
+            next_air_date = episode.air_date
+            if next_air_date:
+                season_info += ' | ' + _('<i>Next air date:</i> %s') % episode.get_air_date_text()
+            else:
+                season_info += ' | ' + _('<i>Next to watch:</i> %s') % episode
+            if next_episode.already_aired():
+                color = get_color(constants.ACTIVE_TEXT_COLOR)
         renderer.set_property('markup',
                               '<b>%s</b>\n'
                               '<span foreground="%s">%s</span>' % \
-                              (name, constants.SECONDARY_TEXT_COLOR, season_info))
+                              (name, color, season_info))
         renderer.set_property('ellipsize', pango.ELLIPSIZE_END)
 
 class NewShowDialog(gtk.Dialog):
@@ -780,6 +787,10 @@ class EpisodesView(hildon.StackableWindow):
 
 class EpisodesCheckView(gtk.TreeView):
     
+    EPISODE_CHECK_COLUMN = 0
+    EPISODE_NAME_COLUMN = 1
+    EPISODE_OBJECT_COLUMN = 2
+    
     def __init__(self):
         super(EpisodesCheckView, self).__init__()
         model = gtk.ListStore(bool, str, gobject.TYPE_PYOBJECT)
@@ -788,14 +799,17 @@ class EpisodesCheckView(gtk.TreeView):
         column = gtk.TreeViewColumn('Watched', self.watched_renderer)
         column.add_attribute(self.watched_renderer, "active", 0)
         self.append_column(column)
-        column = gtk.TreeViewColumn('Name', gtk.CellRendererText(), text = 1)
+        episode_renderer = gtk.CellRendererText()
+        column = gtk.TreeViewColumn('Name', episode_renderer, text = 1)
+        column.set_cell_data_func(episode_renderer,
+                                  self._episode_select_view_data_func)
         self.append_column(column)
         self.set_model(model)
         self.get_model().set_sort_func(2, self._sort_func)
     
     def _sort_func(self, model, iter1, iter2):
-        episode1 = model.get_value(iter1, 2)
-        episode2 = model.get_value(iter2, 2)
+        episode1 = model.get_value(iter1, self.EPISODE_OBJECT_COLUMN)
+        episode2 = model.get_value(iter2, self.EPISODE_OBJECT_COLUMN)
         if episode1 == None or episode2 == None:
             return 0
         if episode1.episode_number < episode2.episode_number:
@@ -812,14 +826,16 @@ class EpisodesCheckView(gtk.TreeView):
     def get_episode_from_path(self, path):
         model = self.get_model()
         iter = model.get_iter(path)
-        episode = model.get_value(iter, 2)
+        episode = model.get_value(iter, self.EPISODE_OBJECT_COLUMN)
         return episode
     
     def sort_descending(self):
-        self.get_model().set_sort_column_id(2, gtk.SORT_DESCENDING)
+        self.get_model().set_sort_column_id(self.EPISODE_OBJECT_COLUMN,
+                                            gtk.SORT_DESCENDING)
     
     def sort_ascending(self):
-        self.get_model().set_sort_column_id(2, gtk.SORT_ASCENDING)
+        self.get_model().set_sort_column_id(self.EPISODE_OBJECT_COLUMN,
+                                            gtk.SORT_ASCENDING)
     
     def select_all(self):
         for path in self.get_model():
@@ -827,7 +843,19 @@ class EpisodesCheckView(gtk.TreeView):
     
     def select_none(self):
         for path in self.get_model() or []:
-            path[0] = path[2].watched = False
+            path[self.EPISODE_CHECK_COLUMN] = \
+                path[self.EPISODE_OBJECT_COLUMN].watched = False
+    
+    def _episode_select_view_data_func(self, column, renderer, model, iter):
+        episode = model.get_value(iter, self.EPISODE_OBJECT_COLUMN)
+        color = get_color(constants.SECONDARY_TEXT_COLOR)
+        if not episode.watched and episode.already_aired():
+            color = get_color(constants.ACTIVE_TEXT_COLOR)
+        renderer.set_property('markup',
+                              '<span foreground="%s">%s\n'
+                              '%s</span>' % \
+                              (color, episode, episode.get_air_date_text()))
+        renderer.set_property('ellipsize', pango.ELLIPSIZE_END)
 
 class EpisodeView(hildon.StackableWindow):
     
@@ -1091,3 +1119,15 @@ def show_information(parent, message):
     hildon.hildon_banner_show_information(parent,
                                           '',
                                           message)
+
+def get_color(color_name):
+    # Adapted from gPodder
+    settings = gtk.settings_get_default()
+    if not settings:
+        return None
+    color_style = gtk.rc_get_style_by_paths(settings,
+                                            'GtkButton',
+                                            'osso-logical-colors',
+                                            gtk.Button)
+    return color_style.lookup_color(color_name).to_string()
+

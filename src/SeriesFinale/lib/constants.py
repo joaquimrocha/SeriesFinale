@@ -20,6 +20,7 @@
 
 import os
 import sys
+import gtk
 
 SF_NAME = 'SeriesFinale'
 SF_COMPACT_NAME = 'seriesfinale'
@@ -49,4 +50,5 @@ DEFAULT_LANGUAGES += ['en_US', 'pt_PT']
 
 TVDB_API_KEY = 'FAD75AF31E1B1577'
 
-SECONDARY_TEXT_COLOR = '#AFAFAF'
+SECONDARY_TEXT_COLOR = 'SecondaryTextColor'
+ACTIVE_TEXT_COLOR = 'ActiveTextColor'

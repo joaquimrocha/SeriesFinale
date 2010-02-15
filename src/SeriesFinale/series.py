@@ -127,7 +127,20 @@ class Episode(object):
         self.writer = self.writer or episode.writer
         self.watched = self.watched or episode.watched
         self.air_date = self.air_date or episode.air_date
-
+    
+    def get_air_date_text(self):
+        if not self.air_date:
+            return None
+        next_air_date_str = self.air_date.strftime('%d %b')
+        if self.air_date.year != datetime.today().year:
+            next_air_date_str += self.air_date.strftime(' %Y')
+        return next_air_date_str
+    
+    def already_aired(self):
+        if self.air_date and self.air_date <= datetime.today().date():
+            return True
+        return False
+    
     def _get_episode_number(self):
         return self._episode_number
 
