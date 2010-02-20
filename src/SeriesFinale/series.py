@@ -130,7 +130,7 @@ class Episode(object):
     
     def get_air_date_text(self):
         if not self.air_date:
-            return None
+            return ''
         next_air_date_str = self.air_date.strftime('%d %b')
         if self.air_date.year != datetime.today().year:
             next_air_date_str += self.air_date.strftime(' %Y')
