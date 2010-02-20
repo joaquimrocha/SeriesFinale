@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2010-01-12 17:49+0100\n"
+"POT-Creation-Date: 2010-02-20 20:20+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,219 +17,234 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=INTEGER; plural=EXPRESSION;\n"
 
-#: gui.py:83 gui.py:977
+#: src/SeriesFinale/gui.py:83 src/SeriesFinale/gui.py:1012
 msgid "Add Shows"
 msgstr ""
 
-#: gui.py:88 gui.py:199
+#: src/SeriesFinale/gui.py:88 src/SeriesFinale/gui.py:199
 msgid "Delete Shows"
 msgstr ""
 
-#: gui.py:117
+#: src/SeriesFinale/gui.py:117
 msgid "Gathering show information. Please wait..."
 msgstr ""
 
-#: gui.py:125 gui.py:405 gui.py:1054
+#: src/SeriesFinale/gui.py:125 src/SeriesFinale/gui.py:406
+#: src/SeriesFinale/gui.py:1089
 msgid "Please verify your internet connection is available"
 msgstr ""
 
-#: gui.py:128 gui.py:1056
+#: src/SeriesFinale/gui.py:128 src/SeriesFinale/gui.py:1091
 #, python-format
 msgid "An error occurred.%s"
 msgstr ""
 
-#: gui.py:176 gui.py:177 gui.py:200 gui.py:892
+#: src/SeriesFinale/gui.py:176 src/SeriesFinale/gui.py:177
+#: src/SeriesFinale/gui.py:200 src/SeriesFinale/gui.py:927
 msgid "Delete"
 msgstr ""
 
-#: gui.py:210
+#: src/SeriesFinale/gui.py:210
 msgid "Please select one or more shows"
 msgstr ""
 
-#: gui.py:257
+#: src/SeriesFinale/gui.py:257
 #, python-format
 msgid "%s season"
 msgid_plural "%s seasons"
 msgstr[0] ""
 msgstr[1] ""
 
-#: gui.py:260 gui.py:466
+#: src/SeriesFinale/gui.py:260 src/SeriesFinale/gui.py:468
 msgid "Completely watched"
 msgstr ""
 
-#: gui.py:265 gui.py:469
+#: src/SeriesFinale/gui.py:265 src/SeriesFinale/gui.py:471
 #, python-format
 msgid "%s episode not watched"
 msgid_plural "%s episodes not watched"
 msgstr[0] ""
 msgstr[1] ""
 
-#: gui.py:270
+#: src/SeriesFinale/gui.py:270
 msgid "No episodes to watch"
 msgstr ""
 
-#: gui.py:318
+#: src/SeriesFinale/gui.py:318
 msgid "Info"
 msgstr ""
 
-#: gui.py:323 gui.py:862
+#: src/SeriesFinale/gui.py:323 src/SeriesFinale/gui.py:896
 msgid "Edit Info"
 msgstr ""
 
-#: gui.py:329
+#: src/SeriesFinale/gui.py:329
 msgid "Update Show"
 msgstr ""
 
-#: gui.py:334 gui.py:567
+#: src/SeriesFinale/gui.py:334 src/SeriesFinale/gui.py:575
 msgid "New Episode"
 msgstr ""
 
-#: gui.py:345
+#: src/SeriesFinale/gui.py:345
 msgid "Updating show. Please wait..."
 msgstr ""
 
-#: gui.py:349
+#: src/SeriesFinale/gui.py:349
 msgid "Show Details"
 msgstr ""
 
-#: gui.py:354
+#: src/SeriesFinale/gui.py:354
 msgid "Genre"
 msgstr ""
 
-#: gui.py:355
+#: src/SeriesFinale/gui.py:355
 msgid "Network"
 msgstr ""
 
-#: gui.py:356
+#: src/SeriesFinale/gui.py:356
 msgid "Actors"
 msgstr ""
 
-#: gui.py:357 gui.py:855
+#: src/SeriesFinale/gui.py:357 src/SeriesFinale/gui.py:889
 msgid "Rating"
 msgstr ""
 
-#: gui.py:438 gui.py:455
+#: src/SeriesFinale/gui.py:439 src/SeriesFinale/gui.py:456
 msgid "Special"
 msgstr ""
 
-#: gui.py:440 gui.py:457
+#: src/SeriesFinale/gui.py:441 src/SeriesFinale/gui.py:458
 #, python-format
 msgid "Season %s"
 msgstr ""
 
-#: gui.py:481
+#: src/SeriesFinale/gui.py:485
+#, python-format
+msgid "<i>Next air date:</i> %s"
+msgstr ""
+
+#: src/SeriesFinale/gui.py:487
 #, python-format
 msgid "<i>Next to watch:</i> %s"
 msgstr ""
 
-#: gui.py:495
+#: src/SeriesFinale/gui.py:503
 msgid "Edit Show"
 msgstr ""
 
-#: gui.py:499 gui.py:571
+#: src/SeriesFinale/gui.py:507 src/SeriesFinale/gui.py:579
 msgid "Overview"
 msgstr ""
 
-#: gui.py:509 gui.py:605
+#: src/SeriesFinale/gui.py:517 src/SeriesFinale/gui.py:614
 msgid "Name:"
 msgstr ""
 
-#: gui.py:514
+#: src/SeriesFinale/gui.py:522
 msgid "Genre:"
 msgstr ""
 
-#: gui.py:515
+#: src/SeriesFinale/gui.py:523
 msgid "Network:"
 msgstr ""
 
-#: gui.py:516 gui.py:616
+#: src/SeriesFinale/gui.py:524 src/SeriesFinale/gui.py:626
 msgid "Rating:"
 msgstr ""
 
-#: gui.py:517
+#: src/SeriesFinale/gui.py:525
 msgid "Actors:"
 msgstr ""
 
-#: gui.py:577
+#: src/SeriesFinale/gui.py:585
 msgid "Number:"
 msgstr ""
 
-#: gui.py:586
+#: src/SeriesFinale/gui.py:594
 msgid "Season:"
 msgstr ""
 
-#: gui.py:614
+#: src/SeriesFinale/gui.py:623
 msgid "Director:"
 msgstr ""
 
-#: gui.py:615
+#: src/SeriesFinale/gui.py:624
 msgid "Writer:"
 msgstr ""
 
-#: gui.py:617
+#: src/SeriesFinale/gui.py:625
+msgid "Original air date:"
+msgstr ""
+
+#: src/SeriesFinale/gui.py:627
 msgid "Guest Stars:"
 msgstr ""
 
-#: gui.py:702
+#: src/SeriesFinale/gui.py:714
 msgid "A-Z"
 msgstr ""
 
-#: gui.py:707
+#: src/SeriesFinale/gui.py:719
 msgid "Z-A"
 msgstr ""
 
-#: gui.py:716
+#: src/SeriesFinale/gui.py:728
 msgid "Mark All"
 msgstr ""
 
-#: gui.py:721
+#: src/SeriesFinale/gui.py:733
 msgid "Mark None"
 msgstr ""
 
-#: gui.py:726 gui.py:891
+#: src/SeriesFinale/gui.py:738 src/SeriesFinale/gui.py:926
 msgid "Delete Episodes"
 msgstr ""
 
-#: gui.py:852
+#: src/SeriesFinale/gui.py:885
+msgid "Original air date"
+msgstr ""
+
+#: src/SeriesFinale/gui.py:886
 msgid "Director"
 msgstr ""
 
-#: gui.py:853
+#: src/SeriesFinale/gui.py:887
 msgid "Writer"
 msgstr ""
 
-#: gui.py:854
+#: src/SeriesFinale/gui.py:888
 msgid "Guest Stars"
 msgstr ""
 
-#: gui.py:902
+#: src/SeriesFinale/gui.py:937
 msgid "Please select one or more episodes"
 msgstr ""
 
-#: gui.py:958
+#: src/SeriesFinale/gui.py:993
 #, python-format
 msgid ""
 "\n"
 "%(label)s: %(contents)s"
 msgstr ""
 
-#: gui.py:980
+#: src/SeriesFinale/gui.py:1015
 msgid "Search Shows"
 msgstr ""
 
-#: gui.py:983
+#: src/SeriesFinale/gui.py:1018
 msgid "Add Manually"
 msgstr ""
 
-#: gui.py:1001
+#: src/SeriesFinale/gui.py:1036
 msgid "Search shows"
 msgstr ""
 
-#: gui.py:1019
+#: src/SeriesFinale/gui.py:1054
 msgid "Search"
 msgstr ""
 
-#: series.py:100
+#: src/SeriesFinale/series.py:108
 #, python-format
-msgid "Ep. %(number)s: %(name)s"
+msgid "Ep. %s: %s"
 msgstr ""
