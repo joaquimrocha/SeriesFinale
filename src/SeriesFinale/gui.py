@@ -882,7 +882,8 @@ class EpisodeView(hildon.StackableWindow):
         self.infotextview.set_title(self.episode.name)
         self.infotextview.add_field(self.episode.overview)
         self.infotextview.add_field('\n')
-        self.infotextview.add_field(self.episode.air_date, _('Original air date'))
+        self.infotextview.add_field(self.episode.get_air_date_text(),
+                                    _('Original air date'))
         self.infotextview.add_field(self.episode.director, _('Director'))
         self.infotextview.add_field(self.episode.writer, _('Writer'))
         self.infotextview.add_field(self.episode.guest_stars, _('Guest Stars'))
