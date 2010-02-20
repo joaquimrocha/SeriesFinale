@@ -405,7 +405,7 @@ class SeasonsView(hildon.StackableWindow):
             if 'socket' in str(error).lower():
                 error_message = '\n ' + _('Please verify your internet connection '
                                           'is available')
-            show_information((self, error_message))
+            show_information(self, error_message)
         elif show == self.show:
             seasons = self.show.get_seasons()
             model = self.seasons_select_view.get_model()
