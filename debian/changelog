@@ -1,3 +1,10 @@
+seriesfinale (0.3.5-1) unstable; urgency=low
+
+  * Display episodes' air date 
+  * Added Spanish translation (thanks to Juan A. Sánchez Romero)
+
+ -- Joaquim Rocha <jrocha@igalia.com>  Sat, 20 Feb 2010 12:59:48 +0100
+
 seriesfinale (0.3-1) unstable; urgency=low
 
   * Added extra information to tree views
