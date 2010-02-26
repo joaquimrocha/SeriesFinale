@@ -243,8 +243,10 @@ class SeasonsView(hildon.Window):
         self.set_sensitive(False)
     
     def _show_info_cb(self, button):
-        dialog = gtk.Dialog(parent = self)
+        dialog = gtk.Dialog(parent = self,
+                            buttons = (gtk.STOCK_OK, gtk.RESPONSE_ACCEPT))
         dialog.set_title(_('Show Details'))
+        dialog.set_default_size(600, 400);
         infotextview = InfoTextView()
         infotextview.set_title(self.show.name)
         infotextview.add_field (self.show.overview)
