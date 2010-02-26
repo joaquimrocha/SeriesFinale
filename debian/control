@@ -1,7 +1,7 @@
 Source: seriesfinale
 Section: user/utilities
 Priority: extra
-Maintainer: Joaquim Rocha <jrocha@igalia.com>
+Maintainer: Juan A. Suarez Romero <jasuarez@igalia.com>
 Build-Depends: debhelper (>=5), python-support (>= 0.6.4), cdbs (>= 0.4.48), python-runtime | python2.5-runtime
 Standards-Version: 3.7.2
 

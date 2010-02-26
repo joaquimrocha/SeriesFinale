@@ -1,3 +1,9 @@
+seriesfinale (0.2.1-1diablo) unstable; urgency=low
+
+  * Diablo-ized version
+
+ -- Juan A. Suarez Romero <jasuarez@igalia.com>  Fri, 26 Feb 2010 09:53:32 +0100
+
 seriesfinale (0.2.1-1) unstable; urgency=low
 
   * Fixed Debian package generation
