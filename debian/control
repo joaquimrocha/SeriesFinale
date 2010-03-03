@@ -2,7 +2,9 @@ Source: seriesfinale
 Section: user/utilities
 Priority: extra
 Maintainer: Juan A. Suarez Romero <jasuarez@igalia.com>
-Build-Depends: debhelper (>=5), python-support (>= 0.6.4), cdbs (>= 0.4.48), python-runtime | python2.5-runtime
+Build-Depends: debhelper (>=5), python-support (>= 0.6.4), cdbs (>= 0.4.48),
+ python-runtime | python2.5-runtime, python-distutils | python2.5-distutils,
+ python-dev | python2.5-dev
 Standards-Version: 3.7.2
 
 Package: seriesfinale
