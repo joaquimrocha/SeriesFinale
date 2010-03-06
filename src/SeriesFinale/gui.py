@@ -220,7 +220,6 @@ class SeasonsView(hildon.Window):
         menu.append(menuitem)
         
         menuitem = gtk.MenuItem(_('Edit Info'))
-        menuitem.set_sensitive(False)
         menuitem.connect('activate', self._edit_show_info)
         menu.append(menuitem)
         
@@ -343,27 +342,30 @@ class NewShowDialog(gtk.Dialog):
     
     def __init__(self, parent):
         super(NewShowDialog, self).__init__(parent = parent,
-                                             buttons = (gtk.STOCK_ADD,
-                                                        gtk.RESPONSE_ACCEPT))
+                                            buttons = (gtk.STOCK_ADD, gtk.RESPONSE_ACCEPT,
+                                                       gtk.STOCK_CANCEL, gtk.RESPONSE_REJECT))
         
         self.set_title(_('Edit Show'))
-        
+        self.set_default_size(600, -1);
         self.show_name = gtk.Entry()
-        self.show_overview = hildon.TextView()
-        self.show_overview.set_placeholder(_('Overview'))
+        self.show_overview = gtk.TextView()
         self.show_overview.set_wrap_mode(gtk.WRAP_WORD)
         self.show_genre = gtk.Entry()
         self.show_network = gtk.Entry()
         self.show_rating = gtk.Entry()
         self.show_actors = gtk.Entry()
         
+        winscroll = gtk.ScrolledWindow()
+        winscroll.add(self.show_overview)
+        winscroll.set_policy(gtk.POLICY_AUTOMATIC, gtk.POLICY_AUTOMATIC)
+
         contents = gtk.VBox(False, 0)
         
         row = gtk.HBox(False, 12)
         row.pack_start(gtk.Label(_('Name:')), False, False, 0)
         row.pack_start(self.show_name, True, True, 0)
         contents.pack_start(row, False, False, 0)
-        contents.pack_start(self.show_overview, False, False, 0)
+        contents.pack_start(winscroll, False, False, 0)
         
         fields = [(_('Genre:'), self.show_genre),
                   (_('Network:'), self.show_network),
@@ -378,12 +380,8 @@ class NewShowDialog(gtk.Dialog):
             row.pack_start(label, False, False, 0)
             row.pack_start(widget, True, True, 0)
             contents.pack_start(row, False, False, 0)
-        
-        contents_area = hildon.PannableArea()
-        contents_area.add_with_viewport(contents)
-        contents_area.set_size_request_policy(hildon.SIZE_REQUEST_CHILDREN)
-        
-        self.vbox.add(contents_area)
+                
+        self.vbox.add(contents)
         self.vbox.show_all()
     
     def get_info(self):
