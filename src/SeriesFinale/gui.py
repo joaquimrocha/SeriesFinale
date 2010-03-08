@@ -356,7 +356,7 @@ class NewShowDialog(gtk.Dialog):
         
         winscroll = gtk.ScrolledWindow()
         winscroll.add(self.show_overview)
-        winscroll.set_policy(gtk.POLICY_AUTOMATIC, gtk.POLICY_AUTOMATIC)
+        winscroll.set_policy(gtk.POLICY_AUTOMATIC, gtk.POLICY_ALWAYS)
 
         contents = gtk.VBox(False, 0)
         
@@ -786,7 +786,6 @@ class NewShowsDialog(gtk.Dialog):
         self.search_shows_button.connect('clicked', self._button_clicked_cb)        
         self.manual_add_button = gtk.Button()
         self.manual_add_button.set_label(_('Add Manually'))
-        self.manual_add_button.set_sensitive(False)
         self.manual_add_button.connect('clicked', self._button_clicked_cb)
         contents.add(self.search_shows_button)
         contents.add(self.manual_add_button)
