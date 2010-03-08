@@ -29,6 +29,7 @@ import locale
 import pango
 from series import SeriesManager, Show, Episode
 from lib import constants
+from settings import Settings
 
 _ = gettext.gettext
 
@@ -38,12 +39,31 @@ class MainWindow(hildon.Window):
     
     def __init__(self):
         super(MainWindow, self).__init__()
+        
+        # i18n
+        languages = []
+        lc, encoding = locale.getdefaultlocale()
+        if lc:
+            languages = [lc]
+        languages += constants.DEFAULT_LANGUAGES
+        gettext.bindtextdomain(constants.SF_COMPACT_NAME,
+                               constants.LOCALE_DIR)
+        gettext.textdomain(constants.SF_COMPACT_NAME)
+        language = gettext.translation(constants.SF_COMPACT_NAME,
+                                       constants.LOCALE_DIR,
+                                       languages = languages,
+                                       fallback = True)
+        _ = language.gettext
+        
         self.series_manager = SeriesManager()
-        self.series_manager.load(constants.SF_CONF_FILE)
+        self.series_manager.load(constants.SF_DB_FILE)
         self.series_manager.connect('show-list-changed',
                                     self._show_list_changed_cb)
         self.series_manager.connect('get-full-show-complete',
                                     self._get_show_complete_cb)
+        
+        self.settings = Settings()
+        self.settings.load(constants.SF_CONF_FILE)
 
         self.shows_view = ShowsSelectView()
         self.shows_view.connect('row-activated', self._row_activated_cb)
@@ -117,7 +137,7 @@ class MainWindow(hildon.Window):
     
     def _row_activated_cb(self, view, path, column):
         show = self.shows_view.get_show_from_path(path)
-        seasons_view = SeasonsView(self.series_manager, show)
+        seasons_view = SeasonsView(self.settings, self.series_manager, show)
         seasons_view.connect('delete-event',
                      lambda w, e:
                         self.shows_view.set_shows(self.series_manager.series_list))
@@ -138,7 +158,8 @@ class MainWindow(hildon.Window):
         new_show_dialog.destroy()
     
     def _exit_cb(self, window, event):
-        self.series_manager.save(constants.SF_CONF_FILE)
+        self.series_manager.save(constants.SF_DB_FILE)
+        self.settings.save(constants.SF_CONF_FILE)
         gtk.main_quit()
 
     def _show_list_changed_cb(self, series_manager):
@@ -154,10 +175,15 @@ class MainWindow(hildon.Window):
 
 class ShowsSelectView(gtk.TreeView):
     
+    SHOW_NAME_COLUMN = 0
+    SHOW_OBJECT_COLUMN = 1
+    
     def __init__(self):
         super(ShowsSelectView, self).__init__()
         model = gtk.ListStore(str, gobject.TYPE_PYOBJECT)
-        column = gtk.TreeViewColumn('Name', gtk.CellRendererText(), text = 0)
+        show_renderer = gtk.CellRendererText()
+        column = gtk.TreeViewColumn('Name', show_renderer, text = self.SHOW_NAME_COLUMN)
+        column.set_cell_data_func(show_renderer, self._show_select_view_data_func)
         self.set_model(model)
         self.append_column(column)
         self.sort_ascending()
@@ -166,23 +192,57 @@ class ShowsSelectView(gtk.TreeView):
         model = self.get_model()
         model.clear()
         for show in shows:
-            model.append([show.name, show])
+            row = {self.SHOW_NAME_COLUMN: show.name,
+                   self.SHOW_OBJECT_COLUMN: show
+                  }
+            model.append(row.values())
 
     def get_show_from_path(self, path):
         model = self.get_model()
-        return model[path][1]
+        return model[path][self.SHOW_OBJECT_COLUMN]
     
     def sort_descending(self):
-        self.get_model().set_sort_column_id(0, gtk.SORT_DESCENDING)
+        self.get_model().set_sort_column_id(self.SHOW_NAME_COLUMN, gtk.SORT_DESCENDING)
     
     def sort_ascending(self):
-        self.get_model().set_sort_column_id(0, gtk.SORT_ASCENDING)
+        self.get_model().set_sort_column_id(self.SHOW_NAME_COLUMN, gtk.SORT_ASCENDING)
+    
+    def _show_select_view_data_func(self, column, renderer, model, iter):
+        show = model.get_value(iter, self.SHOW_OBJECT_COLUMN)
+        if not show:
+            return
+        seasons = len(show.get_seasons())
+        if seasons:
+            show_info = '<small><span foreground="%s">' % constants.SECONDARY_TEXT_COLOR
+            show_info += gettext.ngettext('%s season', '%s seasons', seasons) \
+                         % seasons
+            if show.is_completely_watched():
+                show_info += ' | ' + _('Completely watched')
+            else:
+                episodes_to_watch = len([episode for episode in show.episode_list \
+                                    if not episode.watched])
+                if episodes_to_watch:
+                    show_info += ' | ' + gettext.ngettext('%s episode not watched',
+                                                          '%s episodes not watched',
+                                                          episodes_to_watch) \
+                                                          % episodes_to_watch
+                else:
+                    show_info += ' | ' + _('No episodes to watch')
+            show_info += '</span></small>'
+        else:
+            show_info = ''
+        renderer.set_property('markup',
+                              '<b>%s</b>\n' % show.name +
+                              show_info)
+        renderer.set_property('ellipsize', pango.ELLIPSIZE_END)
 
 class SeasonsView(hildon.Window):
     
-    def __init__(self, series_manager, show):
+    def __init__(self, settings, series_manager, show):
         super(SeasonsView, self).__init__()
         self.set_title(show.name)
+        
+        self.settings = settings
         
         self.series_manager = series_manager
         self.series_manager.connect('update-show-episodes-complete',
@@ -191,7 +251,7 @@ class SeasonsView(hildon.Window):
         self.set_menu(self._create_menu())
         self.set_title(show.name)
 
-        self.seasons_select_view = SeasonSelectView()
+        self.seasons_select_view = SeasonSelectView(self.show)
         seasons = self.show.get_seasons()
         self.seasons_select_view.set_seasons(seasons)
         self.seasons_select_view.connect('row-activated', self._row_activated_cb)
@@ -203,7 +263,7 @@ class SeasonsView(hildon.Window):
     
     def _row_activated_cb(self, view, path, column):
         season = self.seasons_select_view.get_season_from_path(path)
-        episodes_view = EpisodesView(self.show, season)
+        episodes_view = EpisodesView(self.settings, self.show, season)
         episodes_view.connect('delete-event', self._update_series_list_cb)
         episodes_view.connect('episode-list-changed', self._update_series_list_cb)
         episodes_view.show_all()
@@ -248,7 +308,7 @@ class SeasonsView(hildon.Window):
         infotextview = InfoTextView()
         infotextview.set_title(self.show.name)
         infotextview.add_field (self.show.overview)
-        infotextview.add_field (_('\n'))
+        infotextview.add_field ('\n')
         infotextview.add_field (self.show.genre, _('Genre'))
         infotextview.add_field (self.show.network, _('Network'))
         infotextview.add_field (self.show.actors, _('Actors'))
@@ -314,10 +374,17 @@ class SeasonsView(hildon.Window):
     
 class SeasonSelectView(gtk.TreeView):
     
-    def __init__(self):
+    SEASON_NAME_COLUMN = 0
+    SEASON_NUMBER_COLUMN = 1
+    
+    def __init__(self, show):
         super(SeasonSelectView, self).__init__()
+        self.show = show
         model = gtk.ListStore(str, str)
-        column = gtk.TreeViewColumn('Name', gtk.CellRendererText(), text = 0)
+        season_renderer = gtk.CellRendererText()
+        column = gtk.TreeViewColumn('Name', season_renderer, text = 0)
+        column.set_cell_data_func(season_renderer,
+                                  self._season_select_view_data_func)
         self.set_model(model)
         self.append_column(column)
 
@@ -329,13 +396,52 @@ class SeasonSelectView(gtk.TreeView):
                 name = _('Special')
             else:
                 name = _('Season %s') % season
-            model.append([name, season])
+            row = {self.SEASON_NAME_COLUMN: name,
+                   self.SEASON_NUMBER_COLUMN: season,
+                  }
+            model.append(row.values())
     
     def get_season_from_path(self, path):
         model = self.get_model()
         iter = model.get_iter(path)
-        season = model.get_value(iter, 1)
+        season = model.get_value(iter, self.SEASON_NUMBER_COLUMN)
         return season
+    
+    def _season_select_view_data_func(self, column, renderer, model, iter):
+        season = model.get_value(iter, self.SEASON_NUMBER_COLUMN)
+        if season == '0':
+            name = _('Special')
+        else:
+            name = _('Season %s') % season
+        episodes = self.show.get_episode_list_by_season(season)
+        episodes_to_watch = [episode for episode in episodes \
+                            if not episode.watched]
+        season_info = ''
+        if not episodes_to_watch:
+            if episodes:
+                name = '<span foreground="%s">%s</span>' % \
+                        (constants.SECONDARY_TEXT_COLOR, name)
+                season_info = _('Completely watched')
+        else:
+            number_episodes_to_watch = len(episodes_to_watch)
+            season_info = gettext.ngettext('%s episode not watched',
+                                           '%s episodes not watched',
+                                           number_episodes_to_watch) \
+                                           % number_episodes_to_watch
+            sorted_episodes_to_watch = [episode.episode_number for episode in \
+                                        episodes_to_watch]
+            sorted_episodes_to_watch.sort()
+            next_episode = None
+            for episode in episodes_to_watch:
+                if episode.episode_number == sorted_episodes_to_watch[0]:
+                    next_episode = episode
+                    break
+            season_info += ' | ' + _('<i>Next to watch:</i> %s') % episode
+        renderer.set_property('markup',
+                              '<b>%s</b>\n'
+                              '<span foreground="%s">%s</span>' % \
+                              (name, constants.SECONDARY_TEXT_COLOR, season_info))
+        renderer.set_property('ellipsize', pango.ELLIPSIZE_END)
 
 class NewShowDialog(gtk.Dialog):
     
@@ -515,8 +621,10 @@ class EpisodesView(hildon.Window):
                                                    ()),
                    }
     
-    def __init__(self, show, season_number = None):
+    def __init__(self, settings, show, season_number = None):
         super(EpisodesView, self).__init__()
+        
+        self.settings = settings
         
         self.show = show
         self.season_number = season_number
@@ -533,18 +641,26 @@ class EpisodesView(hildon.Window):
         winscroll.set_policy(gtk.POLICY_AUTOMATIC, gtk.POLICY_AUTOMATIC)
         self.add(winscroll)
         self.set_menu(self._create_menu())
-        self._sort_descending_cb(None)
+	if self.settings.episodes_order == self.settings.ASCENDING_ORDER:
+		self._sort_ascending_cb(None)
+	else:
+	        self._sort_descending_cb(None)
     
     def _create_menu(self):
         menu = gtk.Menu()
         
-        menuitem= gtk.RadioMenuItem(label = _('A-Z'))
+        menuitem = gtk.RadioMenuItem(label = _('A-Z'))
         menuitem.connect('activate', self._sort_ascending_cb)
         menu.append(menuitem)
+	if self.settings.episodes_order == self.settings.ASCENDING_ORDER:
+		menuitem.set_active(True)
+
         menuitem = gtk.RadioMenuItem(label = _('Z-A'), group = menuitem)
         menuitem.connect('activate', self._sort_descending_cb)
         menu.append(menuitem)
-        
+        if self.settings.episodes_order == self.settings.DESCENDING_ORDER:
+		menuitem.set_active(True)
+
         menuitem = gtk.MenuItem(_('Mark All'))
         menuitem.connect('activate', self._select_all_cb)
         menu.append(menuitem)
@@ -600,9 +716,11 @@ class EpisodesView(hildon.Window):
     
     def _sort_ascending_cb(self, button):
         self.episodes_check_view.sort_ascending()
+        self.settings.episodes_order = self.settings.ASCENDING_ORDER
     
     def _sort_descending_cb(self, button):
         self.episodes_check_view.sort_descending()
+        self.settings.episodes_order = self.settings.DESCENDING_ORDER
 
 class EpisodesCheckView(gtk.TreeView):
     
@@ -762,7 +880,9 @@ class InfoTextView(gtk.TextView):
         if not contents:
             return
         if label:
-            contents = _('\n%s: %s') % (label, contents)
+            contents = _('\n%(label)s: %(contents)s') % {'label': label,
+                                                         'contents': contents,
+                                                        }
         self.get_buffer().insert(self.iter, contents)
     
     def clear(self):
@@ -782,7 +902,7 @@ class NewShowsDialog(gtk.Dialog):
         self.set_title(_('Add Shows'))
         contents = gtk.HBox(True, 0)
         self.search_shows_button = gtk.Button()
-        self.search_shows_button.set_label(_('Search Series'))
+        self.search_shows_button.set_label(_('Search Shows'))
         self.search_shows_button.connect('clicked', self._button_clicked_cb)        
         self.manual_add_button = gtk.Button()
         self.manual_add_button.set_label(_('Add Manually'))
