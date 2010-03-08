@@ -499,8 +499,8 @@ class EditEpisodeDialog(NewEpisodeDialog):
         
         self.episode_name.set_text(episode.name)
         self.episode_overview.get_buffer().set_text(episode.overview)
-        self.episode_season.get_selector().get_entry().set_text(episode.season_number)
-        self.episode_number.get_selector().get_entry().set_text(str(episode.episode_number))
+        self.episode_season.child.set_text(episode.season_number)
+        self.episode_number.child.set_text(str(episode.episode_number))
         self.episode_director.set_text(episode.director)
         self.episode_writer.set_text(str(episode.writer))
         self.episode_rating.set_text(episode.rating)
@@ -689,7 +689,6 @@ class EpisodeView(hildon.Window):
         menu = gtk.Menu()
         
         menuitem = gtk.MenuItem(_('Edit Info'))
-        menuitem.set_sensitive(False)
         menuitem.connect('activate', self._edit_episode_cb)
         menu.append(menuitem)
         
