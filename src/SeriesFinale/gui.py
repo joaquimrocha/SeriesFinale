@@ -229,7 +229,6 @@ class SeasonsView(hildon.Window):
             menu.append(menuitem)
         
         menuitem = gtk.MenuItem(_('New Episode'))
-        menuitem.set_sensitive(False)
         menuitem.connect('activate', self._new_episode_cb)
         menu.append(menuitem)
         
@@ -413,37 +412,35 @@ class NewEpisodeDialog(gtk.Dialog):
     
     def __init__(self, parent, show):
         super(NewEpisodeDialog, self).__init__(parent = parent,
-                                               buttons = (gtk.STOCK_ADD,
-                                                          gtk.RESPONSE_ACCEPT))
+                                               buttons = (gtk.STOCK_ADD, gtk.RESPONSE_ACCEPT,
+                                                          gtk.STOCK_CANCEL, gtk.RESPONSE_REJECT))
         
         self.set_title(_('New Episode'))
-        
+        self.set_default_size(600, 400);
+
         self.episode_name = gtk.Entry()
-        self.episode_overview = hildon.TextView()
-        self.episode_overview.set_placeholder(_('Overview'))
+        self.episode_overview = gtk.TextView()
         self.episode_overview.set_wrap_mode(gtk.WRAP_WORD)
         
-        self.episode_number = hildon.PickerButton(gtk.HILDON_SIZE_FINGER_HEIGHT,
-                                                  hildon.BUTTON_ARRANGEMENT_VERTICAL)
-        selector = hildon.TouchSelectorEntry(text = True)
+        winscroll = gtk.ScrolledWindow()
+        winscroll.add(self.episode_overview)
+        winscroll.set_policy(gtk.POLICY_AUTOMATIC, gtk.POLICY_ALWAYS)
+
+        self.episode_number = gtk.combo_box_entry_new_text()
         self.episode_number.set_title(_('Number:'))
         for i in xrange(20):
-            selector.append_text(str(i + 1))
-        self.episode_number.set_selector(selector)
+            self.episode_number.append_text(str(i + 1))
         self.episode_number.set_active(0)
-        
-        self.episode_season = hildon.PickerButton(gtk.HILDON_SIZE_FINGER_HEIGHT,
-                                                  hildon.BUTTON_ARRANGEMENT_VERTICAL)
-        selector = hildon.TouchSelectorEntry(text = True)
+
+        self.episode_season = gtk.combo_box_entry_new_text()
         self.episode_season.set_title(_('Season:'))
         seasons = show.get_seasons()
         for season in seasons:
-            selector.append_text(season)
-        self.episode_season.set_selector(selector)
+            self.episode_season.append_text(season)
         if seasons:
             self.episode_season.set_active(len(seasons) - 1)
         else:
-            selector.append_text('1')
+            self.episode_season.append_text('1')
             self.episode_season.set_active(0)
         
         self.episode_director = gtk.Entry()
@@ -457,7 +454,7 @@ class NewEpisodeDialog(gtk.Dialog):
         row.pack_start(gtk.Label(_('Name:')), False, False, 0)
         row.pack_start(self.episode_name, True, True, 0)
         contents.pack_start(row, False, False, 0)
-        contents.pack_start(self.episode_overview, False, False, 0)
+        contents.pack_start(winscroll, False, False, 0)
         row = gtk.HBox(False, 12)
         row.add(self.episode_season)
         row.add(self.episode_number)
@@ -477,11 +474,7 @@ class NewEpisodeDialog(gtk.Dialog):
             row.pack_start(widget, True, True, 0)
             contents.pack_start(row, False, False, 0)
         
-        contents_area = hildon.PannableArea()
-        contents_area.add_with_viewport(contents)
-        contents_area.set_size_request_policy(hildon.SIZE_REQUEST_CHILDREN)
-        
-        self.vbox.add(contents_area)
+        self.vbox.add(contents)
         self.vbox.show_all()
     
     def get_info(self):
@@ -491,8 +484,8 @@ class NewEpisodeDialog(gtk.Dialog):
         overview_text = buffer.get_text(start_iter, end_iter)
         info = {'name': self.episode_name.get_text(),
                 'overview': overview_text,
-                'season': self.episode_season.get_selector().get_entry().get_text(),
-                'number': self.episode_number.get_selector().get_entry().get_text(),
+                'season': self.episode_season.child.get_text(),
+                'number': self.episode_number.child.get_text(),
                 'director': self.episode_director.get_text(),
                 'writer': self.episode_writer.get_text(),
                 'rating': self.episode_rating.get_text(),
