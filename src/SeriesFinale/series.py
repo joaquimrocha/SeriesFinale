@@ -62,7 +62,12 @@ class Show(object):
 
     def update_episode_list(self, episode_list):
         for episode in episode_list:
-            if not [ep for ep in self.episode_list if ep == episode]:
+            exists = False
+            for ep in self.episode_list:
+                if ep == episode:
+                    exists = True
+                    ep.merge_episode(episode)
+            if not exists:
                 self.episode_list.append(episode)
     
     def delete_episode(self, episode):
@@ -84,7 +89,8 @@ class Episode(object):
     
     def __init__(self, name, show, episode_number, season_number = '1',
                  overview = None, director = None, guest_stars = [],
-                 rating = None, writer = None, watched = False):
+                 rating = None, writer = None, watched = False,
+                 air_date = ''):
         self.id = -1
         self.name = name
         self.show = show
@@ -96,7 +102,8 @@ class Episode(object):
         self.rating = rating
         self.writer = writer
         self.watched = watched
-    
+        self.air_date = air_date
+
     def __repr__(self):
         return _('Ep. %s: %s') % (self.episode_number, self.name)
     
@@ -107,6 +114,32 @@ class Episode(object):
                self.episode_number == episode.episode_number and \
                self.season_number == episode.season_number and \
                self.name == episode.name
+    
+    def merge_episode(self, episode):
+        self.name = self.name or episode.name
+        self.show = self.show or episode.show
+        self.episode_number = self.episode_number or episode.episode_number
+        self.season_number = self.season_number or episode.season_number
+        self.overview = self.overview or episode.overview
+        self.director = self.director or episode.director
+        self.guest_stars = self.guest_stars or episode.guest_stars
+        self.rating = self.rating or episode.rating
+        self.writer = self.writer or episode.writer
+        self.watched = self.watched or episode.watched
+        self.air_date = self.air_date or episode.air_date
+    
+    def get_air_date_text(self):
+        if not self.air_date:
+            return ''
+        next_air_date_str = self.air_date.strftime('%d %b')
+        if self.air_date.year != datetime.today().year:
+            next_air_date_str += self.air_date.strftime(' %Y')
+        return next_air_date_str
+    
+    def already_aired(self):
+        if self.air_date and self.air_date <= datetime.today().date():
+            return True
+        return False
     
     def _get_episode_number(self):
         return self._episode_number
@@ -239,6 +272,7 @@ class SeriesManager(gobject.GObject):
         episode_obj.guest_stars = thetvdb_episode.guest_stars
         episode_obj.rating = thetvdb_episode.rating
         episode_obj.writer = thetvdb_episode.writer
+        episode_obj.air_date = thetvdb_episode.first_aired or ''
         return episode_obj
     
     def stop_request(self):

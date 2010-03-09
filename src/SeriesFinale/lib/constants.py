@@ -20,10 +20,11 @@
 
 import os
 import sys
+import gtk
 
 SF_NAME = 'SeriesFinale'
 SF_COMPACT_NAME = 'seriesfinale'
-SF_VERSION = '0.3'
+SF_VERSION = '0.3.6'
 SF_DESCRIPTION = 'SeriesFinale is a TV series browser and tracker application'
 SF_URL = 'http://www.igalia.com'
 
@@ -49,4 +50,5 @@ DEFAULT_LANGUAGES += ['en_US', 'pt_PT']
 
 TVDB_API_KEY = 'FAD75AF31E1B1577'
 
-SECONDARY_TEXT_COLOR = '#AFAFAF'
+SECONDARY_TEXT_COLOR = 'SecondaryTextColor'
+ACTIVE_TEXT_COLOR = 'ActiveTextColor'

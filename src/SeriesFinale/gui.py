@@ -213,7 +213,7 @@ class ShowsSelectView(gtk.TreeView):
             return
         seasons = len(show.get_seasons())
         if seasons:
-            show_info = '<small><span foreground="%s">' % constants.SECONDARY_TEXT_COLOR
+            show_info = '<small><span foreground="%s">' % get_color(constants.SECONDARY_TEXT_COLOR)
             show_info += gettext.ngettext('%s season', '%s seasons', seasons) \
                          % seasons
             if show.is_completely_watched():
@@ -350,6 +350,7 @@ class SeasonsView(hildon.Window):
             episode.director = episode_info['director']
             episode.writer = episode_info['writer']
             episode.rating = episode_info['rating']
+            episode.air_date = episode_info['air_date']
             episode.guest_stars = episode_info['guest_stars']
             self.show.update_episode_list([episode])
             seasons = self.show.get_seasons()
@@ -362,7 +363,7 @@ class SeasonsView(hildon.Window):
             if 'socket' in str(error).lower():
                 error_message = '\n ' + _('Please verify your internet connection '
                                           'is available')
-            show_information((self, error_message))
+            show_information(self, error_message)
         elif show == self.show:
             seasons = self.show.get_seasons()
             model = self.seasons_select_view.get_model()
@@ -417,10 +418,11 @@ class SeasonSelectView(gtk.TreeView):
         episodes_to_watch = [episode for episode in episodes \
                             if not episode.watched]
         season_info = ''
+        color = get_color(constants.SECONDARY_TEXT_COLOR)
         if not episodes_to_watch:
             if episodes:
                 name = '<span foreground="%s">%s</span>' % \
-                        (constants.SECONDARY_TEXT_COLOR, name)
+                        (get_color(constants.SECONDARY_TEXT_COLOR), name)
                 season_info = _('Completely watched')
         else:
             number_episodes_to_watch = len(episodes_to_watch)
@@ -436,11 +438,17 @@ class SeasonSelectView(gtk.TreeView):
                 if episode.episode_number == sorted_episodes_to_watch[0]:
                     next_episode = episode
                     break
-            season_info += ' | ' + _('<i>Next to watch:</i> %s') % episode
+            next_air_date = episode.air_date
+            if next_air_date:
+                season_info += ' | ' + _('<i>Next air date:</i> %s') % episode.get_air_date_text()
+            else:
+                season_info += ' | ' + _('<i>Next to watch:</i> %s') % episode
+            if next_episode.already_aired():
+                color = get_color(constants.ACTIVE_TEXT_COLOR)
         renderer.set_property('markup',
                               '<b>%s</b>\n'
                               '<span foreground="%s">%s</span>' % \
-                              (name, constants.SECONDARY_TEXT_COLOR, season_info))
+                              (name, color, season_info))
         renderer.set_property('ellipsize', pango.ELLIPSIZE_END)
 
 class NewShowDialog(gtk.Dialog):
@@ -549,10 +557,11 @@ class NewEpisodeDialog(gtk.Dialog):
             self.episode_season.append_text('1')
             self.episode_season.set_active(0)
         
-        self.episode_director = gtk.Entry()
-        self.episode_writer = gtk.Entry()
-        self.episode_rating = gtk.Entry()
-        self.episode_guest_stars = gtk.Entry()
+        self.episode_director = hildon.Entry(gtk.HILDON_SIZE_FINGER_HEIGHT)
+        self.episode_writer = hildon.Entry(gtk.HILDON_SIZE_FINGER_HEIGHT)
+        self.episode_air_date = hildon.Entry(gtk.HILDON_SIZE_FINGER_HEIGHT)
+        self.episode_rating = hildon.Entry(gtk.HILDON_SIZE_FINGER_HEIGHT)
+        self.episode_guest_stars = hildon.Entry(gtk.HILDON_SIZE_FINGER_HEIGHT)
         
         contents = gtk.VBox(False, 0)
         
@@ -568,6 +577,7 @@ class NewEpisodeDialog(gtk.Dialog):
         
         fields = [(_('Director:'), self.episode_director),
                   (_('Writer:'), self.episode_writer),
+                  (_('Original air date:'), self.episode_air_date),
                   (_('Rating:'), self.episode_rating),
                   (_('Guest Stars:'), self.episode_guest_stars),
                  ]
@@ -594,6 +604,7 @@ class NewEpisodeDialog(gtk.Dialog):
                 'number': self.episode_number.child.get_text(),
                 'director': self.episode_director.get_text(),
                 'writer': self.episode_writer.get_text(),
+                'air_date': self.episode_air_date.get_text(),
                 'rating': self.episode_rating.get_text(),
                 'guest_stars': self.episode_guest_stars.get_text()}
         return info
@@ -609,6 +620,7 @@ class EditEpisodeDialog(NewEpisodeDialog):
         self.episode_number.child.set_text(str(episode.episode_number))
         self.episode_director.set_text(episode.director)
         self.episode_writer.set_text(str(episode.writer))
+        self.episode_air_date.set_text(str(episode.air_date))
         self.episode_rating.set_text(episode.rating)
         self.episode_guest_stars.set_text(str(episode.guest_stars))
 
@@ -724,6 +736,10 @@ class EpisodesView(hildon.Window):
 
 class EpisodesCheckView(gtk.TreeView):
     
+    EPISODE_CHECK_COLUMN = 0
+    EPISODE_NAME_COLUMN = 1
+    EPISODE_OBJECT_COLUMN = 2
+    
     def __init__(self):
         super(EpisodesCheckView, self).__init__()
         model = gtk.ListStore(bool, str, gobject.TYPE_PYOBJECT)
@@ -732,14 +748,17 @@ class EpisodesCheckView(gtk.TreeView):
         column = gtk.TreeViewColumn('Watched', self.watched_renderer)
         column.add_attribute(self.watched_renderer, "active", 0)
         self.append_column(column)
-        column = gtk.TreeViewColumn('Name', gtk.CellRendererText(), text = 1)
+        episode_renderer = gtk.CellRendererText()
+        column = gtk.TreeViewColumn('Name', episode_renderer, text = 1)
+        column.set_cell_data_func(episode_renderer,
+                                  self._episode_select_view_data_func)
         self.append_column(column)
         self.set_model(model)
         self.get_model().set_sort_func(2, self._sort_func)
     
     def _sort_func(self, model, iter1, iter2):
-        episode1 = model.get_value(iter1, 2)
-        episode2 = model.get_value(iter2, 2)
+        episode1 = model.get_value(iter1, self.EPISODE_OBJECT_COLUMN)
+        episode2 = model.get_value(iter2, self.EPISODE_OBJECT_COLUMN)
         if episode1 == None or episode2 == None:
             return 0
         if episode1.episode_number < episode2.episode_number:
@@ -756,14 +775,16 @@ class EpisodesCheckView(gtk.TreeView):
     def get_episode_from_path(self, path):
         model = self.get_model()
         iter = model.get_iter(path)
-        episode = model.get_value(iter, 2)
+        episode = model.get_value(iter, self.EPISODE_OBJECT_COLUMN)
         return episode
     
     def sort_descending(self):
-        self.get_model().set_sort_column_id(2, gtk.SORT_DESCENDING)
+        self.get_model().set_sort_column_id(self.EPISODE_OBJECT_COLUMN,
+                                            gtk.SORT_DESCENDING)
     
     def sort_ascending(self):
-        self.get_model().set_sort_column_id(2, gtk.SORT_ASCENDING)
+        self.get_model().set_sort_column_id(self.EPISODE_OBJECT_COLUMN,
+                                            gtk.SORT_ASCENDING)
     
     def select_all(self):
         for path in self.get_model():
@@ -771,7 +792,19 @@ class EpisodesCheckView(gtk.TreeView):
     
     def select_none(self):
         for path in self.get_model() or []:
-            path[0] = path[2].watched = False
+            path[self.EPISODE_CHECK_COLUMN] = \
+                path[self.EPISODE_OBJECT_COLUMN].watched = False
+    
+    def _episode_select_view_data_func(self, column, renderer, model, iter):
+        episode = model.get_value(iter, self.EPISODE_OBJECT_COLUMN)
+        color = get_color(constants.SECONDARY_TEXT_COLOR)
+        if not episode.watched and episode.already_aired():
+            color = get_color(constants.ACTIVE_TEXT_COLOR)
+        renderer.set_property('markup',
+                              '<span foreground="%s">%s\n'
+                              '%s</span>' % \
+                              (color, episode, episode.get_air_date_text()))
+        renderer.set_property('ellipsize', pango.ELLIPSIZE_END)
 
 class EpisodeView(hildon.Window):
     
@@ -797,6 +830,8 @@ class EpisodeView(hildon.Window):
         self.infotextview.set_title(self.episode.name)
         self.infotextview.add_field(self.episode.overview)
         self.infotextview.add_field('\n')
+        self.infotextview.add_field(self.episode.get_air_date_text(),
+                                    _('Original air date'))
         self.infotextview.add_field(self.episode.director, _('Director'))
         self.infotextview.add_field(self.episode.writer, _('Writer'))
         self.infotextview.add_field(self.episode.guest_stars, _('Guest Stars'))
@@ -823,6 +858,7 @@ class EpisodeView(hildon.Window):
             self.episode.overview = episode_info['overview']
             self.episode.season_number = episode_info['season']
             self.episode.episode_number = episode_info['number']
+            self.episode.air_date = episode_info['air_date']
             self.episode.director = episode_info['director']
             self.episode.writer = episode_info['writer']
             self.episode.rating = episode_info['rating']
@@ -1015,3 +1051,14 @@ def show_progress(parent, message):
     return hildon.hildon_banner_show_animation(parent,
                                                None,
                                                message)
+
+def get_color(color_name):
+    # Adapted from gPodder
+    settings = gtk.settings_get_default()
+    if not settings:
+        return None
+    color_style = gtk.rc_get_style_by_paths(settings,
+                                            'GtkButton',
+                                            'osso-logical-colors',
+                                            gtk.Button)
+    return color_style.lookup_color(color_name).to_string()

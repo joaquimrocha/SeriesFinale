@@ -1,8 +1,22 @@
-seriesfinale (0.3-1diablo) unstable; urgency=low
+seriesfinale (0.3.6-1diablo) unstable; urgency=low
 
   * Diablo-ized version
 
- -- Juan A. Suarez Romero <jasuarez@igalia.com>  Mon, 08 Mar 2010 21:17:24 +0100
+ -- Juan A. Suarez Romero <jasuarez@igalia.com>  Tue, 09 Mar 2010 23:05:06 +0100
+
+seriesfinale (0.3.6-1) unstable; urgency=low
+
+  * Fix error when calling the show info function
+  * Fix error when getting the episodes' air date text
+
+ -- Joaquim Rocha <jrocha@igalia.com>  Sat, 20 Feb 2010 20:20:48 +0100
+
+seriesfinale (0.3.5-1) unstable; urgency=low
+
+  * Display episodes' air date 
+  * Added Spanish translation (thanks to Juan A. Sánchez Romero)
+
+ -- Joaquim Rocha <jrocha@igalia.com>  Sat, 20 Feb 2010 12:59:48 +0100
 
 seriesfinale (0.3-1) unstable; urgency=low
 
