@@ -148,8 +148,26 @@ class Episode(object):
             self._episode_number = int(number)
         except ValueError:
             self._episode_number = 1
-    
+
+    def _get_air_date(self):
+        return self._air_date
+
+    def _set_air_date(self, new_air_date):
+        if type(new_air_date) != str:
+            self._air_date = new_air_date
+            return
+        for format in ['%Y-%m-%d', '%d-%m-%Y', '%Y/%m/%d', '%d/%m/%Y',
+                       '%m-%d-%Y', '%d %b %Y']:
+            try:
+                self._air_date = datetime.strptime(new_air_date, format).date()
+            except ValueError:
+                continue
+            else:
+                return
+        self._air_date = None
+
     episode_number = property(_get_episode_number, _set_episode_number)
+    air_date = property(_get_air_date, _set_air_date)
 
 class SeriesManager(gobject.GObject):
     
