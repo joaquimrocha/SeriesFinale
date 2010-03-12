@@ -60,6 +60,10 @@ class MainWindow(hildon.StackableWindow):
                                     self._show_list_changed_cb)
         self.series_manager.connect('get-full-show-complete',
                                     self._get_show_complete_cb)
+        self.series_manager.connect('update-show-episodes-complete',
+                                    self._update_show_complete_cb)
+        self.series_manager.connect('update-shows-call-complete',
+                                    self._update_all_shows_complete_cb)
         
         self.settings = Settings()
         self.settings.load(constants.SF_CONF_FILE)
@@ -73,6 +77,7 @@ class MainWindow(hildon.StackableWindow):
         area.add(self.shows_view)
         self.add(area)
         
+        self.request = None
         self.connect('delete-event', self._exit_cb)
         self._update_delete_menu_visibility()
     
@@ -88,7 +93,12 @@ class MainWindow(hildon.StackableWindow):
         self.delete_menu.set_label(_('Delete Shows'))
         self.delete_menu.connect('clicked', self._delete_shows_cb)
         menu.append(self.delete_menu)
-        
+
+        self.update_all_menu = hildon.GtkButton(gtk.HILDON_SIZE_FINGER_HEIGHT)
+        self.update_all_menu.set_label(_('Update All'))
+        self.update_all_menu.connect('clicked', self._update_all_shows_cb)
+        menu.append(self.update_all_menu)
+
         menu.show_all()
         return menu
     
@@ -154,6 +164,8 @@ class MainWindow(hildon.StackableWindow):
         new_show_dialog.destroy()
     
     def _exit_cb(self, window, event):
+        if self.request:
+            self.request.stop()
         self.series_manager.save(constants.SF_DB_FILE)
         self.settings.save(constants.SF_CONF_FILE)
         gtk.main_quit()
@@ -164,10 +176,27 @@ class MainWindow(hildon.StackableWindow):
         return False
     
     def _update_delete_menu_visibility(self):
-        if len(self.series_manager.series_list):
-            self.delete_menu.show()
-        else:
+        if not self.series_manager.series_list or self.request:
             self.delete_menu.hide()
+            self.update_all_menu.hide()
+        else:
+            self.delete_menu.show()
+            self.update_all_menu.show()
+
+    def _update_all_shows_cb(self, button):
+        self.request = self.series_manager.update_all_shows_episodes()
+        self.set_sensitive(False)
+        self._update_delete_menu_visibility()
+
+    def _update_all_shows_complete_cb(self, series_manager, show, error):
+        self._show_list_changed_cb(self.series_manager)
+        show_information(self, _('Finished updating the shows'))
+        self.request = None
+        self.set_sensitive(True)
+        self._update_delete_menu_visibility()
+
+    def _update_show_complete_cb(self, series_manager, show, error):
+        show_information(self, _('Updated "%s"') % show.name)
 
 class DeleteView(hildon.StackableWindow):
     
@@ -295,21 +324,32 @@ class SeasonsView(hildon.StackableWindow):
         seasons = self.show.get_seasons()
         self.seasons_select_view.set_seasons(seasons)
         self.seasons_select_view.connect('row-activated', self._row_activated_cb)
+        self.connect('delete-event', self._delete_event_cb)
         
         seasons_area = hildon.PannableArea()
         seasons_area.add(self.seasons_select_view)
         self.add(seasons_area)
-    
+
+        self.request = None
+        self._update_menu_visibility()
+
+    def _delete_event_cb(self, window, event):
+        if self.request:
+            self.request.stop()
+            self.request = None
+        return False
+
     def _row_activated_cb(self, view, path, column):
         season = self.seasons_select_view.get_season_from_path(path)
         episodes_view = EpisodesView(self.settings, self.show, season)
         episodes_view.connect('delete-event', self._update_series_list_cb)
         episodes_view.connect('episode-list-changed', self._update_series_list_cb)
         episodes_view.show_all()
-    
+
     def _update_series_list_cb(self, widget, event = None):
         seasons = self.show.get_seasons();
         self.seasons_select_view.set_seasons(seasons)
+        self._update_menu_visibility()
     
     def _create_menu(self):
         menu = hildon.AppMenu()
@@ -325,10 +365,10 @@ class SeasonsView(hildon.StackableWindow):
         menu.append(button)
         
         if str(self.show.thetvdb_id) != '-1':
-            button = hildon.GtkButton(gtk.HILDON_SIZE_FINGER_HEIGHT)
-            button.set_label(_('Update Show'))
-            button.connect('clicked', self._update_series_cb)
-            menu.append(button)
+            self.update_menu = hildon.GtkButton(gtk.HILDON_SIZE_FINGER_HEIGHT)
+            self.update_menu.set_label(_('Update Show'))
+            self.update_menu.connect('clicked', self._update_series_cb)
+            menu.append(self.update_menu)
         
         button = hildon.GtkButton(gtk.HILDON_SIZE_FINGER_HEIGHT)
         button.set_label(_('New Episode'))
@@ -337,12 +377,19 @@ class SeasonsView(hildon.StackableWindow):
         
         menu.show_all()
         return menu
-    
+
+    def _update_menu_visibility(self):
+        if self.request or not self.show.get_seasons():
+            self.update_menu.hide()
+        else:
+            self.update_menu.show()
+
     def _update_series_cb(self, button):
-        self.series_manager.update_show_episodes(self.show)
+        self.request = self.series_manager.update_show_episodes(self.show)
         hildon.hildon_gtk_window_set_progress_indicator(self, True)
         self.set_sensitive(False)
         show_information(self, _('Updating show. Please wait...'))
+        self._update_menu_visibility()
     
     def _show_info_cb(self, button):
         dialog = gtk.Dialog(parent = self)
@@ -414,6 +461,8 @@ class SeasonsView(hildon.StackableWindow):
                 self.seasons_select_view.set_seasons(seasons)
         hildon.hildon_gtk_window_set_progress_indicator(self, False)
         self.set_sensitive(True)
+        self.request = None
+        self._update_menu_visibility()
     
 class SeasonSelectView(gtk.TreeView):
     

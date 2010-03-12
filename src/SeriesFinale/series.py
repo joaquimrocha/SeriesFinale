@@ -22,7 +22,7 @@ import os
 import gobject
 from lib import thetvdbapi, serializer
 from xml.etree import ElementTree as ET
-from asyncworker import AsyncWorker
+from asyncworker import AsyncWorker, AsyncItem
 from lib.constants import TVDB_API_KEY
 from datetime import datetime
 import gettext
@@ -157,6 +157,7 @@ class SeriesManager(gobject.GObject):
     SEARCH_SERIES_COMPLETE_SIGNAL = 'search-shows-complete'
     GET_FULL_SHOW_COMPLETE_SIGNAL = 'get-full-show-complete'
     UPDATE_SHOW_EPISODES_COMPLETE_SIGNAL = 'update-show-episodes-complete'
+    UPDATE_SHOWS_CALL_COMPLETE_SIGNAL = 'update-shows-call-complete'
     SHOW_LIST_CHANGED_SIGNAL = 'show-list-changed'
     
     __gsignals__ = {SEARCH_SERIES_COMPLETE_SIGNAL: (gobject.SIGNAL_RUN_LAST,
@@ -171,6 +172,10 @@ class SeriesManager(gobject.GObject):
                                                            gobject.TYPE_NONE,
                                                            (gobject.TYPE_PYOBJECT,
                                                             gobject.TYPE_PYOBJECT)),
+                    UPDATE_SHOWS_CALL_COMPLETE_SIGNAL: (gobject.SIGNAL_RUN_LAST,
+                                                       gobject.TYPE_NONE,
+                                                       (gobject.TYPE_PYOBJECT,
+                                                        gobject.TYPE_PYOBJECT)),
                     SHOW_LIST_CHANGED_SIGNAL: (gobject.SIGNAL_RUN_LAST,
                                                gobject.TYPE_NONE,
                                                ()),
@@ -190,7 +195,11 @@ class SeriesManager(gobject.GObject):
     def search_shows(self, terms):
         if not terms:
             return []
-        self.async_worker = AsyncWorker(self.thetvdb.get_matching_shows, terms, self._search_finished_callback)
+        self.async_worker = AsyncWorker()
+        async_item = AsyncItem(self.thetvdb.get_matching_shows,
+                               (terms,),
+                               self._search_finished_callback)
+        self.async_worker.queue.put(async_item)
         self.async_worker.start()
     
     def _search_finished_callback(self, tvdbshows, error):
@@ -200,19 +209,33 @@ class SeriesManager(gobject.GObject):
                 self._cached_tvdb_shows[show_id] = show
                 shows.append(show)
         self.emit(self.SEARCH_SERIES_COMPLETE_SIGNAL, shows, error)
-    
+
     def update_show_episodes(self, show):
-        self.async_worker = AsyncWorker(self.thetvdb.get_show_and_episodes,
-                                        show.thetvdb_id,
-                                        self._get_show_episodes_complete_cb, (show,))
-        self.async_worker.start()
-    
-    def _get_show_episodes_complete_cb(self, show, tvdbcompleteshow, error):
+        return self.update_all_shows_episodes([show])
+
+    def update_all_shows_episodes(self, show_list = []):
+        show_list = show_list or self.series_list
+        async_worker = AsyncWorker()
+        i = 0
+        n_shows = len(show_list)
+        for i in range(n_shows):
+            show = show_list[i]
+            async_item = AsyncItem(self.thetvdb.get_show_and_episodes,
+                                   (show.thetvdb_id,),
+                                   self._get_show_episodes_complete_cb,
+                                   (show, i == n_shows - 1))
+            async_worker.queue.put(async_item)
+        async_worker.start()
+        return async_worker
+
+    def _get_show_episodes_complete_cb(self, show, last_call, tvdbcompleteshow, error):
         if not error:
             episode_list = [self._convert_thetvdbepisode_to_episode(tvdb_ep,show) \
                             for tvdb_ep in tvdbcompleteshow[1]]
             show.update_episode_list(episode_list)
         self.emit(self.UPDATE_SHOW_EPISODES_COMPLETE_SIGNAL, show, error)
+        if last_call:
+            self.emit(self.UPDATE_SHOWS_CALL_COMPLETE_SIGNAL, show, error)
     
     def _search_show_to_update_callback(self, tvdbshows):
         if not tvdbshows:
@@ -228,9 +251,11 @@ class SeriesManager(gobject.GObject):
                 break 
         if not show_id:
             return
-        self.async_worker = AsyncWorker(self.thetvdb.get_show_and_episodes,
-                                        show_id,
-                                        self._get_complete_show_finished_cb)
+        self.async_worker = AsyncWorker()
+        async_item = AsyncItem(self.thetvdb.get_show_and_episodes,
+                               (show_id,),
+                               self._get_complete_show_finished_cb)
+        self.async_worker.queue.put(async_item)
         self.async_worker.start()
     
     def _get_complete_show_finished_cb(self, tvdb_show_episodes, error):
@@ -276,9 +301,10 @@ class SeriesManager(gobject.GObject):
         return episode_obj
     
     def stop_request(self):
-        self.async_worker.stopped = True
-        self.async_worker = None
-    
+        if self.async_worker:
+            self.async_worker.stop()
+            self.async_worker = None
+
     def add_show(self, show):
         if show.id == -1:
             show.id = self._get_id_for_show()

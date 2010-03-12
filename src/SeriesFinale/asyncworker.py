@@ -19,25 +19,60 @@
 ###########################################################################
 
 from threading import Thread
+import Queue
 import gobject
 
-class AsyncWorker(Thread):
-    
+class AsyncItem(object):
+
     def __init__(self, target_method, target_method_args, finish_callback, finish_callback_args = ()):
-        Thread.__init__(self)
-        self.stopped = False
         self.target_method = target_method
         self.target_method_args = target_method_args
         self.finish_callback = finish_callback
         self.finish_callback_args = finish_callback_args
+        self.canceled = False
 
     def run(self):
-        ret = error = None
-        if self.target_method != None:
+        if self.canceled:
+            return
+        results = error = None
+        try:
+            results = self.target_method(*self.target_method_args)
+        except Exception, exception:
+            error = exception
+        if self.canceled:
+            return
+        self.finish_callback_args += (results,)
+        self.finish_callback_args += (error,)
+        gobject.idle_add(self.finish_callback, *self.finish_callback_args)
+
+    def cancel(self):
+        self.canceled = True
+
+class AsyncWorker(Thread):
+
+    def __init__(self):
+        Thread.__init__(self)
+        self.queue = Queue.Queue(0)
+        self.stopped = False
+        self.async_item = None
+        self.item_number = -1
+
+    def run(self):
+        while not self.stopped:
+            if self.queue.empty():
+                self.stop()
+                break
             try:
-                ret = self.target_method(self.target_method_args)
-            except Exception, exception:
-                error = exception
-        if self.finish_callback != None and not self.stopped:
-            self.finish_callback_args += (ret, error)
-            gobject.idle_add(self.finish_callback, *self.finish_callback_args)
+                self.async_item = self.queue.get()
+                self.item_number += 1
+                self.async_item.run()
+                self.queue.task_done()
+                self.async_item = None
+            except:
+                self.stop()
+
+    def stop(self):
+        self.stopped = True
+        if self.async_item:
+            self.async_item.cancel()
+
