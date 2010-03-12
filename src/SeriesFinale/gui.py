@@ -215,7 +215,8 @@ class MainWindow(hildon.StackableWindow):
 
     def _update_all_shows_complete_cb(self, series_manager, show, error):
         self._show_list_changed_cb(self.series_manager)
-        show_information(self, _('Finished updating the shows'))
+        if self.request:
+            show_information(self, _('Finished updating the shows'))
         self.request = None
         self.set_sensitive(True)
         self._update_delete_menu_visibility()
