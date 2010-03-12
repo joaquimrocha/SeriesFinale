@@ -112,21 +112,20 @@ class Episode(object):
             return False
         return self.show == episode.show and \
                self.episode_number == episode.episode_number and \
-               self.season_number == episode.season_number and \
-               self.name == episode.name
+               self.season_number == episode.season_number
     
     def merge_episode(self, episode):
-        self.name = self.name or episode.name
-        self.show = self.show or episode.show
-        self.episode_number = self.episode_number or episode.episode_number
-        self.season_number = self.season_number or episode.season_number
-        self.overview = self.overview or episode.overview
-        self.director = self.director or episode.director
-        self.guest_stars = self.guest_stars or episode.guest_stars
-        self.rating = self.rating or episode.rating
-        self.writer = self.writer or episode.writer
-        self.watched = self.watched or episode.watched
-        self.air_date = self.air_date or episode.air_date
+        self.name = episode.name or self.name
+        self.show = episode.show or self.show
+        self.episode_number = episode.episode_number or self.episode_number
+        self.season_number = episode.season_number or self.season_number
+        self.overview = episode.overview or self.overview
+        self.director = episode.director or self.director
+        self.guest_stars = episode.guest_stars or self.guest_stars
+        self.rating = episode.rating or self.rating
+        self.writer = episode.writer or self.writer
+        self.watched = episode.watched or self.watched
+        self.air_date = episode.air_date or self.air_date
     
     def get_air_date_text(self):
         if not self.air_date:
