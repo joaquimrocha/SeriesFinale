@@ -82,6 +82,24 @@ class Show(object):
                 return False
         return True
 
+    def get_episodes_info(self, season = None):
+        info = {}
+        episodes = self.episode_list
+        if season:
+            episodes = self.get_episode_list_by_season(season)
+        episodes_to_watch = [episode for episode in episodes \
+                            if not episode.watched]
+        info['episodes'] = episodes
+        info['episodes_to_watch'] = episodes_to_watch
+        sorted_episodes_to_watch = [(episode.air_date, episode) \
+                                    for episode in episodes_to_watch \
+                                    if episode.air_date]
+        sorted_episodes_to_watch.sort()
+        info['next_episode'] = None
+        if sorted_episodes_to_watch:
+            info['next_episode'] = sorted_episodes_to_watch[0][1]
+        return info
+
     def __str__(self):
         return self.name
 

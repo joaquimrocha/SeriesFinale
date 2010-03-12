@@ -309,19 +309,34 @@ class ShowsSelectView(gtk.TreeView):
             return
         seasons = len(show.get_seasons())
         if seasons:
-            show_info = '<small><span foreground="%s">' % get_color(constants.SECONDARY_TEXT_COLOR)
+            color = get_color(constants.SECONDARY_TEXT_COLOR)
+            episodes_info = show.get_episodes_info()
+            episodes_to_watch = episodes_info['episodes_to_watch']
+            next_episode = episodes_info['next_episode']
+            if next_episode and next_episode.already_aired():
+                color = get_color(constants.ACTIVE_TEXT_COLOR) 
+            show_info = '<small><span foreground="%s">' % color
             show_info += gettext.ngettext('%s season', '%s seasons', seasons) \
                          % seasons
             if show.is_completely_watched():
                 show_info += ' | ' + _('Completely watched')
             else:
-                episodes_to_watch = len([episode for episode in show.episode_list \
-                                    if not episode.watched])
                 if episodes_to_watch:
+                    n_episodes_to_watch = len(episodes_to_watch)
                     show_info += ' | ' + gettext.ngettext('%s episode not watched',
                                                           '%s episodes not watched',
-                                                          episodes_to_watch) \
-                                                          % episodes_to_watch
+                                                          n_episodes_to_watch) \
+                                                          % n_episodes_to_watch
+                    if next_episode:
+                        next_air_date = next_episode.air_date
+                        if next_air_date:
+                            show_info += ' | ' + _('<i>Next air date:</i> %s') % \
+                                         next_episode.get_air_date_text()
+                        else:
+                            show_info += ' | ' + _('<i>Next to watch:</i> %s') % \
+                                         next_episode
+                        if next_episode.already_aired():
+                            color = get_color(constants.ACTIVE_TEXT_COLOR)
                 else:
                     show_info += ' | ' + _('No episodes to watch')
             show_info += '</span></small>'
@@ -532,9 +547,10 @@ class SeasonSelectView(gtk.TreeView):
             name = _('Special')
         else:
             name = _('Season %s') % season
-        episodes = self.show.get_episode_list_by_season(season)
-        episodes_to_watch = [episode for episode in episodes \
-                            if not episode.watched]
+        info = self.show.get_episodes_info(season)
+        episodes = info['episodes']
+        episodes_to_watch = info['episodes_to_watch']
+        next_episode = info['next_episode']
         season_info = ''
         color = get_color(constants.SECONDARY_TEXT_COLOR)
         if not episodes_to_watch:
@@ -548,21 +564,14 @@ class SeasonSelectView(gtk.TreeView):
                                            '%s episodes not watched',
                                            number_episodes_to_watch) \
                                            % number_episodes_to_watch
-            sorted_episodes_to_watch = [episode.episode_number for episode in \
-                                        episodes_to_watch]
-            sorted_episodes_to_watch.sort()
-            next_episode = None
-            for episode in episodes_to_watch:
-                if episode.episode_number == sorted_episodes_to_watch[0]:
-                    next_episode = episode
-                    break
-            next_air_date = episode.air_date
-            if next_air_date:
-                season_info += ' | ' + _('<i>Next air date:</i> %s') % episode.get_air_date_text()
-            else:
-                season_info += ' | ' + _('<i>Next to watch:</i> %s') % episode
-            if next_episode.already_aired():
-                color = get_color(constants.ACTIVE_TEXT_COLOR)
+            if next_episode:
+                next_air_date = next_episode.air_date
+                if next_air_date:
+                    season_info += ' | ' + _('<i>Next air date:</i> %s') % next_episode.get_air_date_text()
+                else:
+                    season_info += ' | ' + _('<i>Next to watch:</i> %s') % next_episode
+                if next_episode.already_aired():
+                    color = get_color(constants.ACTIVE_TEXT_COLOR)
         renderer.set_property('markup',
                               '<b>%s</b>\n'
                               '<span foreground="%s">%s</span>' % \
