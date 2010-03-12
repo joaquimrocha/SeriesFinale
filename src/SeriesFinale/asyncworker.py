@@ -24,7 +24,7 @@ import gobject
 
 class AsyncItem(object):
 
-    def __init__(self, target_method, target_method_args, finish_callback, finish_callback_args = ()):
+    def __init__(self, target_method, target_method_args, finish_callback = None, finish_callback_args = ()):
         self.target_method = target_method
         self.target_method_args = target_method_args
         self.finish_callback = finish_callback
@@ -39,7 +39,7 @@ class AsyncItem(object):
             results = self.target_method(*self.target_method_args)
         except Exception, exception:
             error = exception
-        if self.canceled:
+        if self.canceled or not self.finish_callback:
             return
         self.finish_callback_args += (results,)
         self.finish_callback_args += (error,)

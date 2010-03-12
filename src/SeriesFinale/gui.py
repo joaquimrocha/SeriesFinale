@@ -29,6 +29,7 @@ import pango
 from series import SeriesManager, Show, Episode
 from lib import constants
 from settings import Settings
+from asyncworker import AsyncWorker, AsyncItem
 
 _ = gettext.gettext
 
@@ -55,7 +56,9 @@ class MainWindow(hildon.StackableWindow):
         _ = language.gettext
         
         self.series_manager = SeriesManager()
-        self.series_manager.load(constants.SF_DB_FILE)
+        hildon.hildon_gtk_window_set_progress_indicator(self, True)
+        load_shows_item = AsyncItem(self.series_manager.load,
+                                    (constants.SF_DB_FILE,))
         self.series_manager.connect('show-list-changed',
                                     self._show_list_changed_cb)
         self.series_manager.connect('get-full-show-complete',
@@ -66,21 +69,31 @@ class MainWindow(hildon.StackableWindow):
                                     self._update_all_shows_complete_cb)
         
         self.settings = Settings()
-        self.settings.load(constants.SF_CONF_FILE)
+        load_conf_item = AsyncItem(self.settings.load,
+                                    (constants.SF_CONF_FILE,),
+                                    self._load_finished)
+        self.request = AsyncWorker()
+        self.request.queue.put(load_shows_item)
+        self.request.queue.put(load_conf_item)
+        self.request.start()
 
         self.shows_view = ShowsSelectView()
         self.shows_view.connect('row-activated', self._row_activated_cb)
-        self.shows_view.set_shows(self.series_manager.series_list)
         self.set_title(constants.SF_NAME)
         self.set_app_menu(self._create_menu())
         area = hildon.PannableArea()
         area.add(self.shows_view)
         self.add(area)
         
-        self.request = None
         self.connect('delete-event', self._exit_cb)
         self._update_delete_menu_visibility()
-    
+
+    def _load_finished(self, dummy_arg, error):
+        self.shows_view.set_shows(self.series_manager.series_list)
+        hildon.hildon_gtk_window_set_progress_indicator(self, False)
+        self.request = None
+        self._update_delete_menu_visibility()
+
     def _create_menu(self):
         menu = hildon.AppMenu()
         
@@ -166,8 +179,19 @@ class MainWindow(hildon.StackableWindow):
     def _exit_cb(self, window, event):
         if self.request:
             self.request.stop()
-        self.series_manager.save(constants.SF_DB_FILE)
-        self.settings.save(constants.SF_CONF_FILE)
+        hildon.hildon_gtk_window_set_progress_indicator(self, True)
+        save_shows_item = AsyncItem(self.series_manager.save,
+                               (constants.SF_DB_FILE,))
+        save_conf_item = AsyncItem(self.settings.save,
+                               (constants.SF_CONF_FILE,),
+                               self._save_finished_cb)
+        async_worker = AsyncWorker()
+        async_worker.queue.put(save_shows_item)
+        async_worker.queue.put(save_conf_item)
+        async_worker.start()
+
+    def _save_finished_cb(self, dummy_arg, error):
+        hildon.hildon_gtk_window_set_progress_indicator(self, False)
         gtk.main_quit()
 
     def _show_list_changed_cb(self, series_manager):
@@ -184,6 +208,7 @@ class MainWindow(hildon.StackableWindow):
             self.update_all_menu.show()
 
     def _update_all_shows_cb(self, button):
+        hildon.hildon_gtk_window_set_progress_indicator(self, True)
         self.request = self.series_manager.update_all_shows_episodes()
         self.set_sensitive(False)
         self._update_delete_menu_visibility()
@@ -194,6 +219,7 @@ class MainWindow(hildon.StackableWindow):
         self.request = None
         self.set_sensitive(True)
         self._update_delete_menu_visibility()
+        hildon.hildon_gtk_window_set_progress_indicator(self, False)
 
     def _update_show_complete_cb(self, series_manager, show, error):
         show_information(self, _('Updated "%s"') % show.name)
