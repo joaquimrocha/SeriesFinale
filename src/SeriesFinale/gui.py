@@ -216,7 +216,11 @@ class MainWindow(hildon.StackableWindow):
     def _update_all_shows_complete_cb(self, series_manager, show, error):
         self._show_list_changed_cb(self.series_manager)
         if self.request:
-            show_information(self, _('Finished updating the shows'))
+            if error:
+                show_information(self, _('Please verify your internet connection '
+                                         'is available'))
+            else:
+                show_information(self, _('Finished updating the shows'))
         self.request = None
         self.set_sensitive(True)
         self._update_delete_menu_visibility()
@@ -489,7 +493,7 @@ class SeasonsView(hildon.StackableWindow):
         new_episode_dialog.destroy()
     
     def _update_show_episodes_complete_cb(self, series_manager, show, error):
-        if error:
+        if error and self.request:
             error_message = ''
             if 'socket' in str(error).lower():
                 error_message = '\n ' + _('Please verify your internet connection '
