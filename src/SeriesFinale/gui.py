@@ -444,7 +444,7 @@ class SeasonSelectView(gtk.TreeView):
             else:
                 season_info += ' | ' + _('<i>Next to watch:</i> %s') % episode
             if next_episode.already_aired():
-                color = get_color(constants.ACTIVE_TEXT_COLOR)
+                color = get_color(constants.DEFAULT_TEXT_COLOR)
         renderer.set_property('markup',
                               '<b>%s</b>\n'
                               '<span foreground="%s">%s</span>' % \
@@ -799,7 +799,7 @@ class EpisodesCheckView(gtk.TreeView):
         episode = model.get_value(iter, self.EPISODE_OBJECT_COLUMN)
         color = get_color(constants.SECONDARY_TEXT_COLOR)
         if not episode.watched and episode.already_aired():
-            color = get_color(constants.ACTIVE_TEXT_COLOR)
+            color = get_color(constants.DEFAULT_TEXT_COLOR)
         renderer.set_property('markup',
                               '<span foreground="%s">%s\n'
                               '%s</span>' % \
