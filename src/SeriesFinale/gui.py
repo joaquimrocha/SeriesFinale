@@ -1061,4 +1061,5 @@ def get_color(color_name):
                                             'GtkButton',
                                             'osso-logical-colors',
                                             gtk.Button)
-    return color_style.lookup_color(color_name).to_string()
+    color = color_style.lookup_color(color_name)
+    return "#%04x%04x%04x" % (color.red, color.green, color.blue)
