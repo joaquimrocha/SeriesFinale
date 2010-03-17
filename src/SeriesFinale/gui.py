@@ -645,11 +645,11 @@ class NewEpisodeDialog(gtk.Dialog):
             self.episode_season.append_text('1')
             self.episode_season.set_active(0)
         
-        self.episode_director = hildon.Entry(gtk.HILDON_SIZE_FINGER_HEIGHT)
-        self.episode_writer = hildon.Entry(gtk.HILDON_SIZE_FINGER_HEIGHT)
-        self.episode_air_date = hildon.Entry(gtk.HILDON_SIZE_FINGER_HEIGHT)
-        self.episode_rating = hildon.Entry(gtk.HILDON_SIZE_FINGER_HEIGHT)
-        self.episode_guest_stars = hildon.Entry(gtk.HILDON_SIZE_FINGER_HEIGHT)
+        self.episode_director = gtk.Entry()
+        self.episode_writer = gtk.Entry()
+        self.episode_air_date = gtk.Entry()
+        self.episode_rating = gtk.Entry()
+        self.episode_guest_stars = gtk.Entry()
         
         contents = gtk.VBox(False, 0)
         
