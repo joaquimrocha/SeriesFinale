@@ -57,7 +57,7 @@ class MainWindow(hildon.Window):
         _ = language.gettext
         
         self.series_manager = SeriesManager()
-        hildon.hildon_gtk_window_set_progress_indicator(self, True)
+	self.progress = show_progress(self, _('Loading...'))
         load_shows_item = AsyncItem(self.series_manager.load,
                                     (constants.SF_DB_FILE,))
         self.series_manager.connect('show-list-changed',
@@ -92,7 +92,7 @@ class MainWindow(hildon.Window):
 
     def _load_finished(self, dummy_arg, error):
         self.shows_view.set_shows(self.series_manager.series_list)
-        hildon.hildon_gtk_window_set_progress_indicator(self, False)
+	self.progress.destroy()
         self.request = None
         self._update_delete_menu_visibility()
 
@@ -183,7 +183,7 @@ class MainWindow(hildon.Window):
     def _exit_cb(self, window, event):
         if self.request:
             self.request.stop()
-        hildon.hildon_gtk_window_set_progress_indicator(self, True)
+	self.progress = show_progress(self, _('Saving...'))
         save_shows_item = AsyncItem(self.series_manager.save,
                                (constants.SF_DB_FILE,))
         save_conf_item = AsyncItem(self.settings.save,
@@ -195,7 +195,7 @@ class MainWindow(hildon.Window):
         async_worker.start()
 
     def _save_finished_cb(self, dummy_arg, error):
-        hildon.hildon_gtk_window_set_progress_indicator(self, False)
+	self.progress.destroy()
         gtk.main_quit()
 
     def _show_list_changed_cb(self, series_manager):
@@ -212,7 +212,7 @@ class MainWindow(hildon.Window):
             self.update_all_menu.show()
 
     def _update_all_shows_cb(self, button):
-        hildon.hildon_gtk_window_set_progress_indicator(self, True)
+	self.progress = show_progress(self, _('Updating all shows...'))
         self.request = self.series_manager.update_all_shows_episodes()
         self.set_sensitive(False)
         self._update_delete_menu_visibility()
@@ -228,7 +228,7 @@ class MainWindow(hildon.Window):
         self.request = None
         self.set_sensitive(True)
         self._update_delete_menu_visibility()
-        hildon.hildon_gtk_window_set_progress_indicator(self, False)
+	self.progress.destroy()
 
     def _update_show_complete_cb(self, series_manager, show, error):
         show_information(self, _('Updated "%s"') % show.name)
