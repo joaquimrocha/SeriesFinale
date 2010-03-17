@@ -30,6 +30,7 @@ import pango
 from series import SeriesManager, Show, Episode
 from lib import constants
 from settings import Settings
+from asyncworker import AsyncWorker, AsyncItem
 
 _ = gettext.gettext
 
@@ -56,18 +57,29 @@ class MainWindow(hildon.Window):
         _ = language.gettext
         
         self.series_manager = SeriesManager()
-        self.series_manager.load(constants.SF_DB_FILE)
+        hildon.hildon_gtk_window_set_progress_indicator(self, True)
+        load_shows_item = AsyncItem(self.series_manager.load,
+                                    (constants.SF_DB_FILE,))
         self.series_manager.connect('show-list-changed',
                                     self._show_list_changed_cb)
         self.series_manager.connect('get-full-show-complete',
                                     self._get_show_complete_cb)
+        self.series_manager.connect('update-show-episodes-complete',
+                                    self._update_show_complete_cb)
+        self.series_manager.connect('update-shows-call-complete',
+                                    self._update_all_shows_complete_cb)
         
         self.settings = Settings()
-        self.settings.load(constants.SF_CONF_FILE)
+        load_conf_item = AsyncItem(self.settings.load,
+                                    (constants.SF_CONF_FILE,),
+                                    self._load_finished)
+        self.request = AsyncWorker()
+        self.request.queue.put(load_shows_item)
+        self.request.queue.put(load_conf_item)
+        self.request.start()
 
         self.shows_view = ShowsSelectView()
         self.shows_view.connect('row-activated', self._row_activated_cb)
-        self.shows_view.set_shows(self.series_manager.series_list)
         self.set_title(constants.SF_NAME)
         self.set_menu(self._create_menu())
         winscroll = gtk.ScrolledWindow()
@@ -77,7 +89,13 @@ class MainWindow(hildon.Window):
         
         self.connect('delete-event', self._exit_cb)
         self._update_delete_menu_visibility()
-    
+
+    def _load_finished(self, dummy_arg, error):
+        self.shows_view.set_shows(self.series_manager.series_list)
+        hildon.hildon_gtk_window_set_progress_indicator(self, False)
+        self.request = None
+        self._update_delete_menu_visibility()
+
     def _create_menu(self):
         menu = gtk.Menu()
         
@@ -88,7 +106,12 @@ class MainWindow(hildon.Window):
         self.delete_menu = gtk.MenuItem(_('Delete Shows'))
         self.delete_menu.connect('activate', self._delete_shows_cb)
         menu.append(self.delete_menu)
-        
+
+        self.update_all_menu = hildon.GtkButton(gtk.HILDON_SIZE_FINGER_HEIGHT)
+        self.update_all_menu.set_label(_('Update All'))
+        self.update_all_menu.connect('clicked', self._update_all_shows_cb)
+        menu.append(self.update_all_menu)
+
         menu.show_all()
         return menu
     
@@ -158,8 +181,21 @@ class MainWindow(hildon.Window):
         new_show_dialog.destroy()
     
     def _exit_cb(self, window, event):
-        self.series_manager.save(constants.SF_DB_FILE)
-        self.settings.save(constants.SF_CONF_FILE)
+        if self.request:
+            self.request.stop()
+        hildon.hildon_gtk_window_set_progress_indicator(self, True)
+        save_shows_item = AsyncItem(self.series_manager.save,
+                               (constants.SF_DB_FILE,))
+        save_conf_item = AsyncItem(self.settings.save,
+                               (constants.SF_CONF_FILE,),
+                               self._save_finished_cb)
+        async_worker = AsyncWorker()
+        async_worker.queue.put(save_shows_item)
+        async_worker.queue.put(save_conf_item)
+        async_worker.start()
+
+    def _save_finished_cb(self, dummy_arg, error):
+        hildon.hildon_gtk_window_set_progress_indicator(self, False)
         gtk.main_quit()
 
     def _show_list_changed_cb(self, series_manager):
@@ -168,10 +204,34 @@ class MainWindow(hildon.Window):
         return False
     
     def _update_delete_menu_visibility(self):
-        if len(self.series_manager.series_list):
-            self.delete_menu.show()
-        else:
+        if not self.series_manager.series_list or self.request:
             self.delete_menu.hide()
+            self.update_all_menu.hide()
+        else:
+            self.delete_menu.show()
+            self.update_all_menu.show()
+
+    def _update_all_shows_cb(self, button):
+        hildon.hildon_gtk_window_set_progress_indicator(self, True)
+        self.request = self.series_manager.update_all_shows_episodes()
+        self.set_sensitive(False)
+        self._update_delete_menu_visibility()
+
+    def _update_all_shows_complete_cb(self, series_manager, show, error):
+        self._show_list_changed_cb(self.series_manager)
+        if self.request:
+            if error:
+                show_information(self, _('Please verify your internet connection '
+                                         'is available'))
+            else:
+                show_information(self, _('Finished updating the shows'))
+        self.request = None
+        self.set_sensitive(True)
+        self._update_delete_menu_visibility()
+        hildon.hildon_gtk_window_set_progress_indicator(self, False)
+
+    def _update_show_complete_cb(self, series_manager, show, error):
+        show_information(self, _('Updated "%s"') % show.name)
 
 class ShowsSelectView(gtk.TreeView):
     
@@ -213,19 +273,34 @@ class ShowsSelectView(gtk.TreeView):
             return
         seasons = len(show.get_seasons())
         if seasons:
-            show_info = '<small><span foreground="%s">' % get_color(constants.SECONDARY_TEXT_COLOR)
+            color = get_color(constants.SECONDARY_TEXT_COLOR)
+            episodes_info = show.get_episodes_info()
+            episodes_to_watch = episodes_info['episodes_to_watch']
+            next_episode = episodes_info['next_episode']
+            if next_episode and next_episode.already_aired():
+                color = get_color(constants.DEFAULT_TEXT_COLOR) 
+            show_info = '<small><span foreground="%s">' % color
             show_info += gettext.ngettext('%s season', '%s seasons', seasons) \
                          % seasons
             if show.is_completely_watched():
                 show_info += ' | ' + _('Completely watched')
             else:
-                episodes_to_watch = len([episode for episode in show.episode_list \
-                                    if not episode.watched])
                 if episodes_to_watch:
+                    n_episodes_to_watch = len(episodes_to_watch)
                     show_info += ' | ' + gettext.ngettext('%s episode not watched',
                                                           '%s episodes not watched',
-                                                          episodes_to_watch) \
-                                                          % episodes_to_watch
+                                                          n_episodes_to_watch) \
+                                                          % n_episodes_to_watch
+                    if next_episode:
+                        next_air_date = next_episode.air_date
+                        if next_air_date:
+                            show_info += ' | ' + _('<i>Next air date:</i> %s') % \
+                                         next_episode.get_air_date_text()
+                        else:
+                            show_info += ' | ' + _('<i>Next to watch:</i> %s') % \
+                                         next_episode
+                        if next_episode.already_aired():
+                            color = get_color(constants.DEFAULT_TEXT_COLOR)
                 else:
                     show_info += ' | ' + _('No episodes to watch')
             show_info += '</span></small>'
@@ -255,22 +330,33 @@ class SeasonsView(hildon.Window):
         seasons = self.show.get_seasons()
         self.seasons_select_view.set_seasons(seasons)
         self.seasons_select_view.connect('row-activated', self._row_activated_cb)
+        self.connect('delete-event', self._delete_event_cb)
         
         winscroll = gtk.ScrolledWindow()
         winscroll.add(self.seasons_select_view)
         winscroll.set_policy(gtk.POLICY_AUTOMATIC, gtk.POLICY_AUTOMATIC)
         self.add(winscroll)
     
+        self.request = None
+        self._update_menu_visibility()
+
+    def _delete_event_cb(self, window, event):
+        if self.request:
+            self.request.stop()
+            self.request = None
+        return False
+
     def _row_activated_cb(self, view, path, column):
         season = self.seasons_select_view.get_season_from_path(path)
         episodes_view = EpisodesView(self.settings, self.show, season)
         episodes_view.connect('delete-event', self._update_series_list_cb)
         episodes_view.connect('episode-list-changed', self._update_series_list_cb)
         episodes_view.show_all()
-    
+
     def _update_series_list_cb(self, widget, event = None):
         seasons = self.show.get_seasons();
         self.seasons_select_view.set_seasons(seasons)
+        self._update_menu_visibility()
     
     def _create_menu(self):
         menu = gtk.Menu()
@@ -284,9 +370,9 @@ class SeasonsView(hildon.Window):
         menu.append(menuitem)
         
         if str(self.show.thetvdb_id) != '-1':
-            menuitem = gtk.MenuItem(_('Update Show'))
-            menuitem.connect('activate', self._update_series_cb)
-            menu.append(menuitem)
+            self.update_menu = gtk.MenuItem(_('Update Show'))
+            self.update_menu.connect('activate', self._update_series_cb)
+            menu.append(self.update_menu)
         
         menuitem = gtk.MenuItem(_('New Episode'))
         menuitem.connect('activate', self._new_episode_cb)
@@ -294,11 +380,18 @@ class SeasonsView(hildon.Window):
         
         menu.show_all()
         return menu
-    
+
+    def _update_menu_visibility(self):
+        if self.request or not self.show.get_seasons():
+            self.update_menu.hide()
+        else:
+            self.update_menu.show()
+
     def _update_series_cb(self, button):
-        self.series_manager.update_show_episodes(self.show)
+        self.request = self.series_manager.update_show_episodes(self.show)
         self.progress = show_progress(self, _('Updating show. Please wait...'))
         self.set_sensitive(False)
+        self._update_menu_visibility()
     
     def _show_info_cb(self, button):
         dialog = gtk.Dialog(parent = self,
@@ -358,7 +451,7 @@ class SeasonsView(hildon.Window):
         new_episode_dialog.destroy()
     
     def _update_show_episodes_complete_cb(self, series_manager, show, error):
-        if error:
+        if error and self.request:
             error_message = ''
             if 'socket' in str(error).lower():
                 error_message = '\n ' + _('Please verify your internet connection '
@@ -372,6 +465,8 @@ class SeasonsView(hildon.Window):
                 self.seasons_select_view.set_seasons(seasons)
         self.progress.destroy()
         self.set_sensitive(True)
+        self.request = None
+        self._update_menu_visibility()
     
 class SeasonSelectView(gtk.TreeView):
     
@@ -414,9 +509,10 @@ class SeasonSelectView(gtk.TreeView):
             name = _('Special')
         else:
             name = _('Season %s') % season
-        episodes = self.show.get_episode_list_by_season(season)
-        episodes_to_watch = [episode for episode in episodes \
-                            if not episode.watched]
+        info = self.show.get_episodes_info(season)
+        episodes = info['episodes']
+        episodes_to_watch = info['episodes_to_watch']
+        next_episode = info['next_episode']
         season_info = ''
         color = get_color(constants.SECONDARY_TEXT_COLOR)
         if not episodes_to_watch:
@@ -430,21 +526,14 @@ class SeasonSelectView(gtk.TreeView):
                                            '%s episodes not watched',
                                            number_episodes_to_watch) \
                                            % number_episodes_to_watch
-            sorted_episodes_to_watch = [episode.episode_number for episode in \
-                                        episodes_to_watch]
-            sorted_episodes_to_watch.sort()
-            next_episode = None
-            for episode in episodes_to_watch:
-                if episode.episode_number == sorted_episodes_to_watch[0]:
-                    next_episode = episode
-                    break
-            next_air_date = episode.air_date
-            if next_air_date:
-                season_info += ' | ' + _('<i>Next air date:</i> %s') % episode.get_air_date_text()
-            else:
-                season_info += ' | ' + _('<i>Next to watch:</i> %s') % episode
-            if next_episode.already_aired():
-                color = get_color(constants.DEFAULT_TEXT_COLOR)
+            if next_episode:
+                next_air_date = next_episode.air_date
+                if next_air_date:
+                    season_info += ' | ' + _('<i>Next air date:</i> %s') % next_episode.get_air_date_text()
+                else:
+                    season_info += ' | ' + _('<i>Next to watch:</i> %s') % next_episode
+                if next_episode.already_aired():
+                    color = get_color(constants.DEFAULT_TEXT_COLOR)
         renderer.set_property('markup',
                               '<b>%s</b>\n'
                               '<span foreground="%s">%s</span>' % \

@@ -1,8 +1,17 @@
-seriesfinale (0.3.6-1diablo) unstable; urgency=low
+seriesfinale (0.4-1diablo) unstable; urgency=low
 
   * Diablo-ized version
 
- -- Juan A. Suarez Romero <jasuarez@igalia.com>  Tue, 09 Mar 2010 23:05:06 +0100
+ -- Juan A. Suarez Romero <jasuarez@igalia.com>  Wed, 17 Mar 2010 09:53:46 +0100
+
+seriesfinale (0.4-1) unstable; urgency=low
+
+  * Add update all shows feature
+  * Add asynchronous save and load
+  * Solve problem of duplicated episodes entries
+  * Solve bug when editing an episode information
+
+ -- Joaquim Rocha <jrocha@igalia.com>  Fri, 12 Mar 2010 20:20:48 +0100
 
 seriesfinale (0.3.6-1) unstable; urgency=low
 

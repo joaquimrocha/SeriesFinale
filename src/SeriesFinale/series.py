@@ -22,7 +22,7 @@ import os
 import gobject
 from lib import thetvdbapi, serializer
 from xml.etree import ElementTree as ET
-from asyncworker import AsyncWorker
+from asyncworker import AsyncWorker, AsyncItem
 from lib.constants import TVDB_API_KEY
 from datetime import datetime
 import gettext
@@ -82,6 +82,24 @@ class Show(object):
                 return False
         return True
 
+    def get_episodes_info(self, season = None):
+        info = {}
+        episodes = self.episode_list
+        if season:
+            episodes = self.get_episode_list_by_season(season)
+        episodes_to_watch = [episode for episode in episodes \
+                            if not episode.watched]
+        info['episodes'] = episodes
+        info['episodes_to_watch'] = episodes_to_watch
+        sorted_episodes_to_watch = [(episode.air_date, episode) \
+                                    for episode in episodes_to_watch \
+                                    if episode.air_date]
+        sorted_episodes_to_watch.sort()
+        info['next_episode'] = None
+        if sorted_episodes_to_watch:
+            info['next_episode'] = sorted_episodes_to_watch[0][1]
+        return info
+
     def __str__(self):
         return self.name
 
@@ -112,21 +130,20 @@ class Episode(object):
             return False
         return self.show == episode.show and \
                self.episode_number == episode.episode_number and \
-               self.season_number == episode.season_number and \
-               self.name == episode.name
+               self.season_number == episode.season_number
     
     def merge_episode(self, episode):
-        self.name = self.name or episode.name
-        self.show = self.show or episode.show
-        self.episode_number = self.episode_number or episode.episode_number
-        self.season_number = self.season_number or episode.season_number
-        self.overview = self.overview or episode.overview
-        self.director = self.director or episode.director
-        self.guest_stars = self.guest_stars or episode.guest_stars
-        self.rating = self.rating or episode.rating
-        self.writer = self.writer or episode.writer
-        self.watched = self.watched or episode.watched
-        self.air_date = self.air_date or episode.air_date
+        self.name = episode.name or self.name
+        self.show = episode.show or self.show
+        self.episode_number = episode.episode_number or self.episode_number
+        self.season_number = episode.season_number or self.season_number
+        self.overview = episode.overview or self.overview
+        self.director = episode.director or self.director
+        self.guest_stars = episode.guest_stars or self.guest_stars
+        self.rating = episode.rating or self.rating
+        self.writer = episode.writer or self.writer
+        self.watched = episode.watched or self.watched
+        self.air_date = episode.air_date or self.air_date
     
     def get_air_date_text(self):
         if not self.air_date:
@@ -149,14 +166,33 @@ class Episode(object):
             self._episode_number = int(number)
         except ValueError:
             self._episode_number = 1
-    
+
+    def _get_air_date(self):
+        return self._air_date
+
+    def _set_air_date(self, new_air_date):
+        if type(new_air_date) != str:
+            self._air_date = new_air_date
+            return
+        for format in ['%Y-%m-%d', '%d-%m-%Y', '%Y/%m/%d', '%d/%m/%Y',
+                       '%m-%d-%Y', '%d %b %Y']:
+            try:
+                self._air_date = datetime.strptime(new_air_date, format).date()
+            except ValueError:
+                continue
+            else:
+                return
+        self._air_date = None
+
     episode_number = property(_get_episode_number, _set_episode_number)
+    air_date = property(_get_air_date, _set_air_date)
 
 class SeriesManager(gobject.GObject):
     
     SEARCH_SERIES_COMPLETE_SIGNAL = 'search-shows-complete'
     GET_FULL_SHOW_COMPLETE_SIGNAL = 'get-full-show-complete'
     UPDATE_SHOW_EPISODES_COMPLETE_SIGNAL = 'update-show-episodes-complete'
+    UPDATE_SHOWS_CALL_COMPLETE_SIGNAL = 'update-shows-call-complete'
     SHOW_LIST_CHANGED_SIGNAL = 'show-list-changed'
     
     __gsignals__ = {SEARCH_SERIES_COMPLETE_SIGNAL: (gobject.SIGNAL_RUN_LAST,
@@ -171,6 +207,10 @@ class SeriesManager(gobject.GObject):
                                                            gobject.TYPE_NONE,
                                                            (gobject.TYPE_PYOBJECT,
                                                             gobject.TYPE_PYOBJECT)),
+                    UPDATE_SHOWS_CALL_COMPLETE_SIGNAL: (gobject.SIGNAL_RUN_LAST,
+                                                       gobject.TYPE_NONE,
+                                                       (gobject.TYPE_PYOBJECT,
+                                                        gobject.TYPE_PYOBJECT)),
                     SHOW_LIST_CHANGED_SIGNAL: (gobject.SIGNAL_RUN_LAST,
                                                gobject.TYPE_NONE,
                                                ()),
@@ -190,7 +230,11 @@ class SeriesManager(gobject.GObject):
     def search_shows(self, terms):
         if not terms:
             return []
-        self.async_worker = AsyncWorker(self.thetvdb.get_matching_shows, terms, self._search_finished_callback)
+        self.async_worker = AsyncWorker()
+        async_item = AsyncItem(self.thetvdb.get_matching_shows,
+                               (terms,),
+                               self._search_finished_callback)
+        self.async_worker.queue.put(async_item)
         self.async_worker.start()
     
     def _search_finished_callback(self, tvdbshows, error):
@@ -200,19 +244,33 @@ class SeriesManager(gobject.GObject):
                 self._cached_tvdb_shows[show_id] = show
                 shows.append(show)
         self.emit(self.SEARCH_SERIES_COMPLETE_SIGNAL, shows, error)
-    
+
     def update_show_episodes(self, show):
-        self.async_worker = AsyncWorker(self.thetvdb.get_show_and_episodes,
-                                        show.thetvdb_id,
-                                        self._get_show_episodes_complete_cb, (show,))
-        self.async_worker.start()
-    
-    def _get_show_episodes_complete_cb(self, show, tvdbcompleteshow, error):
+        return self.update_all_shows_episodes([show])
+
+    def update_all_shows_episodes(self, show_list = []):
+        show_list = show_list or self.series_list
+        async_worker = AsyncWorker()
+        i = 0
+        n_shows = len(show_list)
+        for i in range(n_shows):
+            show = show_list[i]
+            async_item = AsyncItem(self.thetvdb.get_show_and_episodes,
+                                   (show.thetvdb_id,),
+                                   self._get_show_episodes_complete_cb,
+                                   (show, i == n_shows - 1))
+            async_worker.queue.put(async_item)
+        async_worker.start()
+        return async_worker
+
+    def _get_show_episodes_complete_cb(self, show, last_call, tvdbcompleteshow, error):
         if not error:
             episode_list = [self._convert_thetvdbepisode_to_episode(tvdb_ep,show) \
                             for tvdb_ep in tvdbcompleteshow[1]]
             show.update_episode_list(episode_list)
         self.emit(self.UPDATE_SHOW_EPISODES_COMPLETE_SIGNAL, show, error)
+        if last_call:
+            self.emit(self.UPDATE_SHOWS_CALL_COMPLETE_SIGNAL, show, error)
     
     def _search_show_to_update_callback(self, tvdbshows):
         if not tvdbshows:
@@ -228,9 +286,11 @@ class SeriesManager(gobject.GObject):
                 break 
         if not show_id:
             return
-        self.async_worker = AsyncWorker(self.thetvdb.get_show_and_episodes,
-                                        show_id,
-                                        self._get_complete_show_finished_cb)
+        self.async_worker = AsyncWorker()
+        async_item = AsyncItem(self.thetvdb.get_show_and_episodes,
+                               (show_id,),
+                               self._get_complete_show_finished_cb)
+        self.async_worker.queue.put(async_item)
         self.async_worker.start()
     
     def _get_complete_show_finished_cb(self, tvdb_show_episodes, error):
@@ -276,9 +336,10 @@ class SeriesManager(gobject.GObject):
         return episode_obj
     
     def stop_request(self):
-        self.async_worker.stopped = True
-        self.async_worker = None
-    
+        if self.async_worker:
+            self.async_worker.stop()
+            self.async_worker = None
+
     def add_show(self, show):
         if show.id == -1:
             show.id = self._get_id_for_show()

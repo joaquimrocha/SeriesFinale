@@ -17,6 +17,7 @@ Description: SeriesFinale is a TV series browser and tracker application
  keep track of the episodes you have seen so far. The shows and episodes
  can be retrieved automatically by using the “TheTVDB API” to help you
  get to the "series finale" with the least effort.
+XSBC-Bugtracker: https://bugs.maemo.org/enter_bug.cgi?product=seriesfinale
 XB-Maemo-Icon-26:
  iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAAABHNCSVQICAgIfAhk
  iAAAAAlwSFlzAAABHQAAAR0BDfQKfgAAABl0RVh0U29mdHdhcmUAd3d3Lmlua3Nj
