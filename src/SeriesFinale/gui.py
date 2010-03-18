@@ -663,21 +663,25 @@ class NewEpisodeDialog(gtk.Dialog):
         row.add(self.episode_number)
         contents.pack_start(row, False, False, 0)
         
-        fields = [(_('Director:'), self.episode_director),
-                  (_('Writer:'), self.episode_writer),
-                  (_('Original air date:'), self.episode_air_date),
-                  (_('Rating:'), self.episode_rating),
-                  (_('Guest Stars:'), self.episode_guest_stars),
+        fields = [[(_('Director:'), self.episode_director),
+                   (_('Writer:'), self.episode_writer),
+                  ],
+                  [(_('Original air date:'), self.episode_air_date),
+                   (_('Rating:'), self.episode_rating),
+                  ],
+                  [(_('Guest Stars:'), self.episode_guest_stars),
+                  ]
                  ]
-        size_group = gtk.SizeGroup(gtk.SIZE_GROUP_BOTH)
-        for text, widget in fields:
+
+        for fields_group in fields:
             row = gtk.HBox(False, 12)
-            label = gtk.Label(text)
-            size_group.add_widget(label)
-            row.pack_start(label, False, False, 0)
-            row.pack_start(widget, True, True, 0)
+            for text, widget in fields_group:
+                label = gtk.Label(text)
+                row.pack_start(label, False, False, 0)
+                row.pack_start(widget, True, True, 0)
+
             contents.pack_start(row, False, False, 0)
-        
+
         self.vbox.add(contents)
         self.vbox.show_all()
     
