@@ -277,7 +277,7 @@ class ShowsSelectView(gtk.TreeView):
             episodes_to_watch = episodes_info['episodes_to_watch']
             next_episode = episodes_info['next_episode']
             if next_episode and next_episode.already_aired():
-                color = get_color(constants.DEFAULT_TEXT_COLOR) 
+                color = get_color(constants.ACTIVE_TEXT_COLOR) 
             show_info = '<small><span foreground="%s">' % color
             show_info += gettext.ngettext('%s season', '%s seasons', seasons) \
                          % seasons
@@ -299,7 +299,7 @@ class ShowsSelectView(gtk.TreeView):
                             show_info += ' | ' + _('<i>Next to watch:</i> %s') % \
                                          next_episode
                         if next_episode.already_aired():
-                            color = get_color(constants.DEFAULT_TEXT_COLOR)
+                            color = get_color(constants.ACTIVE_TEXT_COLOR)
                 else:
                     show_info += ' | ' + _('No episodes to watch')
             show_info += '</span></small>'
@@ -532,7 +532,7 @@ class SeasonSelectView(gtk.TreeView):
                 else:
                     season_info += ' | ' + _('<i>Next to watch:</i> %s') % next_episode
                 if next_episode.already_aired():
-                    color = get_color(constants.DEFAULT_TEXT_COLOR)
+                    color = get_color(constants.ACTIVE_TEXT_COLOR)
         renderer.set_property('markup',
                               '<b>%s</b>\n'
                               '<span foreground="%s">%s</span>' % \
@@ -891,7 +891,7 @@ class EpisodesCheckView(gtk.TreeView):
         episode = model.get_value(iter, self.EPISODE_OBJECT_COLUMN)
         color = get_color(constants.SECONDARY_TEXT_COLOR)
         if not episode.watched and episode.already_aired():
-            color = get_color(constants.DEFAULT_TEXT_COLOR)
+            color = get_color(constants.ACTIVE_TEXT_COLOR)
         renderer.set_property('markup',
                               '<span foreground="%s">%s\n'
                               '%s</span>' % \

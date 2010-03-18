@@ -51,5 +51,4 @@ DEFAULT_LANGUAGES += ['en_US', 'pt_PT']
 TVDB_API_KEY = 'FAD75AF31E1B1577'
 
 SECONDARY_TEXT_COLOR = 'SecondaryTextColor'
-ACTIVE_TEXT_COLOR = 'ActiveTextColor'
-DEFAULT_TEXT_COLOR = 'DefaultTextColor'
+ACTIVE_TEXT_COLOR = 'EmpTextColor'
