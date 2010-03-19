@@ -198,7 +198,7 @@ class Episode(object):
         self.air_date = air_date
 
     def __repr__(self):
-        return _('Ep. %s: %s') % (self.episode_number, self.name)
+        return _('Ep. %sx%02d: %s') % (self.season_number, int(self.episode_number), self.name)
     
     def __eq__(self, episode):
         if not episode:
