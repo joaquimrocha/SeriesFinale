@@ -128,8 +128,9 @@ class Show(object):
                     if next_episode:
                         next_air_date = next_episode.air_date
                         if next_air_date:
-                            show_info += ' | ' + _('<i>Next air date:</i> %s') % \
-                                         next_episode.get_air_date_text()
+                            show_info += ' | ' + _('<i>Next air date:</i> ep. %s on %s') % \
+                                         (next_episode.get_episode_show_number(), \
+                                         next_episode.get_air_date_text())
                         else:
                             show_info += ' | ' + _('<i>Next to watch:</i> %s') % \
                                          next_episode
@@ -167,8 +168,9 @@ class Show(object):
             if next_episode:
                 next_air_date = next_episode.air_date
                 if next_air_date:
-                    season_info += ' | ' + _('<i>Next air date:</i> %s') % \
-                                   next_episode.get_air_date_text()
+                    season_info += ' | ' + _('<i>Next air date:</i> ep. %s on %s') % \
+                                   (next_episode.episode_number, \
+                                    next_episode.get_air_date_text())
                 else:
                     season_info += ' | ' + _('<i>Next to watch:</i> %s') % \
                                    next_episode
@@ -197,8 +199,11 @@ class Episode(object):
         self.watched = watched
         self.air_date = air_date
 
+    def get_episode_show_number(self):
+        return '%sx%02d' % (self.season_number, int(self.episode_number))
+
     def __repr__(self):
-        return _('Ep. %sx%02d: %s') % (self.season_number, int(self.episode_number), self.name)
+        return _('Ep. %s: %s') % (self.get_episode_show_number(), self.name)
     
     def __eq__(self, episode):
         if not episode:
