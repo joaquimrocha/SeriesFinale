@@ -20,7 +20,8 @@
 
 import os
 import gobject
-from lib import thetvdbapi, serializer
+from lib import thetvdbapi, serializer, constants
+from lib.util import get_color
 from xml.etree import ElementTree as ET
 from asyncworker import AsyncWorker, AsyncItem
 from lib.constants import TVDB_API_KEY
@@ -103,6 +104,80 @@ class Show(object):
     def __str__(self):
         return self.name
 
+    def get_info_markup(self):
+        seasons = len(self.get_seasons())
+        if seasons:
+            color = get_color(constants.SECONDARY_TEXT_COLOR)
+            episodes_info = self.get_episodes_info()
+            episodes_to_watch = episodes_info['episodes_to_watch']
+            next_episode = episodes_info['next_episode']
+            if next_episode and next_episode.already_aired():
+                color = get_color(constants.ACTIVE_TEXT_COLOR) 
+            show_info = '\n<small><span foreground="%s">' % color
+            show_info += gettext.ngettext('%s season', '%s seasons', seasons) \
+                         % seasons
+            if self.is_completely_watched():
+                show_info += ' | ' + _('Completely watched')
+            else:
+                if episodes_to_watch:
+                    n_episodes_to_watch = len(episodes_to_watch)
+                    show_info += ' | ' + gettext.ngettext('%s episode not watched',
+                                                          '%s episodes not watched',
+                                                          n_episodes_to_watch) \
+                                                          % n_episodes_to_watch
+                    if next_episode:
+                        next_air_date = next_episode.air_date
+                        if next_air_date:
+                            show_info += ' | ' + _('<i>Next air date:</i> %s') % \
+                                         next_episode.get_air_date_text()
+                        else:
+                            show_info += ' | ' + _('<i>Next to watch:</i> %s') % \
+                                         next_episode
+                        if next_episode.already_aired():
+                            color = get_color(constants.ACTIVE_TEXT_COLOR)
+                else:
+                    show_info += ' | ' + _('No episodes to watch')
+            show_info += '</span></small>'
+        else:
+            show_info = ''
+        return '<b>%s</b>' % self.name + show_info
+
+    def get_season_info_markup(self, season):
+        if season == '0':
+            name = _('Special')
+        else:
+            name = _('Season %s') % season
+        info = self.get_episodes_info(season)
+        episodes = info['episodes']
+        episodes_to_watch = info['episodes_to_watch']
+        next_episode = info['next_episode']
+        season_info = ''
+        color = get_color(constants.SECONDARY_TEXT_COLOR)
+        if not episodes_to_watch:
+            if episodes:
+                name = '<small><span foreground="%s">%s</span></small>' % \
+                        (get_color(constants.SECONDARY_TEXT_COLOR), name)
+                season_info = _('Completely watched')
+        else:
+            number_episodes_to_watch = len(episodes_to_watch)
+            season_info = gettext.ngettext('%s episode not watched',
+                                           '%s episodes not watched',
+                                           number_episodes_to_watch) \
+                                           % number_episodes_to_watch
+            if next_episode:
+                next_air_date = next_episode.air_date
+                if next_air_date:
+                    season_info += ' | ' + _('<i>Next air date:</i> %s') % \
+                                   next_episode.get_air_date_text()
+                else:
+                    season_info += ' | ' + _('<i>Next to watch:</i> %s') % \
+                                   next_episode
+                if next_episode.already_aired():
+                    color = get_color(constants.ACTIVE_TEXT_COLOR)
+        return '<b>%s</b>\n<small><span foreground="%s">%s</span></small>' % \
+               (name, color, season_info)
+
+
 class Episode(object):
     
     def __init__(self, name, show, episode_number, season_number = '1',
@@ -183,6 +258,13 @@ class Episode(object):
             else:
                 return
         self._air_date = None
+
+    def get_info_markup(self):
+        color = get_color(constants.SECONDARY_TEXT_COLOR)
+        if not self.watched and self.already_aired():
+            color = get_color(constants.ACTIVE_TEXT_COLOR)
+        return '<span foreground="%s">%s\n%s</span>' % \
+               (color, self, self.get_air_date_text())
 
     episode_number = property(_get_episode_number, _set_episode_number)
     air_date = property(_get_air_date, _set_air_date)
