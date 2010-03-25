@@ -409,7 +409,8 @@ class SeasonsView(hildon.StackableWindow):
         button.set_label(_('Edit Info'))
         button.connect('clicked', self._edit_show_info)
         menu.append(button)
-        
+
+        self.update_menu = None
         if str(self.show.thetvdb_id) != '-1':
             self.update_menu = hildon.GtkButton(gtk.HILDON_SIZE_FINGER_HEIGHT)
             self.update_menu.set_label(_('Update Show'))
@@ -425,6 +426,8 @@ class SeasonsView(hildon.StackableWindow):
         return menu
 
     def _update_menu_visibility(self):
+        if not self.update_menu:
+            return
         if self.request or not self.show.get_seasons():
             self.update_menu.hide()
         else:
