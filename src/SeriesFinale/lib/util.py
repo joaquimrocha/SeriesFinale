@@ -21,6 +21,8 @@
 import pygtk
 pygtk.require('2.0')
 import gtk
+import urllib
+import os
 
 def get_color(color_name):
     # Adapted from gPodder
@@ -32,3 +34,10 @@ def get_color(color_name):
                                             'osso-logical-colors',
                                             gtk.Button)
     return color_style.lookup_color(color_name).to_string()
+
+def image_downloader(url, save_name):
+    image = urllib.URLopener()
+    path, format = os.path.splitext(url)
+    target = save_name + format
+    image.retrieve(url, target)
+    return target

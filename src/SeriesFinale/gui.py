@@ -26,6 +26,7 @@ import gobject
 import gettext
 import locale
 import pango
+import os
 from series import SeriesManager, Show, Episode
 from lib import constants
 from lib.util import get_color
@@ -279,6 +280,10 @@ class ShowsSelectView(gtk.TreeView):
     def __init__(self):
         super(ShowsSelectView, self).__init__()
         model = ShowListStore()
+        show_image_renderer = gtk.CellRendererPixbuf()
+        column = gtk.TreeViewColumn('Image', show_image_renderer,
+                                    pixbuf = model.IMAGE_COLUMN)
+        self.append_column(column)
         show_renderer = gtk.CellRendererText()
         show_renderer.set_property('ellipsize', pango.ELLIPSIZE_END)
         column = gtk.TreeViewColumn('Name', show_renderer, markup = model.INFO_COLUMN)
@@ -304,16 +309,22 @@ class ShowsSelectView(gtk.TreeView):
 
 class ShowListStore(gtk.ListStore):
 
-    INFO_COLUMN = 0
-    SHOW_COLUMN = 1
+    IMAGE_COLUMN = 0
+    INFO_COLUMN = 1
+    SHOW_COLUMN = 2
+
+    IMAGE_WIDTH = 100
+    IMAGE_HEIGHT = 60
 
     def __init__(self):
-        super(ShowListStore, self).__init__(str, gobject.TYPE_PYOBJECT)
+        super(ShowListStore, self).__init__(gtk.gdk.Pixbuf, str, gobject.TYPE_PYOBJECT)
+        self.cached_pixbufs = {}
 
     def add_shows(self, shows):
         self.clear()
         for show in shows:
-            row = {self.INFO_COLUMN: show.name,
+            row = {self.IMAGE_COLUMN: None,
+                   self.INFO_COLUMN: show.name,
                    self.SHOW_COLUMN: show
                   }
             self.append(row.values())
@@ -327,8 +338,16 @@ class ShowListStore(gtk.ListStore):
 
     def _update_iter(self, iter):
         show = self.get_value(iter, self.SHOW_COLUMN)
+        pixbuf = self.get_value(iter, self.IMAGE_COLUMN)
         info = show.get_info_markup()
         self.set_value(iter, self.INFO_COLUMN, info)
+        if show.image and os.path.isfile(show.image) and not pixbuf:
+            pixbuf = self.cached_pixbufs.get(show.image) or \
+                     gtk.gdk.pixbuf_new_from_file_at_size(show.image,
+                                                          self.IMAGE_WIDTH,
+                                                          self.IMAGE_HEIGHT)
+            self.cached_pixbufs[show.image] = pixbuf
+            self.set_value(iter, self.IMAGE_COLUMN, pixbuf)
 
 class SeasonsView(hildon.StackableWindow):
     
@@ -494,11 +513,17 @@ class SeasonsView(hildon.StackableWindow):
 
 class SeasonListStore(gtk.ListStore):
 
-    INFO_COLUMN = 0
-    SEASON_COLUMN = 1
+    IMAGE_COLUMN = 0
+    INFO_COLUMN = 1
+    SEASON_COLUMN = 2
+
+    IMAGE_WIDTH = 100
+    IMAGE_HEIGHT = 60
 
     def __init__(self, show):
-        super(SeasonListStore, self).__init__(str, gobject.TYPE_PYOBJECT)
+        super(SeasonListStore, self).__init__(gtk.gdk.Pixbuf,
+                                              str,
+                                              gobject.TYPE_PYOBJECT)
         self.show = show
 
     def add(self, season_list):
@@ -508,7 +533,8 @@ class SeasonListStore(gtk.ListStore):
                 name = _('Special')
             else:
                 name = _('Season %s') % season
-            row = {self.INFO_COLUMN: name,
+            row = {self.IMAGE_COLUMN: None,
+                   self.INFO_COLUMN: name,
                    self.SEASON_COLUMN: season,
                   }
             self.append(row.values())
@@ -524,6 +550,13 @@ class SeasonListStore(gtk.ListStore):
         season = self.get_value(iter, self.SEASON_COLUMN)
         info = self.show.get_season_info_markup(season)
         self.set_value(iter, self.INFO_COLUMN, info)
+        pixbuf = self.get_value(iter, self.IMAGE_COLUMN)
+        image = self.show.season_images.get(season)
+        if image and not pixbuf and os.path.isfile(image):
+            pixbuf = gtk.gdk.pixbuf_new_from_file_at_size(image,
+                                                          self.IMAGE_WIDTH,
+                                                          self.IMAGE_HEIGHT)
+            self.set_value(iter, self.IMAGE_COLUMN, pixbuf)
 
 class SeasonSelectView(gtk.TreeView):
 
@@ -531,6 +564,9 @@ class SeasonSelectView(gtk.TreeView):
         super(SeasonSelectView, self).__init__()
         self.show = show
         model = SeasonListStore(self.show)
+        season_image_renderer = gtk.CellRendererPixbuf()
+        column = gtk.TreeViewColumn('Image', season_image_renderer, pixbuf = model.IMAGE_COLUMN)
+        self.append_column(column)
         season_renderer = gtk.CellRendererText()
         season_renderer.set_property('ellipsize', pango.ELLIPSIZE_END)
         column = gtk.TreeViewColumn('Name', season_renderer, markup = model.INFO_COLUMN)
@@ -873,6 +909,7 @@ class EpisodesCheckView(gtk.TreeView):
         super(EpisodesCheckView, self).__init__()
         model = EpisodeListStore()
         self.watched_renderer = gtk.CellRendererToggle()
+        self.watched_renderer.set_property('width', 100)
         self.watched_renderer.set_property('activatable', True)
         column = gtk.TreeViewColumn('Watched', self.watched_renderer)
         column.add_attribute(self.watched_renderer, "active", model.CHECK_COLUMN)

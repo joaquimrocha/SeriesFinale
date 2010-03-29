@@ -260,7 +260,10 @@ class TheTVDB(object):
             banner_path = banner.findtext("BannerPath")
             banner_type = banner.findtext("BannerType")
             banner_url = "%s/banners/%s" % (self.mirror_url, banner_path)
-
-            images.append((banner_url, banner_type))
+            banner_language = banner.findtext("Language")
+            banner_season = False
+            if banner_type == 'season':
+                banner_season = banner.findtext("Season")
+            images.append((banner_url, banner_type, banner_language, banner_season))
 
         return images
