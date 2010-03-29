@@ -1,3 +1,13 @@
+seriesfinale (0.5-1) unstable; urgency=low
+
+  * Add images retrieval for shows and seasons
+  * Add season number to episode number
+  * Show episode number together with next air date
+  * Fix slow panning of views
+  * Fix problem when selecting a manually added show
+
+ -- Joaquim Rocha <jrocha@igalia.com>  Mon, 29 Mar 2010 20:20:48 +0100
+
 seriesfinale (0.4-1) unstable; urgency=low
 
   * Add update all shows feature
