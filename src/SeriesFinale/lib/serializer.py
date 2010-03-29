@@ -45,4 +45,13 @@ def deserialize(shows_file_path):
                 episode.air_date
             except AttributeError:
                 episode.air_date = ''
+        try:
+            show.image
+        except:
+            show.image = None
+        try:
+            show.season_images
+        except:
+            show.season_images = {}
+        
     return shows_list

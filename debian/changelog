@@ -1,8 +1,18 @@
-seriesfinale (0.4-1diablo) unstable; urgency=low
+seriesfinale (0.5-1diablo) unstable; urgency=low
 
   * Diablo-ized version
 
- -- Juan A. Suarez Romero <jasuarez@igalia.com>  Wed, 17 Mar 2010 09:53:46 +0100
+ -- Juan A. Suarez Romero <jasuarez@igalia.com>  Mon, 29 Mar 2010 18:54:18 +0200
+
+seriesfinale (0.5-1) unstable; urgency=low
+
+  * Add images retrieval for shows and seasons
+  * Add season number to episode number
+  * Show episode number together with next air date
+  * Fix slow panning of views
+  * Fix problem when selecting a manually added show
+
+ -- Joaquim Rocha <jrocha@igalia.com>  Mon, 29 Mar 2010 20:20:48 +0100
 
 seriesfinale (0.4-1) unstable; urgency=low
 

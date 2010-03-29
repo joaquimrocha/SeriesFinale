@@ -27,8 +27,10 @@ import gobject
 import gettext
 import locale
 import pango
+import os
 from series import SeriesManager, Show, Episode
 from lib import constants
+from lib.util import get_color
 from settings import Settings
 from asyncworker import AsyncWorker, AsyncItem
 
@@ -234,81 +236,77 @@ class MainWindow(hildon.Window):
 
 class ShowsSelectView(gtk.TreeView):
     
-    SHOW_NAME_COLUMN = 0
-    SHOW_OBJECT_COLUMN = 1
-    
     def __init__(self):
         super(ShowsSelectView, self).__init__()
-        model = gtk.ListStore(str, gobject.TYPE_PYOBJECT)
+        model = ShowListStore()
+        show_image_renderer = gtk.CellRendererPixbuf()
+        column = gtk.TreeViewColumn('Image', show_image_renderer,
+                                    pixbuf = model.IMAGE_COLUMN)
+        self.append_column(column)
         show_renderer = gtk.CellRendererText()
-        column = gtk.TreeViewColumn('Name', show_renderer, text = self.SHOW_NAME_COLUMN)
-        column.set_cell_data_func(show_renderer, self._show_select_view_data_func)
+        show_renderer.set_property('ellipsize', pango.ELLIPSIZE_END)
+        column = gtk.TreeViewColumn('Name', show_renderer, markup = model.INFO_COLUMN)
         self.set_model(model)
         self.append_column(column)
         self.sort_ascending()
 
     def set_shows(self, shows):
         model = self.get_model()
-        model.clear()
-        for show in shows:
-            row = {self.SHOW_NAME_COLUMN: show.name,
-                   self.SHOW_OBJECT_COLUMN: show
-                  }
-            model.append(row.values())
+        model.add_shows(shows)
 
     def get_show_from_path(self, path):
         model = self.get_model()
-        return model[path][self.SHOW_OBJECT_COLUMN]
+        return model[path][model.SHOW_COLUMN]
     
     def sort_descending(self):
-        self.get_model().set_sort_column_id(self.SHOW_NAME_COLUMN, gtk.SORT_DESCENDING)
+        model = self.get_model()
+        model.set_sort_column_id(model.INFO_COLUMN, gtk.SORT_DESCENDING)
     
     def sort_ascending(self):
-        self.get_model().set_sort_column_id(self.SHOW_NAME_COLUMN, gtk.SORT_ASCENDING)
-    
-    def _show_select_view_data_func(self, column, renderer, model, iter):
-        show = model.get_value(iter, self.SHOW_OBJECT_COLUMN)
-        if not show:
-            return
-        seasons = len(show.get_seasons())
-        if seasons:
-            color = get_color(constants.SECONDARY_TEXT_COLOR)
-            episodes_info = show.get_episodes_info()
-            episodes_to_watch = episodes_info['episodes_to_watch']
-            next_episode = episodes_info['next_episode']
-            if next_episode and next_episode.already_aired():
-                color = get_color(constants.ACTIVE_TEXT_COLOR) 
-            show_info = '<small><span foreground="%s">' % color
-            show_info += gettext.ngettext('%s season', '%s seasons', seasons) \
-                         % seasons
-            if show.is_completely_watched():
-                show_info += ' | ' + _('Completely watched')
-            else:
-                if episodes_to_watch:
-                    n_episodes_to_watch = len(episodes_to_watch)
-                    show_info += ' | ' + gettext.ngettext('%s episode not watched',
-                                                          '%s episodes not watched',
-                                                          n_episodes_to_watch) \
-                                                          % n_episodes_to_watch
-                    if next_episode:
-                        next_air_date = next_episode.air_date
-                        if next_air_date:
-                            show_info += ' | ' + _('<i>Next air date:</i> %s') % \
-                                         next_episode.get_air_date_text()
-                        else:
-                            show_info += ' | ' + _('<i>Next to watch:</i> %s') % \
-                                         next_episode
-                        if next_episode.already_aired():
-                            color = get_color(constants.ACTIVE_TEXT_COLOR)
-                else:
-                    show_info += ' | ' + _('No episodes to watch')
-            show_info += '</span></small>'
-        else:
-            show_info = ''
-        renderer.set_property('markup',
-                              '<b>%s</b>\n' % show.name +
-                              show_info)
-        renderer.set_property('ellipsize', pango.ELLIPSIZE_END)
+        model = self.get_model()
+        model.set_sort_column_id(model.INFO_COLUMN, gtk.SORT_ASCENDING)
+
+class ShowListStore(gtk.ListStore):
+
+    IMAGE_COLUMN = 0
+    INFO_COLUMN = 1
+    SHOW_COLUMN = 2
+
+    IMAGE_WIDTH = 100
+    IMAGE_HEIGHT = 60
+
+    def __init__(self):
+        super(ShowListStore, self).__init__(gtk.gdk.Pixbuf, str, gobject.TYPE_PYOBJECT)
+        self.cached_pixbufs = {}
+
+    def add_shows(self, shows):
+        self.clear()
+        for show in shows:
+            row = {self.IMAGE_COLUMN: None,
+                   self.INFO_COLUMN: show.name,
+                   self.SHOW_COLUMN: show
+                  }
+            self.append(row.values())
+        self.update()
+
+    def update(self):
+        iter = self.get_iter_first()
+        while iter:
+            self._update_iter(iter)
+            iter = self.iter_next(iter)
+
+    def _update_iter(self, iter):
+        show = self.get_value(iter, self.SHOW_COLUMN)
+        pixbuf = self.get_value(iter, self.IMAGE_COLUMN)
+        info = show.get_info_markup()
+        self.set_value(iter, self.INFO_COLUMN, info)
+        if show.image and os.path.isfile(show.image) and not pixbuf:
+            pixbuf = self.cached_pixbufs.get(show.image) or \
+                     gtk.gdk.pixbuf_new_from_file_at_size(show.image,
+                                                          self.IMAGE_WIDTH,
+                                                          self.IMAGE_HEIGHT)
+            self.cached_pixbufs[show.image] = pixbuf
+            self.set_value(iter, self.IMAGE_COLUMN, pixbuf)
 
 class SeasonsView(hildon.Window):
     
@@ -367,7 +365,7 @@ class SeasonsView(hildon.Window):
         menuitem = gtk.MenuItem(_('Edit Info'))
         menuitem.connect('activate', self._edit_show_info)
         menu.append(menuitem)
-        
+    	
         if str(self.show.thetvdb_id) != '-1':
             self.update_menu = gtk.MenuItem(_('Update Show'))
             self.update_menu.connect('activate', self._update_series_cb)
@@ -381,6 +379,8 @@ class SeasonsView(hildon.Window):
         return menu
 
     def _update_menu_visibility(self):
+        if not self.update_menu:
+            return
         if self.request or not self.show.get_seasons():
             self.update_menu.hide()
         else:
@@ -466,78 +466,78 @@ class SeasonsView(hildon.Window):
         self.set_sensitive(True)
         self.request = None
         self._update_menu_visibility()
-    
-class SeasonSelectView(gtk.TreeView):
-    
-    SEASON_NAME_COLUMN = 0
-    SEASON_NUMBER_COLUMN = 1
-    
-    def __init__(self, show):
-        super(SeasonSelectView, self).__init__()
-        self.show = show
-        model = gtk.ListStore(str, str)
-        season_renderer = gtk.CellRendererText()
-        column = gtk.TreeViewColumn('Name', season_renderer, text = 0)
-        column.set_cell_data_func(season_renderer,
-                                  self._season_select_view_data_func)
-        self.set_model(model)
-        self.append_column(column)
 
-    def set_seasons(self, season_list):
-        model = self.get_model()
-        model.clear()
+class SeasonListStore(gtk.ListStore):
+
+    IMAGE_COLUMN = 0
+    INFO_COLUMN = 1
+    SEASON_COLUMN = 2
+
+    IMAGE_WIDTH = 100
+    IMAGE_HEIGHT = 60
+
+    def __init__(self, show):
+        super(SeasonListStore, self).__init__(gtk.gdk.Pixbuf,
+                                              str,
+                                              gobject.TYPE_PYOBJECT)
+        self.show = show
+
+    def add(self, season_list):
+        self.clear()
         for season in season_list:
             if season == '0':
                 name = _('Special')
             else:
                 name = _('Season %s') % season
-            row = {self.SEASON_NAME_COLUMN: name,
-                   self.SEASON_NUMBER_COLUMN: season,
+            row = {self.IMAGE_COLUMN: None,
+                   self.INFO_COLUMN: name,
+                   self.SEASON_COLUMN: season,
                   }
-            model.append(row.values())
-    
+            self.append(row.values())
+        self.update()
+
+    def update(self):
+        iter = self.get_iter_first()
+        while iter:
+            self._update_iter(iter)
+            iter = self.iter_next(iter)
+
+    def _update_iter(self, iter):
+        season = self.get_value(iter, self.SEASON_COLUMN)
+        info = self.show.get_season_info_markup(season)
+        self.set_value(iter, self.INFO_COLUMN, info)
+        pixbuf = self.get_value(iter, self.IMAGE_COLUMN)
+        image = self.show.season_images.get(season)
+        if image and not pixbuf and os.path.isfile(image):
+            pixbuf = gtk.gdk.pixbuf_new_from_file_at_size(image,
+                                                          self.IMAGE_WIDTH,
+                                                          self.IMAGE_HEIGHT)
+            self.set_value(iter, self.IMAGE_COLUMN, pixbuf)
+
+class SeasonSelectView(gtk.TreeView):
+
+    def __init__(self, show):
+        super(SeasonSelectView, self).__init__()
+        self.show = show
+        model = SeasonListStore(self.show)
+        season_image_renderer = gtk.CellRendererPixbuf()
+        column = gtk.TreeViewColumn('Image', season_image_renderer, pixbuf = model.IMAGE_COLUMN)
+        self.append_column(column)
+        season_renderer = gtk.CellRendererText()
+        season_renderer.set_property('ellipsize', pango.ELLIPSIZE_END)
+        column = gtk.TreeViewColumn('Name', season_renderer, markup = model.INFO_COLUMN)
+        self.set_model(model)
+        self.append_column(column)
+
+    def set_seasons(self, season_list):
+        model = self.get_model()
+        model.add(season_list)
+
     def get_season_from_path(self, path):
         model = self.get_model()
         iter = model.get_iter(path)
-        season = model.get_value(iter, self.SEASON_NUMBER_COLUMN)
+        season = model.get_value(iter, model.SEASON_COLUMN)
         return season
-    
-    def _season_select_view_data_func(self, column, renderer, model, iter):
-        season = model.get_value(iter, self.SEASON_NUMBER_COLUMN)
-        if season == '0':
-            name = _('Special')
-        else:
-            name = _('Season %s') % season
-        info = self.show.get_episodes_info(season)
-        episodes = info['episodes']
-        episodes_to_watch = info['episodes_to_watch']
-        next_episode = info['next_episode']
-        season_info = ''
-        color = get_color(constants.SECONDARY_TEXT_COLOR)
-        if not episodes_to_watch:
-            if episodes:
-                name = '<span foreground="%s">%s</span>' % \
-                        (get_color(constants.SECONDARY_TEXT_COLOR), name)
-                season_info = _('Completely watched')
-        else:
-            number_episodes_to_watch = len(episodes_to_watch)
-            season_info = gettext.ngettext('%s episode not watched',
-                                           '%s episodes not watched',
-                                           number_episodes_to_watch) \
-                                           % number_episodes_to_watch
-            if next_episode:
-                next_air_date = next_episode.air_date
-                if next_air_date:
-                    season_info += ' | ' + _('<i>Next air date:</i> %s') % next_episode.get_air_date_text()
-                else:
-                    season_info += ' | ' + _('<i>Next to watch:</i> %s') % next_episode
-                if next_episode.already_aired():
-                    color = get_color(constants.ACTIVE_TEXT_COLOR)
-        renderer.set_property('markup',
-                              '<b>%s</b>\n'
-                              '<span foreground="%s">%s</span>' % \
-                              (name, color, season_info))
-        renderer.set_property('ellipsize', pango.ELLIPSIZE_END)
 
 class NewShowDialog(gtk.Dialog):
     
@@ -826,31 +826,55 @@ class EpisodesView(hildon.Window):
         self.episodes_check_view.sort_descending()
         self.settings.episodes_order = self.settings.DESCENDING_ORDER
 
+class EpisodeListStore(gtk.ListStore):
+
+    CHECK_COLUMN = 0
+    INFO_COLUMN = 1
+    EPISODE_COLUMN = 2
+
+    def __init__(self):
+        super(EpisodeListStore, self).__init__(bool, str, gobject.TYPE_PYOBJECT)
+
+    def add(self, episode_list):
+        self.clear()
+        for episode in episode_list:
+            name = str(episode)
+            self.append([episode.watched, name, episode])
+        self.update()
+
+
+    def update(self):
+        iter = self.get_iter_first()
+        while iter:
+            self._update_iter(iter)
+            iter = self.iter_next(iter)
+
+    def _update_iter(self, iter):
+        episode = self.get_value(iter, self.EPISODE_COLUMN)
+        info = episode.get_info_markup()
+        self.set_value(iter, self.INFO_COLUMN, info)
+
 class EpisodesCheckView(gtk.TreeView):
-    
-    EPISODE_CHECK_COLUMN = 0
-    EPISODE_NAME_COLUMN = 1
-    EPISODE_OBJECT_COLUMN = 2
-    
+
     def __init__(self):
         super(EpisodesCheckView, self).__init__()
-        model = gtk.ListStore(bool, str, gobject.TYPE_PYOBJECT)
+        model = EpisodeListStore()
         self.watched_renderer = gtk.CellRendererToggle()
+        self.watched_renderer.set_property('width', 100)
         self.watched_renderer.set_property('activatable', True)
         column = gtk.TreeViewColumn('Watched', self.watched_renderer)
-        column.add_attribute(self.watched_renderer, "active", 0)
+        column.add_attribute(self.watched_renderer, "active", model.CHECK_COLUMN)
         self.append_column(column)
         episode_renderer = gtk.CellRendererText()
-        column = gtk.TreeViewColumn('Name', episode_renderer, text = 1)
-        column.set_cell_data_func(episode_renderer,
-                                  self._episode_select_view_data_func)
+        episode_renderer.set_property('ellipsize', pango.ELLIPSIZE_END)
+        column = gtk.TreeViewColumn('Name', episode_renderer, markup = model.INFO_COLUMN)
         self.append_column(column)
         self.set_model(model)
         self.get_model().set_sort_func(2, self._sort_func)
     
     def _sort_func(self, model, iter1, iter2):
-        episode1 = model.get_value(iter1, self.EPISODE_OBJECT_COLUMN)
-        episode2 = model.get_value(iter2, self.EPISODE_OBJECT_COLUMN)
+        episode1 = model.get_value(iter1, model.EPISODE_COLUMN)
+        episode2 = model.get_value(iter2, model.EPISODE_COLUMN)
         if episode1 == None or episode2 == None:
             return 0
         if episode1.episode_number < episode2.episode_number:
@@ -859,25 +883,24 @@ class EpisodesCheckView(gtk.TreeView):
 
     def set_episodes(self, episode_list):
         model = self.get_model()
-        model.clear()
-        for episode in episode_list:
-            name = str(episode)
-            model.append([episode.watched, name, episode])
+        model.add(episode_list)
 
     def get_episode_from_path(self, path):
         model = self.get_model()
         iter = model.get_iter(path)
-        episode = model.get_value(iter, self.EPISODE_OBJECT_COLUMN)
+        episode = model.get_value(iter, model.EPISODE_COLUMN)
         return episode
     
     def sort_descending(self):
-        self.get_model().set_sort_column_id(self.EPISODE_OBJECT_COLUMN,
-                                            gtk.SORT_DESCENDING)
+        model = self.get_model()
+        model.set_sort_column_id(model.EPISODE_COLUMN,
+                                 gtk.SORT_DESCENDING)
     
     def sort_ascending(self):
-        self.get_model().set_sort_column_id(self.EPISODE_OBJECT_COLUMN,
-                                            gtk.SORT_ASCENDING)
-    
+        model = self.get_model()
+        model.set_sort_column_id(model.EPISODE_COLUMN,
+                                 gtk.SORT_ASCENDING)
+
     def select_all(self):
         for path in self.get_model():
             path[0] = path[2].watched = True
@@ -886,17 +909,6 @@ class EpisodesCheckView(gtk.TreeView):
         for path in self.get_model() or []:
             path[self.EPISODE_CHECK_COLUMN] = \
                 path[self.EPISODE_OBJECT_COLUMN].watched = False
-    
-    def _episode_select_view_data_func(self, column, renderer, model, iter):
-        episode = model.get_value(iter, self.EPISODE_OBJECT_COLUMN)
-        color = get_color(constants.SECONDARY_TEXT_COLOR)
-        if not episode.watched and episode.already_aired():
-            color = get_color(constants.ACTIVE_TEXT_COLOR)
-        renderer.set_property('markup',
-                              '<span foreground="%s">%s\n'
-                              '%s</span>' % \
-                              (color, episode, episode.get_air_date_text()))
-        renderer.set_property('ellipsize', pango.ELLIPSIZE_END)
 
 class EpisodeView(hildon.Window):
     
@@ -1143,15 +1155,3 @@ def show_progress(parent, message):
     return hildon.hildon_banner_show_animation(parent,
                                                None,
                                                message)
-
-def get_color(color_name):
-    # Adapted from gPodder
-    settings = gtk.settings_get_default()
-    if not settings:
-        return None
-    color_style = gtk.rc_get_style_by_paths(settings,
-                                            'GtkButton',
-                                            'osso-logical-colors',
-                                            gtk.Button)
-    color = color_style.lookup_color(color_name)
-    return "#%04x%04x%04x" % (color.red, color.green, color.blue)

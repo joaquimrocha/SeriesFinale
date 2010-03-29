@@ -24,7 +24,7 @@ import gtk
 
 SF_NAME = 'SeriesFinale'
 SF_COMPACT_NAME = 'seriesfinale'
-SF_VERSION = '0.4'
+SF_VERSION = '0.5'
 SF_DESCRIPTION = 'SeriesFinale is a TV series browser and tracker application'
 SF_URL = 'http://www.igalia.com'
 
@@ -32,6 +32,15 @@ HOME_PATH = os.getenv('HOME')
 SF_CONF_FOLDER = HOME_PATH + '/.osso/%s' % SF_COMPACT_NAME
 SF_CONF_FILE = SF_CONF_FOLDER + '/%s.conf' % SF_COMPACT_NAME
 SF_DB_FILE = SF_CONF_FOLDER + '/%s' % 'series.db'
+_XDG_DATA_HOME = os.getenv('XDG_DATA_HOME') or ''
+_XDG_DATA_HOME = _XDG_DATA_HOME.split(':')[0]
+_DATA_DIR_PREFIX = _XDG_DATA_HOME or HOME_PATH
+DATA_DIR = os.path.join(_DATA_DIR_PREFIX, '.local', 'share', SF_COMPACT_NAME)
+if not os.path.exists(DATA_DIR):
+    try:
+        os.makedirs(DATA_DIR)
+    except:
+        print 'Error trying to make: ', DATA_DIR
 
 DEFAULT_SYSTEM_APP_DIR = os.path.join(sys.prefix,
                                       'share',
