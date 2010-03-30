@@ -1,3 +1,9 @@
+seriesfinale (0.5-2diablo) unstable; urgency=low
+
+  * Fix wrong XDG_DATA_HOME envvar
+
+ -- Juan A. Suarez Romero <jasuarez@igalia.com>  Tue, 30 Mar 2010 08:49:48 +0200
+
 seriesfinale (0.5-1diablo) unstable; urgency=low
 
   * Diablo-ized version

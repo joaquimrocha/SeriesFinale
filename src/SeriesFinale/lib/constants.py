@@ -32,9 +32,12 @@ HOME_PATH = os.getenv('HOME')
 SF_CONF_FOLDER = HOME_PATH + '/.osso/%s' % SF_COMPACT_NAME
 SF_CONF_FILE = SF_CONF_FOLDER + '/%s.conf' % SF_COMPACT_NAME
 SF_DB_FILE = SF_CONF_FOLDER + '/%s' % 'series.db'
-_XDG_DATA_HOME = os.getenv('XDG_DATA_HOME') or ''
-_XDG_DATA_HOME = _XDG_DATA_HOME.split(':')[0]
-_DATA_DIR_PREFIX = _XDG_DATA_HOME or HOME_PATH
+# Unfortunately, XDG_DATA_HOME in Diablo points to a system directory instead
+# of user one
+#_XDG_DATA_HOME = os.getenv('XDG_DATA_HOME') or ''
+#_XDG_DATA_HOME = _XDG_DATA_HOME.split(':')[0]
+#_DATA_DIR_PREFIX = _XDG_DATA_HOME or HOME_PATH
+_DATA_DIR_PREFIX = HOME_PATH
 DATA_DIR = os.path.join(_DATA_DIR_PREFIX, '.local', 'share', SF_COMPACT_NAME)
 if not os.path.exists(DATA_DIR):
     try:
