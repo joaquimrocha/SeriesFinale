@@ -272,7 +272,7 @@ class ShowsDeleteView(DeleteView):
             show_information(self, _('Please select one or more shows'))
             return
         for path in paths:
-            self.series_manager.delete_show(model[path][1])
+            self.series_manager.delete_show(model[path][ShowListStore.SHOW_COLUMN])
         self.destroy()
 
 class ShowsSelectView(gtk.TreeView):
