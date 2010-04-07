@@ -48,5 +48,6 @@ deb: i18n
 
 clean:
 	$(PYTHON) setup.py clean
-	rm -rf build/ MANIFEST
+	rm -rf build/ locale/ MANIFEST data/seriesfinale.desktop po/seriesfinale.pot
 	find . -name '*.py[oc]' -exec rm {} \;
+	find . -name '*~' -exec rm {} \;
