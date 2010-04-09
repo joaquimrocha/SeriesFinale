@@ -26,6 +26,7 @@ from xml.etree import ElementTree as ET
 from asyncworker import AsyncWorker, AsyncItem
 from lib.constants import TVDB_API_KEY, DATA_DIR
 from datetime import datetime
+from xml.sax import saxutils
 import gettext
 
 _ = gettext.gettext
@@ -136,7 +137,7 @@ class Show(object):
                                          next_episode.get_air_date_text())
                         else:
                             show_info += ' | ' + _('<i>Next to watch:</i> %s') % \
-                                         next_episode
+                                         saxutils.escape(str(next_episode))
                         if next_episode.already_aired():
                             color = get_color(constants.ACTIVE_TEXT_COLOR)
                 else:
@@ -144,7 +145,7 @@ class Show(object):
             show_info += '</span></small>'
         else:
             show_info = ''
-        return '<b>%s</b>' % self.name + show_info
+        return '<b>%s</b>' % saxutils.escape(self.name) + show_info
 
     def get_season_info_markup(self, season):
         if season == '0':
@@ -176,7 +177,7 @@ class Show(object):
                                     next_episode.get_air_date_text())
                 else:
                     season_info += ' | ' + _('<i>Next to watch:</i> %s') % \
-                                   next_episode
+                                   saxutils.escape(str(next_episode))
                 if next_episode.already_aired():
                     color = get_color(constants.ACTIVE_TEXT_COLOR)
         return '<b>%s</b>\n<small><span foreground="%s">%s</span></small>' % \
@@ -272,7 +273,7 @@ class Episode(object):
         if not self.watched and self.already_aired():
             color = get_color(constants.ACTIVE_TEXT_COLOR)
         return '<span foreground="%s">%s\n%s</span>' % \
-               (color, self, self.get_air_date_text())
+               (color, saxutils.escape(str(self)), self.get_air_date_text())
 
     episode_number = property(_get_episode_number, _set_episode_number)
     air_date = property(_get_air_date, _set_air_date)
