@@ -91,6 +91,8 @@ class MainWindow(hildon.StackableWindow):
         self.connect('delete-event', self._exit_cb)
         self._update_delete_menu_visibility()
 
+        self._have_deleted = False
+
     def _load_finished(self, dummy_arg, error):
         self.shows_view.set_shows(self.series_manager.series_list)
         hildon.hildon_gtk_window_set_progress_indicator(self, False)
@@ -131,6 +133,7 @@ class MainWindow(hildon.StackableWindow):
         delete_shows_view = ShowsDeleteView(self.series_manager)
         delete_shows_view.shows_select_view.set_shows(self.series_manager.series_list)
         delete_shows_view.show_all()
+        self._have_deleted = True
     
     def _launch_search_shows_dialog(self):
         search_dialog = SearchShowsDialog(self, self.series_manager)
@@ -183,6 +186,13 @@ class MainWindow(hildon.StackableWindow):
         if self.request:
             self.request.stop()
         hildon.hildon_gtk_window_set_progress_indicator(self, True)
+        # If the shows list is empty but the user hasn't deleted
+        # any, then we don't save in order to avoid overwriting
+        # the current db (for the shows list might be empty due
+        # to an error)
+        if not self.series_manager.series_list and not self._have_deleted:
+            gtk.main_quit()
+            return
         save_shows_item = AsyncItem(self.series_manager.save,
                                (constants.SF_DB_FILE,))
         save_conf_item = AsyncItem(self.settings.save,
