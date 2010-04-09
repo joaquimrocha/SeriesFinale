@@ -411,6 +411,12 @@ class SeriesManager(gobject.GObject):
                 return show
         return None
     
+    def get_show_by_name(self, show_name):
+        for show in self.series_list:
+            if show.name == show_name:
+                return show
+        return None
+
     def _convert_thetvdbshow_to_show(self, thetvdb_show):
         show_obj = Show(thetvdb_show.name)
         show_obj.genre = thetvdb_show.genre

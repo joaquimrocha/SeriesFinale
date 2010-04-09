@@ -27,6 +27,7 @@ import gettext
 import locale
 import pango
 import os
+from xml.sax import saxutils
 from series import SeriesManager, Show, Episode
 from lib import constants
 from lib.util import get_color
@@ -1131,6 +1132,28 @@ class NewShowsDialog(gtk.Dialog):
         elif button == self.manual_add_button:
             self.response(self.ADD_MANUALLY_RESPONSE)
 
+
+class FoundShowListStore(gtk.ListStore):
+
+    NAME_COLUMN = 0
+    MARKUP_COLUMN = 1
+
+    def __init__(self):
+        super(FoundShowListStore, self).__init__(str, str)
+
+    def add_shows(self, shows):
+        self.clear()
+        for name in shows:
+            markup_name = saxutils.escape(str(name))
+            if self.series_manager.get_show_by_name(name):
+                row = {self.NAME_COLUMN: name,
+                       self.MARKUP_COLUMN: '<span foreground="%s">%s</span>' % \
+                                           (get_color(constants.ACTIVE_TEXT_COLOR), markup_name)}
+            else:
+                row = {self.NAME_COLUMN: name,
+                       self.MARKUP_COLUMN: '<span>%s</span>' % markup_name}
+            self.append(row.values())
+
 class SearchShowsDialog(gtk.Dialog):
     
     def __init__(self, parent, series_manager):
@@ -1146,11 +1169,14 @@ class SearchShowsDialog(gtk.Dialog):
         self.chosen_show = None
         
         self.shows_view = hildon.GtkTreeView(gtk.HILDON_UI_MODE_EDIT)
-        model = gtk.ListStore(str)
+        model = FoundShowListStore()
+        model.series_manager = series_manager
+        show_renderer = gtk.CellRendererText()
+        show_renderer.set_property('ellipsize', pango.ELLIPSIZE_END)
+        column = gtk.TreeViewColumn('Name', show_renderer, markup = model.MARKUP_COLUMN)
         self.shows_view.set_model(model)
-        column = gtk.TreeViewColumn('Name', gtk.CellRendererText(), text = 0)
         self.shows_view.append_column(column)
-        
+
         self.search_entry = hildon.Entry(gtk.HILDON_SIZE_FINGER_HEIGHT)
         self.search_entry.connect('changed', self._search_entry_changed_cb)
         self.search_button = hildon.GtkButton(gtk.HILDON_SIZE_FINGER_HEIGHT)
@@ -1198,8 +1224,7 @@ class SearchShowsDialog(gtk.Dialog):
                 return
             model.clear()
             if shows:
-                for show in shows:
-                    model.append([show])
+                model.add_shows(shows)
                 self.action_area.set_sensitive(True)
             else:
                 self.action_area.set_sensitive(False)
@@ -1215,7 +1240,7 @@ class SearchShowsDialog(gtk.Dialog):
         model, paths = selection.get_selected_rows()
         for path in paths:
             iter = model.get_iter(path)
-            text = model.get_value(iter, 0)
+            text = model.get_value(iter, model.NAME_COLUMN)
             self.chosen_show = text
 
 def show_information(parent, message):
