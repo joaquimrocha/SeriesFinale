@@ -867,7 +867,8 @@ class EpisodesView(hildon.StackableWindow):
         episode = self.episodes_check_view.get_episode_from_path(path)
         episode.watched = not episode.watched
         model[path][0] = episode.watched
-    
+        model.update_iter(model.get_iter(path))
+
     def _sort_ascending_cb(self, button):
         self.episodes_check_view.sort_ascending()
         self.settings.episodes_order = self.settings.ASCENDING_ORDER
@@ -896,10 +897,10 @@ class EpisodeListStore(gtk.ListStore):
     def update(self):
         iter = self.get_iter_first()
         while iter:
-            self._update_iter(iter)
+            self.update_iter(iter)
             iter = self.iter_next(iter)
 
-    def _update_iter(self, iter):
+    def update_iter(self, iter):
         episode = self.get_value(iter, self.EPISODE_COLUMN)
         info = episode.get_info_markup()
         self.set_value(iter, self.INFO_COLUMN, info)
