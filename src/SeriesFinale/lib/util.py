@@ -39,5 +39,7 @@ def image_downloader(url, save_name):
     image = urllib.URLopener()
     path, format = os.path.splitext(url)
     target = save_name + format
-    image.retrieve(url, target)
+    temp_target = target + '.tmp'
+    image.retrieve(url, temp_target)
+    os.rename(temp_target, target)
     return target
