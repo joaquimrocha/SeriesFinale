@@ -119,6 +119,11 @@ class MainWindow(hildon.StackableWindow):
         self.update_all_menu.connect('clicked', self._update_all_shows_cb)
         menu.append(self.update_all_menu)
 
+        button = hildon.GtkButton(gtk.HILDON_SIZE_FINGER_HEIGHT)
+        button.set_label(_('About'))
+        button.connect('clicked', self._about_menu_clicked_cb)
+        menu.append(button)
+        
         menu.show_all()
         return menu
     
@@ -250,6 +255,18 @@ class MainWindow(hildon.StackableWindow):
 
     def _update_show_art(self, series_manager, show):
         self.shows_view.update()
+
+    def _about_menu_clicked_cb(self, menu):
+        about_dialog = AboutDialog(self)
+        about_dialog.set_logo(constants.SF_ICON)
+        about_dialog.set_name(constants.SF_NAME)
+        about_dialog.set_version(constants.SF_VERSION)
+        about_dialog.set_comments(constants.SF_DESCRIPTION)
+        about_dialog.set_authors(constants.SF_AUTHORS)
+        about_dialog.set_copyright(constants.SF_COPYRIGHT)
+        about_dialog.set_license(saxutils.escape(constants.SF_LICENSE))
+        about_dialog.run()
+        about_dialog.destroy()
 
 class DeleteView(hildon.StackableWindow):
     
@@ -1322,6 +1339,80 @@ class SearchShowsDialog(gtk.Dialog):
         selected_lang = self.lang_selector.get_active(0)
         if selected_lang >= 0:
             self.chosen_lang = self.lang_store[self.lang_selector.get_active(0)][0]
+
+class AboutDialog(gtk.Dialog):
+
+    PADDING = 5
+
+    def __init__(self, parent):
+        super(AboutDialog, self).__init__(parent = parent,
+                                       flags = gtk.DIALOG_DESTROY_WITH_PARENT)
+        self._logo = gtk.Image()
+        self._name = ''
+        self._name_label = gtk.Label()
+        self._version = ''
+        self._comments_label = gtk.Label()
+        self._copyright_label = gtk.Label()
+        self._license_label = gtk.Label()
+        _license_alignment = gtk.Alignment(0, 0, 0, 1)
+        _license_alignment.add(self._license_label)
+        self._license_label.set_line_wrap(True)
+
+        self._writers_caption = gtk.Label()
+        self._writers_caption.set_markup('<b>%s</b>' % _('Authors:'))
+        _writers_caption = gtk.Alignment()
+        _writers_caption.add(self._writers_caption)
+        self._writers_label = gtk.Label()
+        self._writers_contents = gtk.VBox(False, 0)
+        self._writers_contents.pack_start(_writers_caption)
+        _writers_alignment = gtk.Alignment(0.2, 0, 0, 1)
+        _writers_alignment.add(self._writers_label)
+        self._writers_contents.pack_start(_writers_alignment)
+
+        _contents = gtk.VBox(False, 0)
+        _contents.pack_start(self._logo, False, False, self.PADDING)
+        _contents.pack_start(self._name_label, False, False, self.PADDING)
+        _contents.pack_start(self._comments_label, False, False, self.PADDING)
+        _contents.pack_start(self._copyright_label, False, False, self.PADDING)
+        _contents.pack_start(self._writers_contents, False, False, self.PADDING)
+        _contents.pack_start(_license_alignment, False, False, self.PADDING)
+
+        _contents_area = hildon.PannableArea()
+        _contents_area.add_with_viewport(_contents)
+        _contents_area.set_size_request_policy(hildon.SIZE_REQUEST_CHILDREN)
+        self.vbox.add(_contents_area)
+        self.vbox.show_all()
+        self._writers_contents.hide()
+
+    def set_logo(self, logo_path):
+        self._logo.set_from_file(logo_path)
+
+    def set_name(self, name):
+        self._name = name
+        self.set_version(self._version)
+        self.set_title(_('About %s') % self._name)
+
+    def _set_name_label(self, name):
+        self._name_label.set_markup('<big>%s</big>' % name)
+
+    def set_version(self, version):
+        self._version = version
+        self._set_name_label('%s %s' % (self._name, self._version))
+
+    def set_comments(self, comments):
+        self._comments_label.set_text(comments)
+
+    def set_copyright(self, copyright):
+        self._copyright_label.set_markup('<small>%s</small>' % copyright)
+
+    def set_license(self, license):
+        self._license_label.set_markup('<b>%s</b>\n<small>%s</small>' % \
+                                       (_('License:'), license))
+
+    def set_authors(self, authors_list):
+        authors = '\n'.join(authors_list)
+        self._writers_label.set_text(authors)
+        self._writers_contents.show_all()
 
 def show_information(parent, message):
     hildon.hildon_banner_show_information(parent,
