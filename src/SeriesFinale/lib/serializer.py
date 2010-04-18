@@ -19,39 +19,81 @@
 ###########################################################################
 
 import jsonpickle
+import simplejson as json
+import SeriesFinale.series
 from xml.etree import ElementTree as ET
 
 def serialize(show_list):
-    for show in show_list:
-        for episode in show.episode_list:
-            episode.show = show.id
-    return jsonpickle.encode(show_list)
+    return json.dumps(show_list, cls = ShowDecoder, indent = 4)
 
 def deserialize(shows_file_path):
     shows_file = open(shows_file_path, 'r')
     contents = shows_file.read()
     shows_file.close()
+    # The following test is to guarantee retro-compatibility with the
+    # old jsonpickle generated json
+    if contents.startswith('[{"py/object": "SeriesFinale.series.Show"'):
+        return deserialize_from_old_format(contents)
+    return json.loads(contents, object_hook = show_encoder)
+
+def deserialize_from_old_format(contents):
     shows_list = jsonpickle.decode(contents)
-    for show in shows_list:
-        for episode in show.episode_list:
-            episode.show = show
-            # IMPORTANT: The code below is here so the episode_number
-            # is set using the right Episode object's property
-            episode.episode_number = episode.episode_number
-            # This prevents errors when the
-            # stored objects still don't have
-            # the air date variable
-            try:
-                episode.air_date
-            except AttributeError:
-                episode.air_date = ''
-        try:
-            show.image
-        except:
-            show.image = None
-        try:
-            show.season_images
-        except:
-            show.season_images = {}
-        
-    return shows_list
+    shows_json = json.dumps(shows_list, cls = ShowDecoder)
+    return json.loads(shows_json, object_hook = show_encoder)
+
+class ShowDecoder(json.JSONEncoder):
+
+    def default(self, show):
+        show_json = dict(show.__dict__)
+        show_json['json_type'] = 'show'
+        episode_list = show_json['episode_list']
+        remove_private_vars(show_json)
+        show_json['episode_list'] = [self._decode_episode(episode) \
+                                     for episode in episode_list]
+        if isinstance(show.actors, list):
+            show_json['actors'] = '|'.join(show.actors)
+        return show_json
+
+    def _decode_episode(self, episode):
+        episode_json = dict(episode.__dict__)
+        episode_json['json_type'] = 'episode'
+        del episode_json['show']
+        episode_json['air_date'] = str(episode.air_date)
+        episode_json['episode_number'] = str(episode.episode_number)
+        remove_private_vars(episode_json)
+        if isinstance(episode.guest_stars, list):
+            episode_json['guest_stars'] = '|'.join(episode.guest_stars)
+        return episode_json
+
+def show_encoder(dictionary):
+    if dictionary.get('json_type') != 'show':
+        return dictionary
+    name = dictionary['name']
+    del dictionary['name']
+    del dictionary['json_type']
+    episode_list = list(dictionary['episode_list'])
+    del dictionary['episode_list']
+    show = SeriesFinale.series.Show(name, **dictionary)
+    episode_list = [episode_encoder(show, episode) for episode in \
+                     episode_list]
+    show.episode_list = episode_list
+    return show
+
+def episode_encoder(show, dictionary):
+    if dictionary.get('json_type') != 'episode':
+        return dictionary
+    name = dictionary['name']
+    del dictionary['name']
+    del dictionary['json_type']
+    episode_number = dictionary['episode_number']
+    del dictionary['episode_number']
+    episode = SeriesFinale.series.Episode(name,
+                                          show,
+                                          episode_number,
+                                          **dictionary)
+    return episode
+
+def remove_private_vars(dictionary):
+    for key in dictionary.keys():
+        if key[0] == '_':
+            del dictionary[key]

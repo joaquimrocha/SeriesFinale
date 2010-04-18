@@ -34,12 +34,12 @@ _ = gettext.gettext
 
 class Show(object):
     
-    def __init__(self, name, language = "en", genre = None, overview = None,
-                 network = None, rating = None, actors = [], episode_list = [],
-                 image = None, thetvdb_id = -1):
-        self.id = -1
+
+    def __init__(self, name, genre = None, overview = None, network = None,
+                 rating = None, actors = [], episode_list = [], image = None,
+                 thetvdb_id = -1, season_images = {}, id = -1, language = None):
+        self.id = id
         self.name = name
-        self.language = language
         self.genre = genre
         self.overview = overview
         self.network = network
@@ -47,8 +47,9 @@ class Show(object):
         self.actors = actors
         self.episode_list = episode_list
         self.image = image
-        self.season_images = {}
+        self.season_images = season_images
         self.thetvdb_id = thetvdb_id
+        self.language = language
     
     def get_episodes_by_season(self, season_number):
         if season_number is None:
@@ -191,8 +192,8 @@ class Episode(object):
     def __init__(self, name, show, episode_number, season_number = '1',
                  overview = None, director = None, guest_stars = [],
                  rating = None, writer = None, watched = False,
-                 air_date = ''):
-        self.id = -1
+                 air_date = '', id = -1):
+        self.id = id
         self.name = name
         self.show = show
         self.episode_number = episode_number
