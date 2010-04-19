@@ -318,13 +318,16 @@ class SeriesManager(gobject.GObject):
         
         # Cached values 
         self._cached_tvdb_shows = {}
+
+        # Languages
+        self.languages = self.thetvdb.get_available_languages()
     
-    def search_shows(self, terms):
+    def search_shows(self, terms, language = "en"):
         if not terms:
             return []
         self.async_worker = AsyncWorker()
         async_item = AsyncItem(self.thetvdb.get_matching_shows,
-                               (terms,),
+                               (terms, language,),
                                self._search_finished_callback)
         self.async_worker.queue.put(async_item)
         self.async_worker.start()
@@ -375,7 +378,7 @@ class SeriesManager(gobject.GObject):
         for show_id, show in tvdbshows:
             pass
     
-    def get_complete_show(self, show_name):
+    def get_complete_show(self, show_name, language = "en"):
         show_id = self._cached_tvdb_shows.get(show_name, None)
         for show_id, show_title in self._cached_tvdb_shows.items():
             if show_title == show_name:
@@ -384,13 +387,13 @@ class SeriesManager(gobject.GObject):
             return
         self.async_worker = AsyncWorker()
         async_item = AsyncItem(self._get_complete_show_from_id,
-                               (show_id,),
+                               (show_id, language,),
                                self._get_complete_show_finished_cb)
         self.async_worker.queue.put(async_item)
         self.async_worker.start()
 
-    def _get_complete_show_from_id(self, show_id):
-        tvdb_show_episodes = self.thetvdb.get_show_and_episodes(show_id)
+    def _get_complete_show_from_id(self, show_id, language):
+        tvdb_show_episodes = self.thetvdb.get_show_and_episodes(show_id, language)
         if not tvdb_show_episodes:
             return None
         show = self._convert_thetvdbshow_to_show(tvdb_show_episodes[0])

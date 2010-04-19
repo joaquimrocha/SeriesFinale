@@ -144,7 +144,11 @@ class MainWindow(hildon.StackableWindow):
                 hildon.hildon_gtk_window_set_progress_indicator(self, True)
                 show_information(self,
                                  _('Gathering show information. Please wait...'))
-                self.series_manager.get_complete_show(search_dialog.chosen_show)
+                if search_dialog.chosen_lang:
+                    self.series_manager.get_complete_show(search_dialog.chosen_show,
+                                                          search_dialog.chosen_lang)
+                else:
+                    self.series_manager.get_complete_show(search_dialog.chosen_show)
         search_dialog.destroy()
         
     def _get_show_complete_cb(self, series_manager, show, error):
@@ -1168,8 +1172,7 @@ class FoundShowListStore(gtk.ListStore):
 class SearchShowsDialog(gtk.Dialog):
     
     def __init__(self, parent, series_manager):
-        super(SearchShowsDialog, self).__init__(parent = parent,
-                                                 buttons = (gtk.STOCK_OK, gtk.RESPONSE_ACCEPT))
+        super(SearchShowsDialog, self).__init__(parent = parent)
         self.set_title(_('Search shows'))
         
         self.series_manager = series_manager
@@ -1178,6 +1181,7 @@ class SearchShowsDialog(gtk.Dialog):
         self.connect('response', self._response_cb)
         
         self.chosen_show = None
+        self.chosen_lang = None
         
         self.shows_view = hildon.GtkTreeView(gtk.HILDON_UI_MODE_EDIT)
         model = FoundShowListStore()
@@ -1199,13 +1203,27 @@ class SearchShowsDialog(gtk.Dialog):
         search_contents.pack_start(self.search_entry, True, True, 0)
         search_contents.pack_start(self.search_button, False, False, 0)
         self.vbox.pack_start(search_contents, False, False, 0)
+
+        self.lang_store = gtk.ListStore(str, str);
+        for langid, langdesc in self.series_manager.languages.iteritems():
+            self.lang_store.append([langid, langdesc])
+        lang_button = hildon.PickerButton(gtk.HILDON_SIZE_AUTO, hildon.BUTTON_ARRANGEMENT_VERTICAL)
+        lang_button.set_title(_('Language'))
+        self.lang_selector = hildon.TouchSelector()
+        lang_column = self.lang_selector.append_column(self.lang_store, gtk.CellRendererText(), text=1)
+        lang_column.set_property("text-column", 1)
+        self.lang_selector.set_column_selection_mode(hildon.TOUCH_SELECTOR_SELECTION_MODE_SINGLE)
+        lang_button.set_selector(self.lang_selector)
         
         shows_area = hildon.PannableArea()
         shows_area.add(self.shows_view)
         shows_area.set_size_request_policy(hildon.SIZE_REQUEST_CHILDREN)
         self.vbox.add(shows_area)
         
-        self.action_area.set_sensitive(False)
+        self.action_area.pack_start(lang_button, True, True, 0)
+        self.ok_button = self.add_button(gtk.STOCK_OK, gtk.RESPONSE_ACCEPT)
+        self.ok_button.set_sensitive(False)
+        self.action_area.show_all()
         
         self.vbox.show_all()
         self.set_size_request(-1, 400)
@@ -1218,9 +1236,10 @@ class SearchShowsDialog(gtk.Dialog):
         self._set_controls_sensitive(False)
         hildon.hildon_gtk_window_set_progress_indicator(self, True)
         search_terms = self.search_entry.get_text()
+        lang = self.lang_store[self.lang_selector.get_active(0)][0]
         if not self.search_entry.get_text():
             return
-        self.series_manager.search_shows(search_terms)
+        self.series_manager.search_shows(search_terms, lang)
     
     def _search_shows_complete_cb(self, series_manager, shows, error):
         if error:
@@ -1236,9 +1255,9 @@ class SearchShowsDialog(gtk.Dialog):
             model.clear()
             if shows:
                 model.add_shows(shows)
-                self.action_area.set_sensitive(True)
+                self.ok_button.set_sensitive(True)
             else:
-                self.action_area.set_sensitive(False)
+                self.ok_button.set_sensitive(False)
         hildon.hildon_gtk_window_set_progress_indicator(self, False)
         self._set_controls_sensitive(True)
     
@@ -1253,6 +1272,7 @@ class SearchShowsDialog(gtk.Dialog):
             iter = model.get_iter(path)
             text = model.get_value(iter, model.NAME_COLUMN)
             self.chosen_show = text
+        self.chosen_lang = self.lang_store[self.lang_selector.get_active(0)][0]
 
 def show_information(parent, message):
     hildon.hildon_banner_show_information(parent,
