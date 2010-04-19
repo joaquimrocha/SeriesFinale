@@ -155,9 +155,9 @@ class TheTVDB(object):
 
         return first_aired
 
-    def get_matching_shows(self, show_name):
+    def get_matching_shows(self, show_name, language = "en"):
         """Get a list of shows matching show_name."""
-        get_args = urllib.urlencode({"seriesname": show_name}, doseq=True)
+        get_args = urllib.urlencode({"seriesname": show_name, "language": language}, doseq=True)
         url = "%s/GetSeries.php?%s" % (self.base_url, get_args)
         data = urllib.urlopen(url)
         show_list = []
@@ -165,7 +165,7 @@ class TheTVDB(object):
         if data:
             try:
                 tree = ET.parse(data)
-                show_list = [(show.findtext("seriesid"), show.findtext("SeriesName")) for show in tree.getiterator("Series")]
+                show_list = [(show.findtext("seriesid"), show.findtext("SeriesName")) for show in tree.getiterator("Series") if show.findtext("language") == language]
             except SyntaxError:
                 pass
 
