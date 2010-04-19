@@ -33,11 +33,12 @@ _ = gettext.gettext
 
 class Show(object):
     
-    def __init__(self, name, genre = None, overview = None, network = None,
-                 rating = None, actors = [], episode_list = [], image = None,
-                 thetvdb_id = -1):
+    def __init__(self, name, language = "en", genre = None, overview = None,
+                 network = None, rating = None, actors = [], episode_list = [],
+                 image = None, thetvdb_id = -1):
         self.id = -1
         self.name = name
+        self.language = language
         self.genre = genre
         self.overview = overview
         self.network = network
@@ -351,7 +352,7 @@ class SeriesManager(gobject.GObject):
                                    None,)
             async_worker.queue.put(async_item)
             async_item = AsyncItem(self.thetvdb.get_show_and_episodes,
-                                   (show.thetvdb_id,),
+                                   (show.thetvdb_id, show.language,),
                                    self._set_show_episodes_complete_cb,
                                    (show, i == n_shows - 1))
             async_worker.queue.put(async_item)
@@ -419,6 +420,7 @@ class SeriesManager(gobject.GObject):
 
     def _convert_thetvdbshow_to_show(self, thetvdb_show):
         show_obj = Show(thetvdb_show.name)
+        show_obj.language = thetvdb_show.language
         show_obj.genre = thetvdb_show.genre
         show_obj.overview = thetvdb_show.overview
         show_obj.network = thetvdb_show.network
