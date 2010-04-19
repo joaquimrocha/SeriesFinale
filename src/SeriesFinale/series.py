@@ -320,8 +320,14 @@ class SeriesManager(gobject.GObject):
         self._cached_tvdb_shows = {}
 
         # Languages
-        self.languages = self.thetvdb.get_available_languages()
-    
+        #self.languages = self.thetvdb.get_available_languages()
+        self.languages = None
+
+    def get_languages(self):
+        if self.languages is None:
+            self.languages = self.thetvdb.get_available_languages()
+        return self.languages
+        
     def search_shows(self, terms, language = "en"):
         if not terms:
             return []

@@ -1205,7 +1205,7 @@ class SearchShowsDialog(gtk.Dialog):
         self.vbox.pack_start(search_contents, False, False, 0)
 
         self.lang_store = gtk.ListStore(str, str);
-        for langid, langdesc in self.series_manager.languages.iteritems():
+        for langid, langdesc in self.series_manager.get_languages().iteritems():
             self.lang_store.append([langid, langdesc])
         lang_button = hildon.PickerButton(gtk.HILDON_SIZE_AUTO, hildon.BUTTON_ARRANGEMENT_VERTICAL)
         lang_button.set_title(_('Language'))
