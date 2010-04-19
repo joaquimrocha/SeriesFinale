@@ -1,6 +1,7 @@
 """
 thetvdb.com Python API
 (c) 2009 James Smith (http://loopj.com)
+(c) 2009 Patrick Geltinger <flunse@googlemail.com>
 (c) 2010 Juan A. Suarez Romero <jasuarez@igalia.com>
 
 This program is free software: you can redistribute it and/or modify
@@ -155,6 +156,20 @@ class TheTVDB(object):
             pass
 
         return first_aired
+
+    def get_available_languages(self):
+        """Get a list of available languages."""
+        url = "%s/languages.xml" % self.base_key_url
+        data = urllib.urlopen(url)
+
+        if data:
+            try:
+                tree = ET.parse(data)
+                lang_list = [(lang.findtext("abbreviation"), lang.findtext("name")) for lang in tree.getiterator("Language")]
+            except SyntaxError:
+                pass
+
+        return dict(lang_list)
 
     def get_matching_shows(self, show_name, language = "en"):
         """Get a list of shows matching show_name."""
