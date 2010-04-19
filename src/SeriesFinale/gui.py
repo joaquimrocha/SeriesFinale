@@ -1236,10 +1236,14 @@ class SearchShowsDialog(gtk.Dialog):
         self._set_controls_sensitive(False)
         hildon.hildon_gtk_window_set_progress_indicator(self, True)
         search_terms = self.search_entry.get_text()
-        lang = self.lang_store[self.lang_selector.get_active(0)][0]
         if not self.search_entry.get_text():
             return
-        self.series_manager.search_shows(search_terms, lang)
+        selected_row = self.lang_selector.get_active(0)
+        if selected_row < 0:
+            self.series_manager.search_shows(search_terms)
+        else:
+            lang = self.lang_store[selected_row][0]
+            self.series_manager.search_shows(search_terms, lang)
     
     def _search_shows_complete_cb(self, series_manager, shows, error):
         if error:
@@ -1272,7 +1276,9 @@ class SearchShowsDialog(gtk.Dialog):
             iter = model.get_iter(path)
             text = model.get_value(iter, model.NAME_COLUMN)
             self.chosen_show = text
-        self.chosen_lang = self.lang_store[self.lang_selector.get_active(0)][0]
+        selected_lang = self.lang_selector.get_active(0)
+        if selected_lang >= 0:
+            self.chosen_lang = self.lang_store[self.lang_selector.get_active(0)][0]
 
 def show_information(parent, message):
     hildon.hildon_banner_show_information(parent,

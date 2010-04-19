@@ -161,6 +161,7 @@ class TheTVDB(object):
         """Get a list of available languages."""
         url = "%s/languages.xml" % self.base_key_url
         data = urllib.urlopen(url)
+        lang_list = []
 
         if data:
             try:
