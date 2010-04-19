@@ -203,9 +203,9 @@ class TheTVDB(object):
         
         return episode
     
-    def get_show_and_episodes(self, show_id):
+    def get_show_and_episodes(self, show_id, language = "en"):
         """Get the show object and all matching episode objects for this show_id."""
-        url = "%s/series/%s/all/" % (self.base_key_url, show_id)
+        url = "%s/series/%s/all/%s.xml" % (self.base_key_url, show_id, language)
         data = urllib.urlopen(url)
         
         show_and_episodes = None
