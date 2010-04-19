@@ -24,10 +24,11 @@ from lib import thetvdbapi, serializer, constants
 from lib.util import get_color, image_downloader
 from xml.etree import ElementTree as ET
 from asyncworker import AsyncWorker, AsyncItem
-from lib.constants import TVDB_API_KEY, DATA_DIR
+from lib.constants import TVDB_API_KEY, DATA_DIR, DEFAULT_LANGUAGES
 from datetime import datetime
 from xml.sax import saxutils
 import gettext
+import locale
 
 _ = gettext.gettext
 
@@ -322,12 +323,32 @@ class SeriesManager(gobject.GObject):
         # Languages
         #self.languages = self.thetvdb.get_available_languages()
         self.languages = None
+        self.default_language = None
 
     def get_languages(self):
         if self.languages is None:
             self.languages = self.thetvdb.get_available_languages()
         return self.languages
-        
+
+    def get_default_language(self):
+        if self.default_language is None:
+            #Get local supported languages
+            local_languages = []
+            lc, encoding = locale.getdefaultlocale()
+            if lc:
+                local_languages = [lc]
+            local_languages += ['es_ES']
+            local_languages += constants.DEFAULT_LANGUAGES
+            #Find language
+            self.default_language = 'en'
+            for lang in local_languages:
+                code = lang.split('_')[0]
+                if self.get_languages().has_key(code):
+                    self.default_language = code
+                    break
+
+        return self.default_language
+            
     def search_shows(self, terms, language = "en"):
         if not terms:
             return []

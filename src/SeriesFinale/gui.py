@@ -1214,6 +1214,10 @@ class SearchShowsDialog(gtk.Dialog):
         lang_column.set_property("text-column", 1)
         self.lang_selector.set_column_selection_mode(hildon.TOUCH_SELECTOR_SELECTION_MODE_SINGLE)
         lang_button.set_selector(self.lang_selector)
+        try:
+            self.lang_selector.set_active(0, self.series_manager.get_languages().keys().index(self.series_manager.get_default_language()))
+        except ValueError:
+            pass
         
         shows_area = hildon.PannableArea()
         shows_area.add(self.shows_view)
