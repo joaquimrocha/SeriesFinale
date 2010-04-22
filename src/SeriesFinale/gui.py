@@ -30,6 +30,7 @@ import os
 from xml.sax import saxutils
 from series import SeriesManager, Show, Episode
 from lib import constants
+from lib.portrait import FremantleRotation
 from lib.util import get_color
 from settings import Settings
 from asyncworker import AsyncWorker, AsyncItem
@@ -57,6 +58,9 @@ class MainWindow(hildon.StackableWindow):
                                        languages = languages,
                                        fallback = True)
         _ = language.gettext
+
+	# Autorotation
+ 	FremantleRotation(constants.SF_COMPACT_NAME, self)
 
         self.series_manager = SeriesManager()
         hildon.hildon_gtk_window_set_progress_indicator(self, True)
