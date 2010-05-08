@@ -322,14 +322,16 @@ class ShowsSelectView(gtk.TreeView):
         model = self.get_model()
         model.set_sort_column_id(model.INFO_COLUMN, gtk.SORT_ASCENDING)
 
+    def update(self):
+        model = self.get_model()
+        if model:
+            model.update()
+
 class ShowListStore(gtk.ListStore):
 
     IMAGE_COLUMN = 0
     INFO_COLUMN = 1
     SHOW_COLUMN = 2
-
-    IMAGE_WIDTH = 100
-    IMAGE_HEIGHT = 60
 
     def __init__(self):
         super(ShowListStore, self).__init__(gtk.gdk.Pixbuf, str, gobject.TYPE_PYOBJECT)
@@ -359,8 +361,8 @@ class ShowListStore(gtk.ListStore):
         if show.image and os.path.isfile(show.image) and not pixbuf:
             pixbuf = self.cached_pixbufs.get(show.image) or \
                      gtk.gdk.pixbuf_new_from_file_at_size(show.image,
-                                                          self.IMAGE_WIDTH,
-                                                          self.IMAGE_HEIGHT)
+                                                          constants.IMAGE_WIDTH,
+                                                          constants.IMAGE_HEIGHT)
             self.cached_pixbufs[show.image] = pixbuf
             self.set_value(iter, self.IMAGE_COLUMN, pixbuf)
 
@@ -526,14 +528,15 @@ class SeasonsView(hildon.StackableWindow):
         self.request = None
         self._update_menu_visibility()
 
+    def _update_show_art(self, series_manager, show):
+        if show == self.show:
+            self.seasons_select_view.update()
+
 class SeasonListStore(gtk.ListStore):
 
     IMAGE_COLUMN = 0
     INFO_COLUMN = 1
     SEASON_COLUMN = 2
-
-    IMAGE_WIDTH = 100
-    IMAGE_HEIGHT = 60
 
     def __init__(self, show):
         super(SeasonListStore, self).__init__(gtk.gdk.Pixbuf,
@@ -569,8 +572,8 @@ class SeasonListStore(gtk.ListStore):
         image = self.show.season_images.get(season)
         if image and not pixbuf and os.path.isfile(image):
             pixbuf = gtk.gdk.pixbuf_new_from_file_at_size(image,
-                                                          self.IMAGE_WIDTH,
-                                                          self.IMAGE_HEIGHT)
+                                                          constants.IMAGE_WIDTH,
+                                                          constants.IMAGE_HEIGHT)
             self.set_value(iter, self.IMAGE_COLUMN, pixbuf)
 
 class SeasonSelectView(gtk.TreeView):
