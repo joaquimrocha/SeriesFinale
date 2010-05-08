@@ -30,5 +30,7 @@ setup(name = constants.SF_NAME.lower(),
                    ),
                    ('share/applications/hildon', ['data/seriesfinale.desktop']
                    ),
+                   (constants.DEFAULT_SYSTEM_APP_DIR, ['data/placeholderimage.png',
+                                                       'data/downloadingimage.png']),
                    ] + get_locale_files()
      )
