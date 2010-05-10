@@ -497,6 +497,9 @@ class SeriesManager(gobject.GObject):
     def delete_show(self, show):
         for i in xrange(len(self.series_list)):
             if self.series_list[i] == show:
+                for image in [show.image] + show.season_images.values():
+                    if os.path.isfile(image):
+                        os.remove(image)
                 del self.series_list[i]
                 self.emit(self.SHOW_LIST_CHANGED_SIGNAL)
                 break
