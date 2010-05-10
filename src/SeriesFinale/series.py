@@ -32,12 +32,12 @@ import locale
 
 _ = gettext.gettext
 
-class Show(object):
-    
+class Show(object):    
 
     def __init__(self, name, genre = None, overview = None, network = None,
                  rating = None, actors = [], episode_list = [], image = None,
-                 thetvdb_id = -1, season_images = {}, id = -1, language = None):
+                 thetvdb_id = -1, season_images = {}, id = -1, language = None,
+                 downloading_show_image = False, downloading_season_image = False):
         self.id = id
         self.name = name
         self.genre = genre
@@ -50,6 +50,8 @@ class Show(object):
         self.season_images = season_images
         self.thetvdb_id = thetvdb_id
         self.language = language
+        self.downloading_show_image = False
+        self.downloading_season_image = downloading_season_image
     
     def get_episodes_by_season(self, season_number):
         if season_number is None:
@@ -288,6 +290,7 @@ class SeriesManager(gobject.GObject):
     UPDATE_SHOW_EPISODES_COMPLETE_SIGNAL = 'update-show-episodes-complete'
     UPDATE_SHOWS_CALL_COMPLETE_SIGNAL = 'update-shows-call-complete'
     SHOW_LIST_CHANGED_SIGNAL = 'show-list-changed'
+    UPDATED_SHOW_ART = 'updated-show-art'
     
     __gsignals__ = {SEARCH_SERIES_COMPLETE_SIGNAL: (gobject.SIGNAL_RUN_LAST,
                                                     gobject.TYPE_NONE,
@@ -308,6 +311,9 @@ class SeriesManager(gobject.GObject):
                     SHOW_LIST_CHANGED_SIGNAL: (gobject.SIGNAL_RUN_LAST,
                                                gobject.TYPE_NONE,
                                                ()),
+                    UPDATED_SHOW_ART: (gobject.SIGNAL_RUN_LAST,
+                                       gobject.TYPE_NONE,
+                                       (gobject.TYPE_PYOBJECT,)),
                    }
     
     def __init__(self):
@@ -378,20 +384,20 @@ class SeriesManager(gobject.GObject):
         n_shows = len(show_list)
         for i in range(n_shows):
             show = show_list[i]
-            async_item = AsyncItem(self._set_show_images,
-                                   (show,),
-                                   None,)
-            async_worker.queue.put(async_item)
             async_item = AsyncItem(self.thetvdb.get_show_and_episodes,
                                    (show.thetvdb_id, show.language,),
                                    self._set_show_episodes_complete_cb,
                                    (show, i == n_shows - 1))
             async_worker.queue.put(async_item)
+            async_item = AsyncItem(self._set_show_images,
+                                   (show,),
+                                   None,)
+            async_worker.queue.put(async_item)
         async_worker.start()
         return async_worker
 
     def _set_show_episodes_complete_cb(self, show, last_call, tvdbcompleteshow, error):
-        if not error:
+        if not error and tvdbcompleteshow:
             episode_list = [self._convert_thetvdbepisode_to_episode(tvdb_ep,show) \
                             for tvdb_ep in tvdbcompleteshow[1]]
             show.update_episode_list(episode_list)
@@ -431,11 +437,16 @@ class SeriesManager(gobject.GObject):
             show.episode_list.append(self._convert_thetvdbepisode_to_episode(tvdb_ep,
                                                                              show))
         self.series_list.append(show)
-        self._set_show_images(show)
         return show
 
     def _get_complete_show_finished_cb(self, show, error):
         self.emit(self.GET_FULL_SHOW_COMPLETE_SIGNAL, show, error)
+        self.async_worker = AsyncWorker()
+        async_item = AsyncItem(self._set_show_images,
+                               (show,),
+                               None,)
+        self.async_worker.queue.put(async_item)
+        self.async_worker.start()
 
     def get_show_by_id(self, show_id):
         for show in self.series_list:
@@ -512,10 +523,16 @@ class SeriesManager(gobject.GObject):
             url = image[0]
             if image_type  == 'poster' and \
                (not show.image or not os.path.isfile(show.image)):
+                show.downloading_show_image = True
+                self.emit(self.UPDATED_SHOW_ART, show)
                 target_file = os.path.join(DATA_DIR, show.thetvdb_id)
                 image_file = os.path.abspath(image_downloader(url, target_file))
                 show.image = image_file
+                show.downloading_show_image = False
+                self.emit(self.UPDATED_SHOW_ART, show)
             elif image_type == 'season':
+                show.downloading_season_image = True
+                self.emit(self.UPDATED_SHOW_ART, show)
                 season = image[3]
                 if season in seasons and \
                    season not in show.season_images.keys():
@@ -524,6 +541,8 @@ class SeriesManager(gobject.GObject):
                     image_file = os.path.abspath(image_downloader(url,
                                                                   target_file))
                     show.season_images[season] = image_file
+                show.downloading_season_image = False
+                self.emit(self.UPDATED_SHOW_ART, show)
             if show.image and len(show.season_images) == len(seasons):
                 break
 

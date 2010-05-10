@@ -70,6 +70,8 @@ class MainWindow(hildon.StackableWindow):
                                     self._update_show_complete_cb)
         self.series_manager.connect('update-shows-call-complete',
                                     self._update_all_shows_complete_cb)
+        self.series_manager.connect('updated-show-art',
+                                    self._update_show_art)
         
         self.settings = Settings()
         load_conf_item = AsyncItem(self.settings.load,
@@ -246,6 +248,9 @@ class MainWindow(hildon.StackableWindow):
     def _update_show_complete_cb(self, series_manager, show, error):
         show_information(self, _('Updated "%s"') % show.name)
 
+    def _update_show_art(self, series_manager, show):
+        self.shows_view.update()
+
 class DeleteView(hildon.StackableWindow):
     
     def __init__(self,
@@ -358,12 +363,20 @@ class ShowListStore(gtk.ListStore):
         pixbuf = self.get_value(iter, self.IMAGE_COLUMN)
         info = show.get_info_markup()
         self.set_value(iter, self.INFO_COLUMN, info)
-        if show.image and os.path.isfile(show.image) and not pixbuf:
+        if pixbuf_is_cover(pixbuf):
+            return
+        if show.image and os.path.isfile(show.image):
             pixbuf = self.cached_pixbufs.get(show.image) or \
                      gtk.gdk.pixbuf_new_from_file_at_size(show.image,
                                                           constants.IMAGE_WIDTH,
                                                           constants.IMAGE_HEIGHT)
             self.cached_pixbufs[show.image] = pixbuf
+            self.set_value(iter, self.IMAGE_COLUMN, pixbuf)
+        elif show.downloading_show_image:
+            pixbuf = get_downloading_pixbuf()
+            self.set_value(iter, self.IMAGE_COLUMN, pixbuf)
+        else:
+            pixbuf = get_placeholder_pixbuf()
             self.set_value(iter, self.IMAGE_COLUMN, pixbuf)
 
 class SeasonsView(hildon.StackableWindow):
@@ -377,6 +390,9 @@ class SeasonsView(hildon.StackableWindow):
         self.series_manager = series_manager
         self.series_manager.connect('update-show-episodes-complete',
                                     self._update_show_episodes_complete_cb)
+        self.series_manager.connect('updated-show-art',
+                                    self._update_show_art)
+
         self.show = show
         self.set_app_menu(self._create_menu())
         self.set_title(show.name)
@@ -570,10 +586,18 @@ class SeasonListStore(gtk.ListStore):
         self.set_value(iter, self.INFO_COLUMN, info)
         pixbuf = self.get_value(iter, self.IMAGE_COLUMN)
         image = self.show.season_images.get(season)
-        if image and not pixbuf and os.path.isfile(image):
+        if pixbuf_is_cover(pixbuf):
+            return
+        if image and os.path.isfile(image):
             pixbuf = gtk.gdk.pixbuf_new_from_file_at_size(image,
                                                           constants.IMAGE_WIDTH,
                                                           constants.IMAGE_HEIGHT)
+            self.set_value(iter, self.IMAGE_COLUMN, pixbuf)
+        elif self.show.downloading_season_image:
+            pixbuf = get_downloading_pixbuf()
+            self.set_value(iter, self.IMAGE_COLUMN, pixbuf)
+        else:
+            pixbuf = get_placeholder_pixbuf()
             self.set_value(iter, self.IMAGE_COLUMN, pixbuf)
 
 class SeasonSelectView(gtk.TreeView):
@@ -1291,3 +1315,22 @@ def show_information(parent, message):
     hildon.hildon_banner_show_information(parent,
                                           '',
                                           message)
+
+def pixbuf_is_cover(pixbuf):
+    if pixbuf:
+        return not bool(pixbuf.get_data('is_placeholder'))
+    return False
+
+def get_downloading_pixbuf():
+    pixbuf = gtk.gdk.pixbuf_new_from_file_at_size(constants.DOWNLOADING_IMAGE,
+                                                  constants.IMAGE_WIDTH,
+                                                  constants.IMAGE_HEIGHT)
+    pixbuf.set_data('is_placeholder', True)
+    return pixbuf
+
+def get_placeholder_pixbuf():
+    pixbuf = gtk.gdk.pixbuf_new_from_file_at_size(constants.PLACEHOLDER_IMAGE,
+                                                constants.IMAGE_WIDTH,
+                                                constants.IMAGE_HEIGHT)
+    pixbuf.set_data('is_placeholder', True)
+    return pixbuf
