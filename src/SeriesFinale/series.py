@@ -515,12 +515,16 @@ class SeriesManager(gobject.GObject):
     def delete_show(self, show):
         for i in xrange(len(self.series_list)):
             if self.series_list[i] == show:
-                for image in [show.image] + show.season_images.values():
-                    if os.path.isfile(image):
-                        os.remove(image)
+                if not self._get_shows_from_id:
+                    for image in [show.image] + show.season_images.values():
+                        if os.path.isfile(image):
+                            os.remove(image)
                 del self.series_list[i]
                 self.emit(self.SHOW_LIST_CHANGED_SIGNAL)
                 break
+
+    def _get_shows_from_id(self, id):
+        return [show for show in self.series_list if show.id == id]
 
     def _get_id_for_show (self):
         id = 1
