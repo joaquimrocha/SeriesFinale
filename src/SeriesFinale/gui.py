@@ -625,6 +625,11 @@ class SeasonSelectView(gtk.TreeView):
         season = model.get_value(iter, model.SEASON_COLUMN)
         return season
 
+    def update(self):
+        model = self.get_model()
+        if model:
+            model.update()
+
 class NewShowDialog(gtk.Dialog):
     
     def __init__(self, parent):
