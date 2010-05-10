@@ -461,7 +461,7 @@ class SeriesManager(gobject.GObject):
         return None
 
     def _convert_thetvdbshow_to_show(self, thetvdb_show):
-        show_obj = Show(thetvdb_show.name)
+        show_obj = Show(thetvdb_show.name, season_images = {})
         show_obj.language = thetvdb_show.language
         show_obj.genre = thetvdb_show.genre
         show_obj.overview = thetvdb_show.overview
