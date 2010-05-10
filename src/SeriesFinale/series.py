@@ -188,6 +188,24 @@ class Show(object):
         return '<b>%s</b>\n<small><span foreground="%s">%s</span></small>' % \
                (name, color, season_info)
 
+    def get_poster_prefix(self):
+        if self.thetvdb_id != -1:
+            return str(self.thetvdb_id)
+        return str(self.name)
+
+    def get_season_poster_prefix(self, season = None):
+        prefix = '%s_season_' % self.get_poster_prefix()
+        if season:
+            prefix = '%s%s' % (prefix, str(season))
+        return prefix
+
+    def assign_image_to_season(self, image):
+        basename = os.path.basename(image)
+        prefix, extension = os.path.splitext(basename)
+        for season in self.get_seasons():
+            if prefix.endswith(season) and not self.season_images.get(season):
+                self.season_images[season] = image
+                break
 
 class Episode(object):
     
@@ -516,11 +534,17 @@ class SeriesManager(gobject.GObject):
         thetvdb_id = show.thetvdb_id
         if thetvdb_id == -1:
             return
-        image_choices = self.thetvdb.get_show_image_choices(thetvdb_id)
+        self._assign_existing_images_to_show(show)
         seasons = show.get_seasons()
         for key, image in show.season_images.items():
             if not os.path.isfile(image):
                 del show.season_images[key]
+        # Check if the download is needed
+        if len(seasons) == len(show.season_images.keys()) and \
+           show.image and os.path.isfile(show.image):
+            self.emit(self.UPDATED_SHOW_ART, show)
+            return
+        image_choices = self.thetvdb.get_show_image_choices(thetvdb_id)
         for image in image_choices:
             image_type = image[1]
             url = image[0]
@@ -528,27 +552,34 @@ class SeriesManager(gobject.GObject):
                (not show.image or not os.path.isfile(show.image)):
                 show.downloading_show_image = True
                 self.emit(self.UPDATED_SHOW_ART, show)
-                target_file = os.path.join(DATA_DIR, show.thetvdb_id)
+                target_file = os.path.join(DATA_DIR, show.get_poster_prefix())
                 image_file = os.path.abspath(image_downloader(url, target_file))
                 show.image = image_file
                 show.downloading_show_image = False
                 self.emit(self.UPDATED_SHOW_ART, show)
             elif image_type == 'season':
-                show.downloading_season_image = True
-                self.emit(self.UPDATED_SHOW_ART, show)
                 season = image[3]
                 if season in seasons and \
                    season not in show.season_images.keys():
+                    show.downloading_season_image = True
+                    self.emit(self.UPDATED_SHOW_ART, show)
                     target_file = os.path.join(DATA_DIR,
-                                          show.thetvdb_id + '_season_' + season)
+                                               show.get_season_poster_prefix(season))
                     image_file = os.path.abspath(image_downloader(url,
                                                                   target_file))
                     show.season_images[season] = image_file
-                show.downloading_season_image = False
-                self.emit(self.UPDATED_SHOW_ART, show)
+                    show.downloading_season_image = False
+                    self.emit(self.UPDATED_SHOW_ART, show)
             if show.image and len(show.season_images) == len(seasons):
                 break
 
+    def _assign_existing_images_to_show(self, show):
+        for archive in os.listdir(DATA_DIR):
+            if archive.startswith(show.get_season_poster_prefix()):
+                show.assign_image_to_season(os.path.join(DATA_DIR, archive))
+            elif archive.startswith(show.get_poster_prefix()):
+                show.image = os.path.abspath(os.path.join(DATA_DIR, archive))
+            
     def save(self, save_file_path):
         dirname = os.path.dirname(save_file_path)
         if not (os.path.exists(dirname) and os.path.isdir(dirname)):
