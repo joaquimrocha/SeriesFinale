@@ -1226,6 +1226,7 @@ class SearchShowsDialog(gtk.Dialog):
 
         self.search_entry = hildon.Entry(gtk.HILDON_SIZE_FINGER_HEIGHT)
         self.search_entry.connect('changed', self._search_entry_changed_cb)
+        self.search_entry.connect('activate', self._search_entry_activated_cb)
         self.search_button = hildon.GtkButton(gtk.HILDON_SIZE_FINGER_HEIGHT)
         self.search_button.set_label(_('Search'))
         self.search_button.connect('clicked', self._search_button_clicked)
@@ -1267,8 +1268,14 @@ class SearchShowsDialog(gtk.Dialog):
     def _search_entry_changed_cb(self, entry):
         enable = self.search_entry.get_text().strip()
         self.search_button.set_sensitive(bool(enable))
-    
+
+    def _search_entry_activated_cb(self, entry):
+        self._search()
+
     def _search_button_clicked(self, button):
+        self._search()
+
+    def _search(self):
         self._set_controls_sensitive(False)
         hildon.hildon_gtk_window_set_progress_indicator(self, True)
         search_terms = self.search_entry.get_text()
@@ -1280,7 +1287,7 @@ class SearchShowsDialog(gtk.Dialog):
         else:
             lang = self.lang_store[selected_row][0]
             self.series_manager.search_shows(search_terms, lang)
-    
+
     def _search_shows_complete_cb(self, series_manager, shows, error):
         if error:
             error_message = ''
