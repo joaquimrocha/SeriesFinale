@@ -20,6 +20,7 @@ seriesfinale (0.6-1) unstable; urgency=low
   * Fix some labels
   * Add AUTHORS file
   * Add README file
+  * Add THANKS file
   * Update Portuguese translation
   * Update Spanish translation
   * Add postrm script to remove the images folder
