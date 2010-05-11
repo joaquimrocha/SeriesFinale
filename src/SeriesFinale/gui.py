@@ -1016,13 +1016,16 @@ class EpisodesCheckView(gtk.TreeView):
                                  gtk.SORT_ASCENDING)
 
     def select_all(self):
-        for path in self.get_model():
-            path[0] = path[2].watched = True
-    
+        self._set_episodes_selection(True)
+
     def select_none(self):
-        for path in self.get_model() or []:
-            path[self.EPISODE_CHECK_COLUMN] = \
-                path[self.EPISODE_OBJECT_COLUMN].watched = False
+        self._set_episodes_selection(False)
+
+    def _set_episodes_selection(self, mark):
+        model = self.get_model()
+        for path in model or []:
+            path[model.CHECK_COLUMN] = \
+                path[model.EPISODE_COLUMN].watched = mark
 
 class EpisodeView(hildon.StackableWindow):
     
