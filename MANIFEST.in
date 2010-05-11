@@ -1,5 +1,7 @@
 include seriesfinale
 include Makefile
+include AUTHORS
+include README
 include MANIFEST.in
 recursive-include data *
 recursive-include locale *
