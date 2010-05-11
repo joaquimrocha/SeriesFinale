@@ -1,3 +1,31 @@
+seriesfinale (0.6-1) unstable; urgency=low
+
+  * Fix deleting shows
+  * Automate translation files
+  * Escape shows and episodes' names for markup
+  * Mark already added series when searching
+  * Fix episode highlight when episode watched state is updated
+  * Prevent erasing database when a problems occurs opening it
+  * Add new logo
+  * Add language specification when searching and downloading shows
+  * Add debug when an exception in async item works
+  * Added manual de/serialization using JSON
+  * Download images to temporal files
+  * Add placeholder and downloading images
+  * Update/Retrieve art in the background
+  * Remove the images when a show is deleted
+  * Do not download images if they already exist
+  * Do not delete images if they are used by other shows
+  * Start searching when user presses Enter in the search entry
+  * Fix some labels
+  * Add AUTHORS file
+  * Add README file
+  * Update Portuguese translation
+  * Update Spanish translation
+  * Add postrm script to remove the images folder
+
+ -- Joaquim Rocha <jrocha@igalia.com>  Tue, 11 May 2010 10:20:48 +0100
+
 seriesfinale (0.5-1) unstable; urgency=low
 
   * Add images retrieval for shows and seasons
