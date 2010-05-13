@@ -21,6 +21,8 @@
 from threading import Thread
 import Queue
 import gobject
+import logging
+logging.basicConfig(level=logging.DEBUG)
 
 class AsyncItem(object):
 
@@ -38,6 +40,7 @@ class AsyncItem(object):
         try:
             results = self.target_method(*self.target_method_args)
         except Exception, exception:
+            logging.debug(str(exception))
             error = exception
         if self.canceled or not self.finish_callback:
             return
@@ -69,6 +72,7 @@ class AsyncWorker(Thread):
                 self.queue.task_done()
                 self.async_item = None
             except:
+                logging.debug(str(exception))
                 self.stop()
 
     def stop(self):

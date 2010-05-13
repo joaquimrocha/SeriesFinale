@@ -1,6 +1,8 @@
 """
 thetvdb.com Python API
 (c) 2009 James Smith (http://loopj.com)
+(c) 2009 Patrick Geltinger <flunse@googlemail.com>
+(c) 2010 Juan A. Suarez Romero <jasuarez@igalia.com>
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -155,9 +157,24 @@ class TheTVDB(object):
 
         return first_aired
 
-    def get_matching_shows(self, show_name):
+    def get_available_languages(self):
+        """Get a list of available languages."""
+        url = "%s/languages.xml" % self.base_key_url
+        data = urllib.urlopen(url)
+        lang_list = []
+
+        if data:
+            try:
+                tree = ET.parse(data)
+                lang_list = [(lang.findtext("abbreviation"), lang.findtext("name")) for lang in tree.getiterator("Language")]
+            except SyntaxError:
+                pass
+
+        return dict(lang_list)
+
+    def get_matching_shows(self, show_name, language = "en"):
         """Get a list of shows matching show_name."""
-        get_args = urllib.urlencode({"seriesname": show_name}, doseq=True)
+        get_args = urllib.urlencode({"seriesname": show_name, "language": language}, doseq=True)
         url = "%s/GetSeries.php?%s" % (self.base_url, get_args)
         data = urllib.urlopen(url)
         show_list = []
@@ -165,7 +182,7 @@ class TheTVDB(object):
         if data:
             try:
                 tree = ET.parse(data)
-                show_list = [(show.findtext("seriesid"), show.findtext("SeriesName")) for show in tree.getiterator("Series")]
+                show_list = [(show.findtext("seriesid"), show.findtext("SeriesName")) for show in tree.getiterator("Series") if show.findtext("language") == language]
             except SyntaxError:
                 pass
 
@@ -203,9 +220,9 @@ class TheTVDB(object):
         
         return episode
     
-    def get_show_and_episodes(self, show_id):
+    def get_show_and_episodes(self, show_id, language = "en"):
         """Get the show object and all matching episode objects for this show_id."""
-        url = "%s/series/%s/all/" % (self.base_key_url, show_id)
+        url = "%s/series/%s/all/%s.xml" % (self.base_key_url, show_id, language)
         data = urllib.urlopen(url)
         
         show_and_episodes = None

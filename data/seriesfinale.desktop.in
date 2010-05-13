@@ -1,8 +1,8 @@
 [Desktop Entry]
-Version=0.1
+Version=0.5
 Type=Application
-Name=SeriesFinale
-Comment=A TV series browser and tracker application.
+_Name=SeriesFinale
+_Comment=A TV series browser and tracker application.
 TryExec=seriesfinale
 Exec=seriesfinale
 Icon=seriesfinale

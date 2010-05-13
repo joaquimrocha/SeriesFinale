@@ -28,6 +28,7 @@ import gettext
 import locale
 import pango
 import os
+from xml.sax import saxutils
 from series import SeriesManager, Show, Episode
 from lib import constants
 from lib.util import get_color
@@ -70,6 +71,8 @@ class MainWindow(hildon.Window):
                                     self._update_show_complete_cb)
         self.series_manager.connect('update-shows-call-complete',
                                     self._update_all_shows_complete_cb)
+        self.series_manager.connect('updated-show-art',
+                                    self._update_show_art)
         
         self.settings = Settings()
         load_conf_item = AsyncItem(self.settings.load,
@@ -92,6 +95,8 @@ class MainWindow(hildon.Window):
         self.connect('delete-event', self._exit_cb)
         self._update_delete_menu_visibility()
 
+        self._have_deleted = False
+
     def _load_finished(self, dummy_arg, error):
         self.shows_view.set_shows(self.series_manager.series_list)
 	self.progress.destroy()
@@ -113,6 +118,11 @@ class MainWindow(hildon.Window):
         self.update_all_menu.connect('activate', self._update_all_shows_cb)
         menu.append(self.update_all_menu)
 
+        button = hildon.GtkButton(gtk.HILDON_SIZE_FINGER_HEIGHT)
+        button.set_label(_('About'))
+        button.connect('clicked', self._about_menu_clicked_cb)
+        menu.append(button)
+        
         menu.show_all()
         return menu
     
@@ -134,6 +144,7 @@ class MainWindow(hildon.Window):
             return
         for path in paths:
             self.series_manager.delete_show(model[path][1])
+        self._have_deleted = True
     
     def _launch_search_shows_dialog(self):
         search_dialog = SearchShowsDialog(self, self.series_manager)
@@ -143,7 +154,11 @@ class MainWindow(hildon.Window):
             if search_dialog.chosen_show:
                 self.progress = show_progress(self,
                                               _('Gathering show information. Please wait...'))
-                self.series_manager.get_complete_show(search_dialog.chosen_show)
+                if search_dialog.chosen_lang:
+                    self.series_manager.get_complete_show(search_dialog.chosen_show,
+                                                          search_dialog.chosen_lang)
+                else:
+                    self.series_manager.get_complete_show(search_dialog.chosen_show)
         search_dialog.destroy()
         
     def _get_show_complete_cb(self, series_manager, show, error):
@@ -185,6 +200,14 @@ class MainWindow(hildon.Window):
         if self.request:
             self.request.stop()
 	self.progress = show_progress(self, _('Saving...'))
+        hildon.hildon_gtk_window_set_progress_indicator(self, True)
+        # If the shows list is empty but the user hasn't deleted
+        # any, then we don't save in order to avoid overwriting
+        # the current db (for the shows list might be empty due
+        # to an error)
+        if not self.series_manager.series_list and not self._have_deleted:
+            gtk.main_quit()
+            return
         save_shows_item = AsyncItem(self.series_manager.save,
                                (constants.SF_DB_FILE,))
         save_conf_item = AsyncItem(self.settings.save,
@@ -234,6 +257,21 @@ class MainWindow(hildon.Window):
     def _update_show_complete_cb(self, series_manager, show, error):
         show_information(self, _('Updated "%s"') % show.name)
 
+    def _update_show_art(self, series_manager, show):
+        self.shows_view.update()
+
+    def _about_menu_clicked_cb(self, menu):
+        about_dialog = AboutDialog(self)
+        about_dialog.set_logo(constants.SF_ICON)
+        about_dialog.set_name(constants.SF_NAME)
+        about_dialog.set_version(constants.SF_VERSION)
+        about_dialog.set_comments(constants.SF_DESCRIPTION)
+        about_dialog.set_authors(constants.SF_AUTHORS)
+        about_dialog.set_copyright(constants.SF_COPYRIGHT)
+        about_dialog.set_license(saxutils.escape(constants.SF_LICENSE))
+        about_dialog.run()
+        about_dialog.destroy()
+
 class ShowsSelectView(gtk.TreeView):
     
     def __init__(self):
@@ -266,14 +304,16 @@ class ShowsSelectView(gtk.TreeView):
         model = self.get_model()
         model.set_sort_column_id(model.INFO_COLUMN, gtk.SORT_ASCENDING)
 
+    def update(self):
+        model = self.get_model()
+        if model:
+            model.update()
+
 class ShowListStore(gtk.ListStore):
 
     IMAGE_COLUMN = 0
     INFO_COLUMN = 1
     SHOW_COLUMN = 2
-
-    IMAGE_WIDTH = 100
-    IMAGE_HEIGHT = 60
 
     def __init__(self):
         super(ShowListStore, self).__init__(gtk.gdk.Pixbuf, str, gobject.TYPE_PYOBJECT)
@@ -300,12 +340,20 @@ class ShowListStore(gtk.ListStore):
         pixbuf = self.get_value(iter, self.IMAGE_COLUMN)
         info = show.get_info_markup()
         self.set_value(iter, self.INFO_COLUMN, info)
-        if show.image and os.path.isfile(show.image) and not pixbuf:
+        if pixbuf_is_cover(pixbuf):
+            return
+        if show.image and os.path.isfile(show.image):
             pixbuf = self.cached_pixbufs.get(show.image) or \
                      gtk.gdk.pixbuf_new_from_file_at_size(show.image,
-                                                          self.IMAGE_WIDTH,
-                                                          self.IMAGE_HEIGHT)
+                                                          constants.IMAGE_WIDTH,
+                                                          constants.IMAGE_HEIGHT)
             self.cached_pixbufs[show.image] = pixbuf
+            self.set_value(iter, self.IMAGE_COLUMN, pixbuf)
+        elif show.downloading_show_image:
+            pixbuf = get_downloading_pixbuf()
+            self.set_value(iter, self.IMAGE_COLUMN, pixbuf)
+        else:
+            pixbuf = get_placeholder_pixbuf()
             self.set_value(iter, self.IMAGE_COLUMN, pixbuf)
 
 class SeasonsView(hildon.Window):
@@ -319,6 +367,9 @@ class SeasonsView(hildon.Window):
         self.series_manager = series_manager
         self.series_manager.connect('update-show-episodes-complete',
                                     self._update_show_episodes_complete_cb)
+        self.series_manager.connect('updated-show-art',
+                                    self._update_show_art)
+
         self.show = show
         self.set_menu(self._create_menu())
         self.set_title(show.name)
@@ -467,14 +518,15 @@ class SeasonsView(hildon.Window):
         self.request = None
         self._update_menu_visibility()
 
+    def _update_show_art(self, series_manager, show):
+        if show == self.show:
+            self.seasons_select_view.update()
+
 class SeasonListStore(gtk.ListStore):
 
     IMAGE_COLUMN = 0
     INFO_COLUMN = 1
     SEASON_COLUMN = 2
-
-    IMAGE_WIDTH = 100
-    IMAGE_HEIGHT = 60
 
     def __init__(self, show):
         super(SeasonListStore, self).__init__(gtk.gdk.Pixbuf,
@@ -508,10 +560,18 @@ class SeasonListStore(gtk.ListStore):
         self.set_value(iter, self.INFO_COLUMN, info)
         pixbuf = self.get_value(iter, self.IMAGE_COLUMN)
         image = self.show.season_images.get(season)
-        if image and not pixbuf and os.path.isfile(image):
+        if pixbuf_is_cover(pixbuf):
+            return
+        if image and os.path.isfile(image):
             pixbuf = gtk.gdk.pixbuf_new_from_file_at_size(image,
-                                                          self.IMAGE_WIDTH,
-                                                          self.IMAGE_HEIGHT)
+                                                          constants.IMAGE_WIDTH,
+                                                          constants.IMAGE_HEIGHT)
+            self.set_value(iter, self.IMAGE_COLUMN, pixbuf)
+        elif self.show.downloading_season_image:
+            pixbuf = get_downloading_pixbuf()
+            self.set_value(iter, self.IMAGE_COLUMN, pixbuf)
+        else:
+            pixbuf = get_placeholder_pixbuf()
             self.set_value(iter, self.IMAGE_COLUMN, pixbuf)
 
 class SeasonSelectView(gtk.TreeView):
@@ -538,6 +598,11 @@ class SeasonSelectView(gtk.TreeView):
         iter = model.get_iter(path)
         season = model.get_value(iter, model.SEASON_COLUMN)
         return season
+
+    def update(self):
+        model = self.get_model()
+        if model:
+            model.update()
 
 class NewShowDialog(gtk.Dialog):
     
@@ -817,7 +882,8 @@ class EpisodesView(hildon.Window):
         episode = self.episodes_check_view.get_episode_from_path(path)
         episode.watched = not episode.watched
         model[path][0] = episode.watched
-    
+        model.update_iter(model.get_iter(path))
+
     def _sort_ascending_cb(self, button):
         self.episodes_check_view.sort_ascending()
         self.settings.episodes_order = self.settings.ASCENDING_ORDER
@@ -846,10 +912,10 @@ class EpisodeListStore(gtk.ListStore):
     def update(self):
         iter = self.get_iter_first()
         while iter:
-            self._update_iter(iter)
+            self.update_iter(iter)
             iter = self.iter_next(iter)
 
-    def _update_iter(self, iter):
+    def update_iter(self, iter):
         episode = self.get_value(iter, self.EPISODE_COLUMN)
         info = episode.get_info_markup()
         self.set_value(iter, self.INFO_COLUMN, info)
@@ -902,13 +968,16 @@ class EpisodesCheckView(gtk.TreeView):
                                  gtk.SORT_ASCENDING)
 
     def select_all(self):
-        for path in self.get_model():
-            path[0] = path[2].watched = True
-    
+        self._set_episodes_selection(True)
+
     def select_none(self):
-        for path in self.get_model() or []:
-            path[self.EPISODE_CHECK_COLUMN] = \
-                path[self.EPISODE_OBJECT_COLUMN].watched = False
+        self._set_episodes_selection(False)
+
+    def _set_episodes_selection(self, mark):
+        model = self.get_model()
+        for path in model or []:
+            path[model.CHECK_COLUMN] = \
+                path[model.EPISODE_COLUMN].watched = mark
 
 class EpisodeView(hildon.Window):
     
@@ -1058,12 +1127,32 @@ class NewShowsDialog(gtk.Dialog):
         elif button == self.manual_add_button:
             self.response(self.ADD_MANUALLY_RESPONSE)
 
+
+class FoundShowListStore(gtk.ListStore):
+
+    NAME_COLUMN = 0
+    MARKUP_COLUMN = 1
+
+    def __init__(self):
+        super(FoundShowListStore, self).__init__(str, str)
+
+    def add_shows(self, shows):
+        self.clear()
+        for name in shows:
+            markup_name = saxutils.escape(str(name))
+            if self.series_manager.get_show_by_name(name):
+                row = {self.NAME_COLUMN: name,
+                       self.MARKUP_COLUMN: '<span foreground="%s">%s</span>' % \
+                                           (get_color(constants.ACTIVE_TEXT_COLOR), markup_name)}
+            else:
+                row = {self.NAME_COLUMN: name,
+                       self.MARKUP_COLUMN: '<span>%s</span>' % markup_name}
+            self.append(row.values())
+
 class SearchShowsDialog(gtk.Dialog):
     
     def __init__(self, parent, series_manager):
-        super(SearchShowsDialog, self).__init__(parent = parent,
-                                                 buttons = (gtk.STOCK_OK, gtk.RESPONSE_ACCEPT,
-                                                            gtk.STOCK_CANCEL, gtk.RESPONSE_REJECT))
+        super(SearchShowsDialog, self).__init__(parent = parent)
         self.set_title(_('Search shows'))
         
         self.series_manager = series_manager
@@ -1072,15 +1161,20 @@ class SearchShowsDialog(gtk.Dialog):
         self.connect('response', self._response_cb)
         
         self.chosen_show = None
+        self.chosen_lang = None
         
         self.shows_view = gtk.TreeView()
-        model = gtk.ListStore(str)
+        model = FoundShowListStore()
+        model.series_manager = series_manager
+        show_renderer = gtk.CellRendererText()
+        show_renderer.set_property('ellipsize', pango.ELLIPSIZE_END)
+        column = gtk.TreeViewColumn('Name', show_renderer, markup = model.MARKUP_COLUMN)
         self.shows_view.set_model(model)
-        column = gtk.TreeViewColumn('Name', gtk.CellRendererText(), text = 0)
         self.shows_view.append_column(column)
         
         self.search_entry = gtk.Entry()
         self.search_entry.connect('changed', self._search_entry_changed_cb)
+        self.search_entry.connect('activate', self._search_entry_activated_cb)
         self.search_button = gtk.Button()
         self.search_button.set_label(_('Search'))
         self.search_button.connect('clicked', self._search_button_clicked)
@@ -1090,13 +1184,31 @@ class SearchShowsDialog(gtk.Dialog):
         search_contents.pack_start(self.search_entry, True, True, 0)
         search_contents.pack_start(self.search_button, False, False, 0)
         self.vbox.pack_start(search_contents, False, False, 0)
+
+        self.lang_store = gtk.ListStore(str, str);
+        for langid, langdesc in self.series_manager.get_languages().iteritems():
+            self.lang_store.append([langid, langdesc])
+        lang_button = hildon.PickerButton(gtk.HILDON_SIZE_AUTO, hildon.BUTTON_ARRANGEMENT_VERTICAL)
+        lang_button.set_title(_('Language'))
+        self.lang_selector = hildon.TouchSelector()
+        lang_column = self.lang_selector.append_column(self.lang_store, gtk.CellRendererText(), text=1)
+        lang_column.set_property("text-column", 1)
+        self.lang_selector.set_column_selection_mode(hildon.TOUCH_SELECTOR_SELECTION_MODE_SINGLE)
+        lang_button.set_selector(self.lang_selector)
+        try:
+            self.lang_selector.set_active(0, self.series_manager.get_languages().keys().index(self.series_manager.get_default_language()))
+        except ValueError:
+            pass
         
         winscroll = gtk.ScrolledWindow()
         winscroll.add(self.shows_view)
         winscroll.set_policy(gtk.POLICY_AUTOMATIC, gtk.POLICY_AUTOMATIC)
         self.vbox.add(winscroll)
         
-        self.action_area.set_sensitive(False)
+        self.action_area.pack_start(lang_button, True, True, 0)
+        self.ok_button = self.add_button(gtk.STOCK_OK, gtk.RESPONSE_ACCEPT)
+        self.ok_button.set_sensitive(False)
+        self.action_area.show_all()
         
         self.vbox.show_all()
         self.set_size_request(-1, 400)
@@ -1104,15 +1216,26 @@ class SearchShowsDialog(gtk.Dialog):
     def _search_entry_changed_cb(self, entry):
         enable = self.search_entry.get_text().strip()
         self.search_button.set_sensitive(bool(enable))
-    
+
+    def _search_entry_activated_cb(self, entry):
+        self._search()
+
     def _search_button_clicked(self, button):
+        self._search()
+
+    def _search(self):
         self._set_controls_sensitive(False)
         self.progress = show_progress(self, _('Searching...'));
         search_terms = self.search_entry.get_text()
         if not self.search_entry.get_text():
             return
-        self.series_manager.search_shows(search_terms)
-    
+        selected_row = self.lang_selector.get_active(0)
+        if selected_row < 0:
+            self.series_manager.search_shows(search_terms)
+        else:
+            lang = self.lang_store[selected_row][0]
+            self.series_manager.search_shows(search_terms, lang)
+
     def _search_shows_complete_cb(self, series_manager, shows, error):
         if error:
             error_message = ''
@@ -1126,11 +1249,10 @@ class SearchShowsDialog(gtk.Dialog):
                 return
             model.clear()
             if shows:
-                for show in shows:
-                    model.append([show])
-                self.action_area.set_sensitive(True)
+                model.add_shows(shows)
+                self.ok_button.set_sensitive(True)
             else:
-                self.action_area.set_sensitive(False)
+                self.ok_button.set_sensitive(False)
         self.progress.destroy()
         self._set_controls_sensitive(True)
     
@@ -1143,8 +1265,85 @@ class SearchShowsDialog(gtk.Dialog):
         model, paths = selection.get_selected_rows()
         for path in paths:
             iter = model.get_iter(path)
-            text = model.get_value(iter, 0)
+            text = model.get_value(iter, model.NAME_COLUMN)
             self.chosen_show = text
+        selected_lang = self.lang_selector.get_active(0)
+        if selected_lang >= 0:
+            self.chosen_lang = self.lang_store[self.lang_selector.get_active(0)][0]
+
+class AboutDialog(gtk.Dialog):
+
+    PADDING = 5
+
+    def __init__(self, parent):
+        super(AboutDialog, self).__init__(parent = parent,
+                                       flags = gtk.DIALOG_DESTROY_WITH_PARENT)
+        self._logo = gtk.Image()
+        self._name = ''
+        self._name_label = gtk.Label()
+        self._version = ''
+        self._comments_label = gtk.Label()
+        self._copyright_label = gtk.Label()
+        self._license_label = gtk.Label()
+        _license_alignment = gtk.Alignment(0, 0, 0, 1)
+        _license_alignment.add(self._license_label)
+        self._license_label.set_line_wrap(True)
+
+        self._writers_caption = gtk.Label()
+        self._writers_caption.set_markup('<b>%s</b>' % _('Authors:'))
+        _writers_caption = gtk.Alignment()
+        _writers_caption.add(self._writers_caption)
+        self._writers_label = gtk.Label()
+        self._writers_contents = gtk.VBox(False, 0)
+        self._writers_contents.pack_start(_writers_caption)
+        _writers_alignment = gtk.Alignment(0.2, 0, 0, 1)
+        _writers_alignment.add(self._writers_label)
+        self._writers_contents.pack_start(_writers_alignment)
+
+        _contents = gtk.VBox(False, 0)
+        _contents.pack_start(self._logo, False, False, self.PADDING)
+        _contents.pack_start(self._name_label, False, False, self.PADDING)
+        _contents.pack_start(self._comments_label, False, False, self.PADDING)
+        _contents.pack_start(self._copyright_label, False, False, self.PADDING)
+        _contents.pack_start(self._writers_contents, False, False, self.PADDING)
+        _contents.pack_start(_license_alignment, False, False, self.PADDING)
+
+        _contents_area = hildon.PannableArea()
+        _contents_area.add_with_viewport(_contents)
+        _contents_area.set_size_request_policy(hildon.SIZE_REQUEST_CHILDREN)
+        self.vbox.add(_contents_area)
+        self.vbox.show_all()
+        self._writers_contents.hide()
+
+    def set_logo(self, logo_path):
+        self._logo.set_from_file(logo_path)
+
+    def set_name(self, name):
+        self._name = name
+        self.set_version(self._version)
+        self.set_title(_('About %s') % self._name)
+
+    def _set_name_label(self, name):
+        self._name_label.set_markup('<big>%s</big>' % name)
+
+    def set_version(self, version):
+        self._version = version
+        self._set_name_label('%s %s' % (self._name, self._version))
+
+    def set_comments(self, comments):
+        self._comments_label.set_text(comments)
+
+    def set_copyright(self, copyright):
+        self._copyright_label.set_markup('<small>%s</small>' % copyright)
+
+    def set_license(self, license):
+        self._license_label.set_markup('<b>%s</b>\n<small>%s</small>' % \
+                                       (_('License:'), license))
+
+    def set_authors(self, authors_list):
+        authors = '\n'.join(authors_list)
+        self._writers_label.set_text(authors)
+        self._writers_contents.show_all()
 
 def show_information(parent, message):
     hildon.hildon_banner_show_information(parent,
@@ -1155,3 +1354,22 @@ def show_progress(parent, message):
     return hildon.hildon_banner_show_animation(parent,
                                                None,
                                                message)
+
+def pixbuf_is_cover(pixbuf):
+    if pixbuf:
+        return not bool(pixbuf.get_data('is_placeholder'))
+    return False
+
+def get_downloading_pixbuf():
+    pixbuf = gtk.gdk.pixbuf_new_from_file_at_size(constants.DOWNLOADING_IMAGE,
+                                                  constants.IMAGE_WIDTH,
+                                                  constants.IMAGE_HEIGHT)
+    pixbuf.set_data('is_placeholder', True)
+    return pixbuf
+
+def get_placeholder_pixbuf():
+    pixbuf = gtk.gdk.pixbuf_new_from_file_at_size(constants.PLACEHOLDER_IMAGE,
+                                                constants.IMAGE_WIDTH,
+                                                constants.IMAGE_HEIGHT)
+    pixbuf.set_data('is_placeholder', True)
+    return pixbuf

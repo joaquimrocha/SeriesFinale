@@ -24,18 +24,21 @@ from lib import thetvdbapi, serializer, constants
 from lib.util import get_color, image_downloader
 from xml.etree import ElementTree as ET
 from asyncworker import AsyncWorker, AsyncItem
-from lib.constants import TVDB_API_KEY, DATA_DIR
+from lib.constants import TVDB_API_KEY, DATA_DIR, DEFAULT_LANGUAGES
 from datetime import datetime
+from xml.sax import saxutils
 import gettext
+import locale
 
 _ = gettext.gettext
 
-class Show(object):
-    
+class Show(object):    
+
     def __init__(self, name, genre = None, overview = None, network = None,
                  rating = None, actors = [], episode_list = [], image = None,
-                 thetvdb_id = -1):
-        self.id = -1
+                 thetvdb_id = -1, season_images = {}, id = -1, language = None,
+                 downloading_show_image = False, downloading_season_image = False):
+        self.id = id
         self.name = name
         self.genre = genre
         self.overview = overview
@@ -44,8 +47,11 @@ class Show(object):
         self.actors = actors
         self.episode_list = episode_list
         self.image = image
-        self.season_images = {}
+        self.season_images = season_images
         self.thetvdb_id = thetvdb_id
+        self.language = language
+        self.downloading_show_image = False
+        self.downloading_season_image = downloading_season_image
     
     def get_episodes_by_season(self, season_number):
         if season_number is None:
@@ -131,12 +137,12 @@ class Show(object):
                     if next_episode:
                         next_air_date = next_episode.air_date
                         if next_air_date:
-                            show_info += ' | ' + _('<i>Next air date:</i> ep. %s on %s') % \
+                            show_info += ' | ' + _('<i>Next episode:</i> %s on %s') % \
                                          (next_episode.get_episode_show_number(), \
                                          next_episode.get_air_date_text())
                         else:
-                            show_info += ' | ' + _('<i>Next to watch:</i> %s') % \
-                                         next_episode
+                            show_info += ' | ' + _('<i>Next episode:</i> %s') % \
+                                         saxutils.escape(str(next_episode))
                         if next_episode.already_aired():
                             color = get_color(constants.ACTIVE_TEXT_COLOR)
                 else:
@@ -144,7 +150,7 @@ class Show(object):
             show_info += '</span></small>'
         else:
             show_info = ''
-        return '<b>%s</b>' % self.name + show_info
+        return '<b>%s</b>' % saxutils.escape(self.name) + show_info
 
     def get_season_info_markup(self, season):
         if season == '0':
@@ -171,25 +177,43 @@ class Show(object):
             if next_episode:
                 next_air_date = next_episode.air_date
                 if next_air_date:
-                    season_info += ' | ' + _('<i>Next air date:</i> ep. %s on %s') % \
+                    season_info += ' | ' + _('<i>Next episode:</i> %s on %s') % \
                                    (next_episode.episode_number, \
                                     next_episode.get_air_date_text())
                 else:
-                    season_info += ' | ' + _('<i>Next to watch:</i> %s') % \
-                                   next_episode
+		    season_info += ' | ' + _('<i>Next episode:</i> %s') % \
+                                   saxutils.escape(str(next_episode))
                 if next_episode.already_aired():
                     color = get_color(constants.ACTIVE_TEXT_COLOR)
         return '<b>%s</b>\n<small><span foreground="%s">%s</span></small>' % \
                (name, color, season_info)
 
+    def get_poster_prefix(self):
+        if self.thetvdb_id != -1:
+            return str(self.thetvdb_id)
+        return str(self.name)
+
+    def get_season_poster_prefix(self, season = None):
+        prefix = '%s_season_' % self.get_poster_prefix()
+        if season:
+            prefix = '%s%s' % (prefix, str(season))
+        return prefix
+
+    def assign_image_to_season(self, image):
+        basename = os.path.basename(image)
+        prefix, extension = os.path.splitext(basename)
+        for season in self.get_seasons():
+            if prefix.endswith(season) and not self.season_images.get(season):
+                self.season_images[season] = image
+                break
 
 class Episode(object):
     
     def __init__(self, name, show, episode_number, season_number = '1',
                  overview = None, director = None, guest_stars = [],
                  rating = None, writer = None, watched = False,
-                 air_date = ''):
-        self.id = -1
+                 air_date = '', id = -1):
+        self.id = id
         self.name = name
         self.show = show
         self.episode_number = episode_number
@@ -272,7 +296,7 @@ class Episode(object):
         if not self.watched and self.already_aired():
             color = get_color(constants.ACTIVE_TEXT_COLOR)
         return '<span foreground="%s">%s\n%s</span>' % \
-               (color, self, self.get_air_date_text())
+               (color, saxutils.escape(str(self)), self.get_air_date_text())
 
     episode_number = property(_get_episode_number, _set_episode_number)
     air_date = property(_get_air_date, _set_air_date)
@@ -284,6 +308,7 @@ class SeriesManager(gobject.GObject):
     UPDATE_SHOW_EPISODES_COMPLETE_SIGNAL = 'update-show-episodes-complete'
     UPDATE_SHOWS_CALL_COMPLETE_SIGNAL = 'update-shows-call-complete'
     SHOW_LIST_CHANGED_SIGNAL = 'show-list-changed'
+    UPDATED_SHOW_ART = 'updated-show-art'
     
     __gsignals__ = {SEARCH_SERIES_COMPLETE_SIGNAL: (gobject.SIGNAL_RUN_LAST,
                                                     gobject.TYPE_NONE,
@@ -304,6 +329,9 @@ class SeriesManager(gobject.GObject):
                     SHOW_LIST_CHANGED_SIGNAL: (gobject.SIGNAL_RUN_LAST,
                                                gobject.TYPE_NONE,
                                                ()),
+                    UPDATED_SHOW_ART: (gobject.SIGNAL_RUN_LAST,
+                                       gobject.TYPE_NONE,
+                                       (gobject.TYPE_PYOBJECT,)),
                    }
     
     def __init__(self):
@@ -316,13 +344,42 @@ class SeriesManager(gobject.GObject):
         
         # Cached values 
         self._cached_tvdb_shows = {}
-    
-    def search_shows(self, terms):
+
+        # Languages
+        #self.languages = self.thetvdb.get_available_languages()
+        self.languages = None
+        self.default_language = None
+
+    def get_languages(self):
+        if self.languages is None:
+            self.languages = self.thetvdb.get_available_languages()
+        return self.languages
+
+    def get_default_language(self):
+        if self.default_language is None:
+            #Get local supported languages
+            local_languages = []
+            lc, encoding = locale.getdefaultlocale()
+            if lc:
+                local_languages = [lc]
+            local_languages += ['es_ES']
+            local_languages += constants.DEFAULT_LANGUAGES
+            #Find language
+            self.default_language = 'en'
+            for lang in local_languages:
+                code = lang.split('_')[0]
+                if self.get_languages().has_key(code):
+                    self.default_language = code
+                    break
+
+        return self.default_language
+            
+    def search_shows(self, terms, language = "en"):
         if not terms:
             return []
         self.async_worker = AsyncWorker()
         async_item = AsyncItem(self.thetvdb.get_matching_shows,
-                               (terms,),
+                               (terms, language,),
                                self._search_finished_callback)
         self.async_worker.queue.put(async_item)
         self.async_worker.start()
@@ -345,20 +402,20 @@ class SeriesManager(gobject.GObject):
         n_shows = len(show_list)
         for i in range(n_shows):
             show = show_list[i]
+            async_item = AsyncItem(self.thetvdb.get_show_and_episodes,
+                                   (show.thetvdb_id, show.language,),
+                                   self._set_show_episodes_complete_cb,
+                                   (show, i == n_shows - 1))
+            async_worker.queue.put(async_item)
             async_item = AsyncItem(self._set_show_images,
                                    (show,),
                                    None,)
-            async_worker.queue.put(async_item)
-            async_item = AsyncItem(self.thetvdb.get_show_and_episodes,
-                                   (show.thetvdb_id,),
-                                   self._set_show_episodes_complete_cb,
-                                   (show, i == n_shows - 1))
             async_worker.queue.put(async_item)
         async_worker.start()
         return async_worker
 
     def _set_show_episodes_complete_cb(self, show, last_call, tvdbcompleteshow, error):
-        if not error:
+        if not error and tvdbcompleteshow:
             episode_list = [self._convert_thetvdbepisode_to_episode(tvdb_ep,show) \
                             for tvdb_ep in tvdbcompleteshow[1]]
             show.update_episode_list(episode_list)
@@ -373,7 +430,7 @@ class SeriesManager(gobject.GObject):
         for show_id, show in tvdbshows:
             pass
     
-    def get_complete_show(self, show_name):
+    def get_complete_show(self, show_name, language = "en"):
         show_id = self._cached_tvdb_shows.get(show_name, None)
         for show_id, show_title in self._cached_tvdb_shows.items():
             if show_title == show_name:
@@ -382,13 +439,13 @@ class SeriesManager(gobject.GObject):
             return
         self.async_worker = AsyncWorker()
         async_item = AsyncItem(self._get_complete_show_from_id,
-                               (show_id,),
+                               (show_id, language,),
                                self._get_complete_show_finished_cb)
         self.async_worker.queue.put(async_item)
         self.async_worker.start()
 
-    def _get_complete_show_from_id(self, show_id):
-        tvdb_show_episodes = self.thetvdb.get_show_and_episodes(show_id)
+    def _get_complete_show_from_id(self, show_id, language):
+        tvdb_show_episodes = self.thetvdb.get_show_and_episodes(show_id, language)
         if not tvdb_show_episodes:
             return None
         show = self._convert_thetvdbshow_to_show(tvdb_show_episodes[0])
@@ -398,11 +455,16 @@ class SeriesManager(gobject.GObject):
             show.episode_list.append(self._convert_thetvdbepisode_to_episode(tvdb_ep,
                                                                              show))
         self.series_list.append(show)
-        self._set_show_images(show)
         return show
 
     def _get_complete_show_finished_cb(self, show, error):
         self.emit(self.GET_FULL_SHOW_COMPLETE_SIGNAL, show, error)
+        self.async_worker = AsyncWorker()
+        async_item = AsyncItem(self._set_show_images,
+                               (show,),
+                               None,)
+        self.async_worker.queue.put(async_item)
+        self.async_worker.start()
 
     def get_show_by_id(self, show_id):
         for show in self.series_list:
@@ -410,8 +472,15 @@ class SeriesManager(gobject.GObject):
                 return show
         return None
     
+    def get_show_by_name(self, show_name):
+        for show in self.series_list:
+            if show.name == show_name:
+                return show
+        return None
+
     def _convert_thetvdbshow_to_show(self, thetvdb_show):
-        show_obj = Show(thetvdb_show.name)
+        show_obj = Show(thetvdb_show.name, season_images = {})
+        show_obj.language = thetvdb_show.language
         show_obj.genre = thetvdb_show.genre
         show_obj.overview = thetvdb_show.overview
         show_obj.network = thetvdb_show.network
@@ -446,9 +515,16 @@ class SeriesManager(gobject.GObject):
     def delete_show(self, show):
         for i in xrange(len(self.series_list)):
             if self.series_list[i] == show:
+                if not self._get_shows_from_id:
+                    for image in [show.image] + show.season_images.values():
+                        if os.path.isfile(image):
+                            os.remove(image)
                 del self.series_list[i]
                 self.emit(self.SHOW_LIST_CHANGED_SIGNAL)
                 break
+
+    def _get_shows_from_id(self, id):
+        return [show for show in self.series_list if show.id == id]
 
     def _get_id_for_show (self):
         id = 1
@@ -462,31 +538,52 @@ class SeriesManager(gobject.GObject):
         thetvdb_id = show.thetvdb_id
         if thetvdb_id == -1:
             return
-        image_choices = self.thetvdb.get_show_image_choices(thetvdb_id)
+        self._assign_existing_images_to_show(show)
         seasons = show.get_seasons()
         for key, image in show.season_images.items():
             if not os.path.isfile(image):
                 del show.season_images[key]
+        # Check if the download is needed
+        if len(seasons) == len(show.season_images.keys()) and \
+           show.image and os.path.isfile(show.image):
+            self.emit(self.UPDATED_SHOW_ART, show)
+            return
+        image_choices = self.thetvdb.get_show_image_choices(thetvdb_id)
         for image in image_choices:
             image_type = image[1]
             url = image[0]
             if image_type  == 'poster' and \
                (not show.image or not os.path.isfile(show.image)):
-                target_file = os.path.join(DATA_DIR, show.thetvdb_id)
+                show.downloading_show_image = True
+                self.emit(self.UPDATED_SHOW_ART, show)
+                target_file = os.path.join(DATA_DIR, show.get_poster_prefix())
                 image_file = os.path.abspath(image_downloader(url, target_file))
                 show.image = image_file
+                show.downloading_show_image = False
+                self.emit(self.UPDATED_SHOW_ART, show)
             elif image_type == 'season':
                 season = image[3]
                 if season in seasons and \
                    season not in show.season_images.keys():
+                    show.downloading_season_image = True
+                    self.emit(self.UPDATED_SHOW_ART, show)
                     target_file = os.path.join(DATA_DIR,
-                                          show.thetvdb_id + '_season_' + season)
+                                               show.get_season_poster_prefix(season))
                     image_file = os.path.abspath(image_downloader(url,
                                                                   target_file))
                     show.season_images[season] = image_file
+                    show.downloading_season_image = False
+                    self.emit(self.UPDATED_SHOW_ART, show)
             if show.image and len(show.season_images) == len(seasons):
                 break
 
+    def _assign_existing_images_to_show(self, show):
+        for archive in os.listdir(DATA_DIR):
+            if archive.startswith(show.get_season_poster_prefix()):
+                show.assign_image_to_season(os.path.join(DATA_DIR, archive))
+            elif archive.startswith(show.get_poster_prefix()):
+                show.image = os.path.abspath(os.path.join(DATA_DIR, archive))
+            
     def save(self, save_file_path):
         dirname = os.path.dirname(save_file_path)
         if not (os.path.exists(dirname) and os.path.isdir(dirname)):

@@ -26,9 +26,11 @@ setup(name = constants.SF_NAME.lower(),
                  'jsonpickle'],
      package_dir = {'': 'src'},
      scripts = ['seriesfinale'],
-     data_files = [('share/icons/hicolor/scalable/apps', ['data/seriesfinale.png']
+     data_files = [(constants.ICON_FOLDER, ['data/seriesfinale.png']
                    ),
                    ('share/applications/hildon', ['data/seriesfinale.desktop']
                    ),
+                   (constants.DEFAULT_SYSTEM_APP_DIR, ['data/placeholderimage.png',
+                                                       'data/downloadingimage.png']),
                    ] + get_locale_files()
      )

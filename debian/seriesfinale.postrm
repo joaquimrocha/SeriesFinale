@@ -1,0 +1,27 @@
+#!/bin/sh
+
+set -e
+
+SF=seriesfinale
+
+IFS=:
+IMAGES_DIR=
+for i in $XDG_DATA_HOME;
+do
+    if [ -d $i ]; then
+       IMAGES_DIR=$i
+       break;
+    fi
+done
+
+if [ ! -d "$IMAGES_DIR" ]; then
+   IMAGES_DIR=$HOME
+fi
+
+IMAGES_DIR=$IMAGES_DIR/.local/share/$SF
+
+if [ -d $IMAGES_DIR ]; then
+   echo Removing images folder: $IMAGES_DIR;
+   rm -rf $IMAGES_DIR
+fi
+

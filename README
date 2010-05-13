@@ -1,0 +1,36 @@
+============================================================
+SeriesFinale is a TV series browser and tracker application
+============================================================
+
+:Authors: Joaquim Rocha and Juan Suarez
+:Contact: jrocha {AT} igalia {DOT} com
+:Date: 2010-05-10
+:License: SeriesFinale is published under the GNU GPL v3 license.
+
+.. contents::
+
+Copyright
+==========
+
+SeriesFinale is (c) 2009-2010 Igalia, S.L.
+
+SeriesFinale is free software: you can redistribute it and/or modify 
+it under the terms of the GNU General Public License as published by 
+the Free Software Foundation, either version 3 of the License, or 
+(at your option) any later version.
+
+SeriesFinale is distributed in the hope that it will be useful, 
+but WITHOUT ANY WARRANTY; without even the implied warranty of 
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the 
+GNU General Public License for more details.
+
+See the COPYING file for more details.
+
+
+The placeholderimage.png and downloadingimage.png were taken 
+from the Humanity icon set.
+Humanity is designed and developed by Daniel Foré 
+<Daniel.p.Fore@gmail.com>, Jonian Guveli <jonian.guveli@gmail.com>, 
+and K.Vishnoo Charan Reddy<foo.mac.v@gmail.com>.
+
+Humanity icons are licensed under GNU General Public License version 2.
