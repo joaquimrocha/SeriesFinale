@@ -199,7 +199,6 @@ class MainWindow(hildon.Window):
         if self.request:
             self.request.stop()
 	self.progress = show_progress(self, _('Saving...'))
-        hildon.hildon_gtk_window_set_progress_indicator(self, True)
         # If the shows list is empty but the user hasn't deleted
         # any, then we don't save in order to avoid overwriting
         # the current db (for the shows list might be empty due
