@@ -118,10 +118,9 @@ class MainWindow(hildon.Window):
         self.update_all_menu.connect('activate', self._update_all_shows_cb)
         menu.append(self.update_all_menu)
 
-        button = hildon.GtkButton(gtk.HILDON_SIZE_FINGER_HEIGHT)
-        button.set_label(_('About'))
-        button.connect('clicked', self._about_menu_clicked_cb)
-        menu.append(button)
+        self.about_menu = gtk.MenuItem(_('About'))
+        self.about_menu.connect('activate', self._about_menu_clicked_cb)
+        menu.append(self.about_menu)
         
         menu.show_all()
         return menu
