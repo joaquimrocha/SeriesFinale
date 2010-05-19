@@ -142,7 +142,7 @@ class MainWindow(hildon.Window):
             show_information(self, _('Please select one or more shows'))
             return
         for path in paths:
-            self.series_manager.delete_show(model[path][1])
+            self.series_manager.delete_show(model[path][2])
         self._have_deleted = True
     
     def _launch_search_shows_dialog(self):
