@@ -1275,7 +1275,9 @@ class AboutDialog(gtk.Dialog):
 
     def __init__(self, parent):
         super(AboutDialog, self).__init__(parent = parent,
-                                       flags = gtk.DIALOG_DESTROY_WITH_PARENT)
+                                          flags = gtk.DIALOG_DESTROY_WITH_PARENT,
+                                          buttons = (gtk.STOCK_OK, gtk.RESPONSE_ACCEPT))
+        self.set_default_size(600, 400)
         self._logo = gtk.Image()
         self._name = ''
         self._name_label = gtk.Label()
@@ -1306,10 +1308,10 @@ class AboutDialog(gtk.Dialog):
         _contents.pack_start(self._writers_contents, False, False, self.PADDING)
         _contents.pack_start(_license_alignment, False, False, self.PADDING)
 
-        _contents_area = hildon.PannableArea()
-        _contents_area.add_with_viewport(_contents)
-        _contents_area.set_size_request_policy(hildon.SIZE_REQUEST_CHILDREN)
-        self.vbox.add(_contents_area)
+        _winscroll = gtk.ScrolledWindow()
+        _winscroll.add_with_viewport(_contents)
+        _winscroll.set_policy(gtk.POLICY_AUTOMATIC, gtk.POLICY_AUTOMATIC)
+        self.vbox.add(_winscroll)
         self.vbox.show_all()
         self._writers_contents.hide()
 
