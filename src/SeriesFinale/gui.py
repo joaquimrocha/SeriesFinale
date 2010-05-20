@@ -1186,15 +1186,16 @@ class SearchShowsDialog(gtk.Dialog):
         self.lang_store = gtk.ListStore(str, str);
         for langid, langdesc in self.series_manager.get_languages().iteritems():
             self.lang_store.append([langid, langdesc])
-        lang_button = hildon.PickerButton(gtk.HILDON_SIZE_AUTO, hildon.BUTTON_ARRANGEMENT_VERTICAL)
-        lang_button.set_title(_('Language'))
-        self.lang_selector = hildon.TouchSelector()
-        lang_column = self.lang_selector.append_column(self.lang_store, gtk.CellRendererText(), text=1)
-        lang_column.set_property("text-column", 1)
-        self.lang_selector.set_column_selection_mode(hildon.TOUCH_SELECTOR_SELECTION_MODE_SINGLE)
-        lang_button.set_selector(self.lang_selector)
+
+        self.lang_combo = gtk.ComboBox(self.lang_store)
+        self.lang_combo.set_title(_('Language'))
+
+        cell = gtk.CellRendererText()
+        self.lang_combo.pack_start(cell, True)
+        self.lang_combo.add_attribute(cell, 'text', 1)
+        
         try:
-            self.lang_selector.set_active(0, self.series_manager.get_languages().keys().index(self.series_manager.get_default_language()))
+            self.lang_combo.set_active(self.series_manager.get_languages().keys().index(self.series_manager.get_default_language()))
         except ValueError:
             pass
         
@@ -1203,10 +1204,11 @@ class SearchShowsDialog(gtk.Dialog):
         winscroll.set_policy(gtk.POLICY_AUTOMATIC, gtk.POLICY_AUTOMATIC)
         self.vbox.add(winscroll)
         
-        self.action_area.pack_start(lang_button, True, True, 0)
+        self.action_area.pack_start(self.lang_combo, True, True, 0)
         self.ok_button = self.add_button(gtk.STOCK_OK, gtk.RESPONSE_ACCEPT)
         self.ok_button.set_sensitive(False)
-        self.action_area.show_all()
+        cancel_button = self.add_button(gtk.STOCK_CANCEL, gtk.RESPONSE_ACCEPT)
+        self.action_area.show_all()        
         
         self.vbox.show_all()
         self.set_size_request(-1, 400)
@@ -1227,7 +1229,7 @@ class SearchShowsDialog(gtk.Dialog):
         search_terms = self.search_entry.get_text()
         if not self.search_entry.get_text():
             return
-        selected_row = self.lang_selector.get_active(0)
+        selected_row = self.lang_combo.get_active()
         if selected_row < 0:
             self.series_manager.search_shows(search_terms)
         else:
@@ -1265,9 +1267,9 @@ class SearchShowsDialog(gtk.Dialog):
             iter = model.get_iter(path)
             text = model.get_value(iter, model.NAME_COLUMN)
             self.chosen_show = text
-        selected_lang = self.lang_selector.get_active(0)
+        selected_lang = self.lang_combo.get_active()
         if selected_lang >= 0:
-            self.chosen_lang = self.lang_store[self.lang_selector.get_active(0)][0]
+            self.chosen_lang = self.lang_store[self.lang_combo.get_active()][0]
 
 class AboutDialog(gtk.Dialog):
 
