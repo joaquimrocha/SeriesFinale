@@ -94,20 +94,31 @@ class Show(object):
 
     def get_episodes_info(self, season = None):
         info = {}
-        episodes = self.episode_list
         if season:
             episodes = self.get_episode_list_by_season(season)
+        else:
+            episodes = self.episode_list
         episodes_to_watch = [episode for episode in episodes \
                             if not episode.watched]
         info['episodes'] = episodes
         info['episodes_to_watch'] = episodes_to_watch
-        sorted_episodes_to_watch = [(episode.air_date, episode) \
-                                    for episode in episodes_to_watch \
-                                    if episode.air_date]
+        if season:
+            sorted_episodes_to_watch = [('%02d'%int(episode.season_number), episode.episode_number, episode) \
+                                         for episode in episodes_to_watch]
+        else:
+            # Leave Extras for end
+            sorted_episodes_to_watch = [('%02d'%int(episode.season_number), episode.episode_number, episode) \
+                                         for episode in episodes_to_watch \
+                                         if episode.season_number != '0']
+            if not sorted_episodes_to_watch:
+                sorted_episodes_to_watch = [('%02d'%int(episode.season_number), episode.episode_number, episode) \
+                                             for episode in episodes_to_watch \
+                                             if episode.season_number == '0']
         sorted_episodes_to_watch.sort()
-        info['next_episode'] = None
         if sorted_episodes_to_watch:
-            info['next_episode'] = sorted_episodes_to_watch[0][1]
+            info['next_episode'] = sorted_episodes_to_watch[0][2]
+        else:
+            info['next_episode'] = None
         return info
 
     def __str__(self):
@@ -142,7 +153,7 @@ class Show(object):
                                          next_episode.get_air_date_text())
                         else:
                             show_info += ' | ' + _('<i>Next episode:</i> %s') % \
-                                         saxutils.escape(str(next_episode))
+                                         next_episode.get_episode_show_number()
                         if next_episode.already_aired():
                             color = get_color(constants.ACTIVE_TEXT_COLOR)
                 else:
@@ -182,7 +193,7 @@ class Show(object):
                                     next_episode.get_air_date_text())
                 else:
 		    season_info += ' | ' + _('<i>Next episode:</i> %s') % \
-                                   saxutils.escape(str(next_episode))
+                                   next_episode.episode_number
                 if next_episode.already_aired():
                     color = get_color(constants.ACTIVE_TEXT_COLOR)
         return '<b>%s</b>\n<small><span foreground="%s">%s</span></small>' % \
