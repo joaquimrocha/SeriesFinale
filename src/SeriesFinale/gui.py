@@ -3,7 +3,7 @@
 ###########################################################################
 #    SeriesFinale
 #    Copyright (C) 2009 Joaquim Rocha <jrocha@igalia.com>
-# 
+#
 #    This program is free software: you can redistribute it and/or modify
 #    it under the terms of the GNU General Public License as published by
 #    the Free Software Foundation, either version 3 of the License, or
@@ -39,10 +39,10 @@ _ = gettext.gettext
 gtk.gdk.threads_init()
 
 class MainWindow(hildon.StackableWindow):
-    
+
     def __init__(self):
         super(MainWindow, self).__init__()
-        
+
         # i18n
         languages = []
         lc, encoding = locale.getdefaultlocale()
@@ -57,7 +57,7 @@ class MainWindow(hildon.StackableWindow):
                                        languages = languages,
                                        fallback = True)
         _ = language.gettext
-        
+
         self.series_manager = SeriesManager()
         hildon.hildon_gtk_window_set_progress_indicator(self, True)
         load_shows_item = AsyncItem(self.series_manager.load,
@@ -72,7 +72,7 @@ class MainWindow(hildon.StackableWindow):
                                     self._update_all_shows_complete_cb)
         self.series_manager.connect('updated-show-art',
                                     self._update_show_art)
-        
+
         self.settings = Settings()
         load_conf_item = AsyncItem(self.settings.load,
                                     (constants.SF_CONF_FILE,),
@@ -89,7 +89,7 @@ class MainWindow(hildon.StackableWindow):
         area = hildon.PannableArea()
         area.add(self.shows_view)
         self.add(area)
-        
+
         self.connect('delete-event', self._exit_cb)
         self._update_delete_menu_visibility()
 
@@ -103,12 +103,12 @@ class MainWindow(hildon.StackableWindow):
 
     def _create_menu(self):
         menu = hildon.AppMenu()
-        
+
         button = hildon.GtkButton(gtk.HILDON_SIZE_FINGER_HEIGHT)
         button.set_label(_('Add Shows'))
         button.connect('clicked', self._add_shows_cb)
         menu.append(button)
-        
+
         self.delete_menu = hildon.GtkButton(gtk.HILDON_SIZE_FINGER_HEIGHT)
         self.delete_menu.set_label(_('Delete Shows'))
         self.delete_menu.connect('clicked', self._delete_shows_cb)
@@ -123,10 +123,10 @@ class MainWindow(hildon.StackableWindow):
         button.set_label(_('About'))
         button.connect('clicked', self._about_menu_clicked_cb)
         menu.append(button)
-        
+
         menu.show_all()
         return menu
-    
+
     def _add_shows_cb(self, button):
         new_show_dialog = NewShowsDialog()
         response = new_show_dialog.run()
@@ -135,13 +135,13 @@ class MainWindow(hildon.StackableWindow):
             self._launch_search_shows_dialog()
         elif response == NewShowsDialog.ADD_MANUALLY_RESPONSE:
             self._new_show_dialog()
-    
+
     def _delete_shows_cb(self, button):
         delete_shows_view = ShowsDeleteView(self.series_manager)
         delete_shows_view.shows_select_view.set_shows(self.series_manager.series_list)
         delete_shows_view.show_all()
         self._have_deleted = True
-    
+
     def _launch_search_shows_dialog(self):
         search_dialog = SearchShowsDialog(self, self.series_manager)
         response = search_dialog.run()
@@ -157,7 +157,7 @@ class MainWindow(hildon.StackableWindow):
                 else:
                     self.series_manager.get_complete_show(search_dialog.chosen_show)
         search_dialog.destroy()
-        
+
     def _get_show_complete_cb(self, series_manager, show, error):
         if error:
             error_message = ''
@@ -170,7 +170,7 @@ class MainWindow(hildon.StackableWindow):
             self.shows_view.set_shows(self.series_manager.series_list)
             self._update_delete_menu_visibility()
         hildon.hildon_gtk_window_set_progress_indicator(self, False)
-    
+
     def _row_activated_cb(self, view, path, column):
         show = self.shows_view.get_show_from_path(path)
         seasons_view = SeasonsView(self.settings, self.series_manager, show)
@@ -192,7 +192,7 @@ class MainWindow(hildon.StackableWindow):
             show.actors = show_info['actors']
             self.series_manager.add_show(show)
         new_show_dialog.destroy()
-    
+
     def _exit_cb(self, window, event):
         if self.request:
             self.request.stop()
@@ -222,7 +222,7 @@ class MainWindow(hildon.StackableWindow):
         self.shows_view.set_shows(self.series_manager.series_list)
         self._update_delete_menu_visibility()
         return False
-    
+
     def _update_delete_menu_visibility(self):
         if not self.series_manager.series_list or self.request:
             self.delete_menu.hide()
@@ -269,7 +269,7 @@ class MainWindow(hildon.StackableWindow):
         about_dialog.destroy()
 
 class DeleteView(hildon.StackableWindow):
-    
+
     def __init__(self,
                  tree_view,
                  toolbar_title = _('Delete'),
@@ -291,7 +291,7 @@ class DeleteView(hildon.StackableWindow):
         self.fullscreen()
 
 class ShowsDeleteView(DeleteView):
-    
+
     def __init__(self, series_manager):
         self.shows_select_view = ShowsSelectView()
         super(ShowsDeleteView, self).__init__(self.shows_select_view,
@@ -313,7 +313,7 @@ class ShowsDeleteView(DeleteView):
         self.destroy()
 
 class ShowsSelectView(gtk.TreeView):
-    
+
     def __init__(self):
         super(ShowsSelectView, self).__init__()
         model = ShowListStore()
@@ -335,11 +335,11 @@ class ShowsSelectView(gtk.TreeView):
     def get_show_from_path(self, path):
         model = self.get_model()
         return model[path][model.SHOW_COLUMN]
-    
+
     def sort_descending(self):
         model = self.get_model()
         model.set_sort_column_id(model.INFO_COLUMN, gtk.SORT_DESCENDING)
-    
+
     def sort_ascending(self):
         model = self.get_model()
         model.set_sort_column_id(model.INFO_COLUMN, gtk.SORT_ASCENDING)
@@ -397,13 +397,13 @@ class ShowListStore(gtk.ListStore):
             self.set_value(iter, self.IMAGE_COLUMN, pixbuf)
 
 class SeasonsView(hildon.StackableWindow):
-    
+
     def __init__(self, settings, series_manager, show):
         super(SeasonsView, self).__init__()
         self.set_title(show.name)
-        
+
         self.settings = settings
-        
+
         self.series_manager = series_manager
         self.series_manager.connect('update-show-episodes-complete',
                                     self._update_show_episodes_complete_cb)
@@ -419,7 +419,7 @@ class SeasonsView(hildon.StackableWindow):
         self.seasons_select_view.set_seasons(seasons)
         self.seasons_select_view.connect('row-activated', self._row_activated_cb)
         self.connect('delete-event', self._delete_event_cb)
-        
+
         seasons_area = hildon.PannableArea()
         seasons_area.add(self.seasons_select_view)
         self.add(seasons_area)
@@ -444,15 +444,15 @@ class SeasonsView(hildon.StackableWindow):
         seasons = self.show.get_seasons();
         self.seasons_select_view.set_seasons(seasons)
         self._update_menu_visibility()
-    
+
     def _create_menu(self):
         menu = hildon.AppMenu()
-        
+
         button = hildon.GtkButton(gtk.HILDON_SIZE_FINGER_HEIGHT)
         button.set_label(_('Info'))
         button.connect('clicked', self._show_info_cb)
         menu.append(button)
-        
+
         button = hildon.GtkButton(gtk.HILDON_SIZE_FINGER_HEIGHT)
         button.set_label(_('Edit Info'))
         button.connect('clicked', self._edit_show_info)
@@ -464,12 +464,12 @@ class SeasonsView(hildon.StackableWindow):
             self.update_menu.set_label(_('Update Show'))
             self.update_menu.connect('clicked', self._update_series_cb)
             menu.append(self.update_menu)
-        
+
         button = hildon.GtkButton(gtk.HILDON_SIZE_FINGER_HEIGHT)
         button.set_label(_('New Episode'))
         button.connect('clicked', self._new_episode_cb)
         menu.append(button)
-        
+
         menu.show_all()
         return menu
 
@@ -487,7 +487,7 @@ class SeasonsView(hildon.StackableWindow):
         self.set_sensitive(False)
         show_information(self, _('Updating show. Please wait...'))
         self._update_menu_visibility()
-    
+
     def _show_info_cb(self, button):
         dialog = gtk.Dialog(parent = self)
         dialog.set_title(_('Show Details'))
@@ -506,7 +506,7 @@ class SeasonsView(hildon.StackableWindow):
         dialog.vbox.show_all()
         dialog.run()
         dialog.destroy()
-    
+
     def _edit_show_info(self, button):
         edit_series_dialog = EditShowsDialog(self, self.show)
         response = edit_series_dialog.run()
@@ -520,7 +520,7 @@ class SeasonsView(hildon.StackableWindow):
             self.show.rating = info['rating']
             self.show.actors = info['actors']
         self.set_title(self.show.name)
-    
+
     def _new_episode_cb(self, button):
         new_episode_dialog = NewEpisodeDialog(self,
                                               self.show)
@@ -542,7 +542,7 @@ class SeasonsView(hildon.StackableWindow):
             seasons = self.show.get_seasons()
             self.seasons_select_view.set_seasons(seasons)
         new_episode_dialog.destroy()
-    
+
     def _update_show_episodes_complete_cb(self, series_manager, show, error):
         if error and self.request:
             error_message = ''
@@ -648,14 +648,14 @@ class SeasonSelectView(gtk.TreeView):
             model.update()
 
 class NewShowDialog(gtk.Dialog):
-    
+
     def __init__(self, parent):
         super(NewShowDialog, self).__init__(parent = parent,
                                              buttons = (gtk.STOCK_ADD,
                                                         gtk.RESPONSE_ACCEPT))
-        
+
         self.set_title(_('Edit Show'))
-        
+
         self.show_name = hildon.Entry(gtk.HILDON_SIZE_FINGER_HEIGHT)
         self.show_overview = hildon.TextView()
         self.show_overview.set_placeholder(_('Overview'))
@@ -664,15 +664,15 @@ class NewShowDialog(gtk.Dialog):
         self.show_network = hildon.Entry(gtk.HILDON_SIZE_FINGER_HEIGHT)
         self.show_rating = hildon.Entry(gtk.HILDON_SIZE_FINGER_HEIGHT)
         self.show_actors = hildon.Entry(gtk.HILDON_SIZE_FINGER_HEIGHT)
-        
+
         contents = gtk.VBox(False, 0)
-        
+
         row = gtk.HBox(False, 12)
         row.pack_start(gtk.Label(_('Name:')), False, False, 0)
         row.pack_start(self.show_name, True, True, 0)
         contents.pack_start(row, False, False, 0)
         contents.pack_start(self.show_overview, False, False, 0)
-        
+
         fields = [(_('Genre:'), self.show_genre),
                   (_('Network:'), self.show_network),
                   (_('Rating:'), self.show_rating),
@@ -686,14 +686,14 @@ class NewShowDialog(gtk.Dialog):
             row.pack_start(label, False, False, 0)
             row.pack_start(widget, True, True, 0)
             contents.pack_start(row, False, False, 0)
-        
+
         contents_area = hildon.PannableArea()
         contents_area.add_with_viewport(contents)
         contents_area.set_size_request_policy(hildon.SIZE_REQUEST_CHILDREN)
-        
+
         self.vbox.add(contents_area)
         self.vbox.show_all()
-    
+
     def get_info(self):
         buffer = self.show_overview.get_buffer()
         start_iter = buffer.get_start_iter()
@@ -708,10 +708,10 @@ class NewShowDialog(gtk.Dialog):
         return info
 
 class EditShowsDialog(NewShowDialog):
-    
+
     def __init__(self, parent, show):
         super(EditShowsDialog, self).__init__(parent)
-        
+
         self.show_name.set_text(show.name)
         self.show_overview.get_buffer().set_text(show.overview)
         self.show_genre.set_text(str(show.genre))
@@ -720,19 +720,19 @@ class EditShowsDialog(NewShowDialog):
         self.show_actors.set_text(str(show.actors))
 
 class NewEpisodeDialog(gtk.Dialog):
-    
+
     def __init__(self, parent, show):
         super(NewEpisodeDialog, self).__init__(parent = parent,
                                                buttons = (gtk.STOCK_ADD,
                                                           gtk.RESPONSE_ACCEPT))
-        
+
         self.set_title(_('New Episode'))
-        
+
         self.episode_name = hildon.Entry(gtk.HILDON_SIZE_FINGER_HEIGHT)
         self.episode_overview = hildon.TextView()
         self.episode_overview.set_placeholder(_('Overview'))
         self.episode_overview.set_wrap_mode(gtk.WRAP_WORD)
-        
+
         self.episode_number = hildon.PickerButton(gtk.HILDON_SIZE_FINGER_HEIGHT,
                                                   hildon.BUTTON_ARRANGEMENT_VERTICAL)
         selector = hildon.TouchSelectorEntry(text = True)
@@ -741,7 +741,7 @@ class NewEpisodeDialog(gtk.Dialog):
             selector.append_text(str(i + 1))
         self.episode_number.set_selector(selector)
         self.episode_number.set_active(0)
-        
+
         self.episode_season = hildon.PickerButton(gtk.HILDON_SIZE_FINGER_HEIGHT,
                                                   hildon.BUTTON_ARRANGEMENT_VERTICAL)
         selector = hildon.TouchSelectorEntry(text = True)
@@ -755,15 +755,15 @@ class NewEpisodeDialog(gtk.Dialog):
         else:
             selector.append_text('1')
             self.episode_season.set_active(0)
-        
+
         self.episode_director = hildon.Entry(gtk.HILDON_SIZE_FINGER_HEIGHT)
         self.episode_writer = hildon.Entry(gtk.HILDON_SIZE_FINGER_HEIGHT)
         self.episode_air_date = hildon.Entry(gtk.HILDON_SIZE_FINGER_HEIGHT)
         self.episode_rating = hildon.Entry(gtk.HILDON_SIZE_FINGER_HEIGHT)
         self.episode_guest_stars = hildon.Entry(gtk.HILDON_SIZE_FINGER_HEIGHT)
-        
+
         contents = gtk.VBox(False, 0)
-        
+
         row = gtk.HBox(False, 12)
         row.pack_start(gtk.Label(_('Name:')), False, False, 0)
         row.pack_start(self.episode_name, True, True, 0)
@@ -773,7 +773,7 @@ class NewEpisodeDialog(gtk.Dialog):
         row.add(self.episode_season)
         row.add(self.episode_number)
         contents.pack_start(row, False, False, 0)
-        
+
         fields = [(_('Director:'), self.episode_director),
                   (_('Writer:'), self.episode_writer),
                   (_('Original air date:'), self.episode_air_date),
@@ -788,14 +788,14 @@ class NewEpisodeDialog(gtk.Dialog):
             row.pack_start(label, False, False, 0)
             row.pack_start(widget, True, True, 0)
             contents.pack_start(row, False, False, 0)
-        
+
         contents_area = hildon.PannableArea()
         contents_area.add_with_viewport(contents)
         contents_area.set_size_request_policy(hildon.SIZE_REQUEST_CHILDREN)
-        
+
         self.vbox.add(contents_area)
         self.vbox.show_all()
-    
+
     def get_info(self):
         buffer = self.episode_overview.get_buffer()
         start_iter = buffer.get_start_iter()
@@ -813,10 +813,10 @@ class NewEpisodeDialog(gtk.Dialog):
         return info
 
 class EditEpisodeDialog(NewEpisodeDialog):
-    
+
     def __init__(self, parent, episode):
         super(EditEpisodeDialog, self).__init__(parent, episode.show)
-        
+
         self.episode_name.set_text(episode.name)
         self.episode_overview.get_buffer().set_text(episode.overview)
         self.episode_season.get_selector().get_entry().set_text(episode.season_number)
@@ -828,19 +828,19 @@ class EditEpisodeDialog(NewEpisodeDialog):
         self.episode_guest_stars.set_text(str(episode.guest_stars))
 
 class EpisodesView(hildon.StackableWindow):
-    
+
     EPISODES_LIST_CHANGED_SIGNAL = 'episode-list-changed'
-    
+
     __gsignals__ = {EPISODES_LIST_CHANGED_SIGNAL: (gobject.SIGNAL_RUN_LAST,
                                                    gobject.TYPE_NONE,
                                                    ()),
                    }
-    
+
     def __init__(self, settings, show, season_number = None):
         super(EpisodesView, self).__init__()
-        
+
         self.settings = settings
-        
+
         self.show = show
         self.season_number = season_number
         self.set_title(self.show.name)
@@ -850,7 +850,7 @@ class EpisodesView(hildon.StackableWindow):
                                                           self._watched_renderer_toggled_cb,
                                                           self.episodes_check_view.get_model())
         self.episodes_check_view.connect('row-activated', self._row_activated_cb)
-        
+
         episodes_area = hildon.PannableArea()
         episodes_area.add(self.episodes_check_view)
         self.add(episodes_area)
@@ -859,10 +859,10 @@ class EpisodesView(hildon.StackableWindow):
             self._sort_ascending_cb(None)
         else:
             self._sort_descending_cb(None)
-    
+
     def _create_menu(self):
         menu = hildon.AppMenu()
-        
+
         button = hildon.GtkRadioButton(gtk.HILDON_SIZE_FINGER_HEIGHT)
         button.set_mode(False)
         button.set_label(_('A-Z'))
@@ -877,12 +877,12 @@ class EpisodesView(hildon.StackableWindow):
             button.set_active(True)
         else:
             button.set_active(False)
-        
+
         button = hildon.GtkButton(gtk.HILDON_SIZE_FINGER_HEIGHT)
         button.set_label(_('Mark All'))
         button.connect('clicked', self._select_all_cb)
         menu.append(button)
-        
+
         button = hildon.GtkButton(gtk.HILDON_SIZE_FINGER_HEIGHT)
         button.set_label(_('Mark None'))
         button.connect('clicked', self._select_none_cb)
@@ -895,7 +895,7 @@ class EpisodesView(hildon.StackableWindow):
 
         menu.show_all()
         return menu
-    
+
     def _delete_episodes_cb(self, button):
         delete_episodes_view = EpisodesDeleteView(self.show)
         episodes = self.show.get_episodes_by_season(self.season_number)
@@ -903,20 +903,20 @@ class EpisodesView(hildon.StackableWindow):
         delete_episodes_view.toolbar.connect('button-clicked',
                                              self._update_episodes_list_cb)
         delete_episodes_view.show_all()
-    
+
     def _select_all_cb(self, button):
         self.episodes_check_view.select_all()
-    
+
     def _select_none_cb(self, button):
         self.episodes_check_view.select_none()
-    
+
     def _row_activated_cb(self, view, path, column):
         episode = self.episodes_check_view.get_episode_from_path(path)
         if self.episodes_check_view.get_column(1) == column:
             episodes_view = EpisodeView(episode)
             episodes_view.connect('delete-event', self._update_episodes_list_cb)
             episodes_view.show_all()
-    
+
     def _update_episodes_list_cb(self, widget, event = None):
         self.emit(self.EPISODES_LIST_CHANGED_SIGNAL)
         episodes = self.show.get_episodes_by_season(self.season_number)
@@ -925,7 +925,7 @@ class EpisodesView(hildon.StackableWindow):
         else:
             self.destroy()
         return False
-    
+
     def _watched_renderer_toggled_cb(self, renderer, path, model):
         episode = self.episodes_check_view.get_episode_from_path(path)
         episode.watched = not episode.watched
@@ -935,7 +935,7 @@ class EpisodesView(hildon.StackableWindow):
     def _sort_ascending_cb(self, button):
         self.episodes_check_view.sort_ascending()
         self.settings.episodes_order = self.settings.ASCENDING_ORDER
-    
+
     def _sort_descending_cb(self, button):
         self.episodes_check_view.sort_descending()
         self.settings.episodes_order = self.settings.DESCENDING_ORDER
@@ -985,7 +985,7 @@ class EpisodesCheckView(gtk.TreeView):
         self.append_column(column)
         self.set_model(model)
         self.get_model().set_sort_func(2, self._sort_func)
-    
+
     def _sort_func(self, model, iter1, iter2):
         episode1 = model.get_value(iter1, model.EPISODE_COLUMN)
         episode2 = model.get_value(iter2, model.EPISODE_COLUMN)
@@ -1004,12 +1004,12 @@ class EpisodesCheckView(gtk.TreeView):
         iter = model.get_iter(path)
         episode = model.get_value(iter, model.EPISODE_COLUMN)
         return episode
-    
+
     def sort_descending(self):
         model = self.get_model()
         model.set_sort_column_id(model.EPISODE_COLUMN,
                                  gtk.SORT_DESCENDING)
-    
+
     def sort_ascending(self):
         model = self.get_model()
         model.set_sort_column_id(model.EPISODE_COLUMN,
@@ -1028,25 +1028,25 @@ class EpisodesCheckView(gtk.TreeView):
                 path[model.EPISODE_COLUMN].watched = mark
 
 class EpisodeView(hildon.StackableWindow):
-    
+
     def __init__(self, episode):
         super(EpisodeView, self).__init__()
         self.episode = episode
-        
+
         self.set_title(str(self.episode))
-        
+
         contents_area = hildon.PannableArea()
         contents = gtk.VBox(False, 0)
         contents_area.add_with_viewport(contents)
-        
+
         self.infotextview = InfoTextView()
         self._update_info_text_view()
         contents.add(self.infotextview)
-        
+
         self.set_app_menu(self._create_menu())
-        
+
         self.add(contents_area)
-    
+
     def _update_info_text_view(self):
         self.infotextview.clear()
         self.infotextview.set_title(self.episode.name)
@@ -1059,18 +1059,18 @@ class EpisodeView(hildon.StackableWindow):
         self.infotextview.add_field(self.episode.guest_stars, _('Guest Stars'))
         self.infotextview.add_field(self.episode.rating, _('Rating'))
         self.set_title(self.episode.name)
-    
+
     def _create_menu(self):
         menu = hildon.AppMenu()
-        
+
         button = hildon.GtkButton(gtk.HILDON_SIZE_FINGER_HEIGHT)
         button.set_label(_('Edit Info'))
         button.connect('clicked', self._edit_episode_cb)
         menu.append(button)
-        
+
         menu.show_all()
         return menu
-    
+
     def _edit_episode_cb(self, button):
         edit_episode_dialog = EditEpisodeDialog(self,
                                                self.episode)
@@ -1090,7 +1090,7 @@ class EpisodeView(hildon.StackableWindow):
         edit_episode_dialog.destroy()
 
 class EpisodesDeleteView(DeleteView):
-    
+
     def __init__(self, show):
         self.episodes_select_view = EpisodesSelectView()
         super(EpisodesDeleteView, self).__init__(self.episodes_select_view,
@@ -1112,7 +1112,7 @@ class EpisodesDeleteView(DeleteView):
         self.destroy()
 
 class EpisodesSelectView(gtk.TreeView):
-    
+
     def __init__(self):
         super(EpisodesSelectView, self).__init__()
         model = gtk.ListStore(str, gobject.TYPE_PYOBJECT)
@@ -1134,10 +1134,10 @@ class EpisodesSelectView(gtk.TreeView):
         return episode
 
 class InfoTextView(hildon.TextView):
-    
+
     def __init__(self):
         super(InfoTextView, self).__init__()
-        
+
         buffer = gtk.TextBuffer()
         self.iter = buffer.get_start_iter()
 
@@ -1145,7 +1145,7 @@ class InfoTextView(hildon.TextView):
         self.set_wrap_mode(gtk.WRAP_WORD)
         self.set_editable(False)
         self.set_cursor_visible(False)
-    
+
     def set_title(self, title):
         if not title:
             return
@@ -1156,7 +1156,7 @@ class InfoTextView(hildon.TextView):
         tag_table = self.get_buffer().get_tag_table()
         tag_table.add(title_tag)
         self.get_buffer().insert_with_tags(self.iter, str(title) + '\n', title_tag)
-    
+
     def add_field(self, contents, label = None):
         if not contents:
             return
@@ -1165,7 +1165,7 @@ class InfoTextView(hildon.TextView):
                                                          'contents': contents,
                                                         }
         self.get_buffer().insert(self.iter, contents)
-    
+
     def clear(self):
         buffer = self.get_buffer()
         if not buffer:
@@ -1174,17 +1174,17 @@ class InfoTextView(hildon.TextView):
         self.iter = buffer.get_start_iter()
 
 class NewShowsDialog(gtk.Dialog):
-    
+
     ADD_AUTOMATICALLY_RESPONSE = 1 << 0
     ADD_MANUALLY_RESPONSE      = 1 << 1
-    
+
     def __init__(self):
         super(NewShowsDialog, self).__init__()
         self.set_title(_('Add Shows'))
         contents = gtk.HBox(True, 0)
         self.search_shows_button = hildon.GtkButton(gtk.HILDON_SIZE_FINGER_HEIGHT)
         self.search_shows_button.set_label(_('Search Shows'))
-        self.search_shows_button.connect('clicked', self._button_clicked_cb)        
+        self.search_shows_button.connect('clicked', self._button_clicked_cb)
         self.manual_add_button = hildon.GtkButton(gtk.HILDON_SIZE_FINGER_HEIGHT)
         self.manual_add_button.set_label(_('Add Manually'))
         self.manual_add_button.connect('clicked', self._button_clicked_cb)
@@ -1222,19 +1222,19 @@ class FoundShowListStore(gtk.ListStore):
             self.append(row.values())
 
 class SearchShowsDialog(gtk.Dialog):
-    
+
     def __init__(self, parent, series_manager):
         super(SearchShowsDialog, self).__init__(parent = parent)
         self.set_title(_('Search shows'))
-        
+
         self.series_manager = series_manager
         self.series_manager.connect('search-shows-complete', self._search_shows_complete_cb)
-        
+
         self.connect('response', self._response_cb)
-        
+
         self.chosen_show = None
         self.chosen_lang = None
-        
+
         self.shows_view = hildon.GtkTreeView(gtk.HILDON_UI_MODE_EDIT)
         model = FoundShowListStore()
         model.series_manager = series_manager
@@ -1271,20 +1271,20 @@ class SearchShowsDialog(gtk.Dialog):
             self.lang_selector.set_active(0, self.series_manager.get_languages().keys().index(self.series_manager.get_default_language()))
         except ValueError:
             pass
-        
+
         shows_area = hildon.PannableArea()
         shows_area.add(self.shows_view)
         shows_area.set_size_request_policy(hildon.SIZE_REQUEST_CHILDREN)
         self.vbox.add(shows_area)
-        
+
         self.action_area.pack_start(lang_button, True, True, 0)
         self.ok_button = self.add_button(gtk.STOCK_OK, gtk.RESPONSE_ACCEPT)
         self.ok_button.set_sensitive(False)
         self.action_area.show_all()
-        
+
         self.vbox.show_all()
         self.set_size_request(-1, 400)
-    
+
     def _search_entry_changed_cb(self, entry):
         enable = self.search_entry.get_text().strip()
         self.search_button.set_sensitive(bool(enable))
@@ -1327,11 +1327,11 @@ class SearchShowsDialog(gtk.Dialog):
                 self.ok_button.set_sensitive(False)
         hildon.hildon_gtk_window_set_progress_indicator(self, False)
         self._set_controls_sensitive(True)
-    
+
     def _set_controls_sensitive(self, sensitive):
         self.search_entry.set_sensitive(sensitive)
         self.search_button.set_sensitive(sensitive)
-    
+
     def _response_cb(self, dialog, response):
         selection = self.shows_view.get_selection()
         model, paths = selection.get_selected_rows()
