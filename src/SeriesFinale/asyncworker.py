@@ -71,7 +71,7 @@ class AsyncWorker(Thread):
                 self.async_item.run()
                 self.queue.task_done()
                 self.async_item = None
-            except:
+            except Exception, exception:
                 logging.debug(str(exception))
                 self.stop()
 
