@@ -383,10 +383,14 @@ class ShowListStore(gtk.ListStore):
         if pixbuf_is_cover(pixbuf):
             return
         if show.image and os.path.isfile(show.image):
-            pixbuf = self.cached_pixbufs.get(show.image) or \
-                     gtk.gdk.pixbuf_new_from_file_at_size(show.image,
+            pixbuf = self.cached_pixbufs.get(show.image)
+            if not pixbuf:
+                try:
+                    pixbuf = gtk.gdk.pixbuf_new_from_file_at_size(show.image,
                                                           constants.IMAGE_WIDTH,
                                                           constants.IMAGE_HEIGHT)
+                except:
+                    pixbuf = get_placeholder_pixbuf()
             self.cached_pixbufs[show.image] = pixbuf
             self.set_value(iter, self.IMAGE_COLUMN, pixbuf)
         elif show.downloading_show_image:
@@ -606,9 +610,12 @@ class SeasonListStore(gtk.ListStore):
         if pixbuf_is_cover(pixbuf):
             return
         if image and os.path.isfile(image):
-            pixbuf = gtk.gdk.pixbuf_new_from_file_at_size(image,
+            try:
+                pixbuf = gtk.gdk.pixbuf_new_from_file_at_size(image,
                                                           constants.IMAGE_WIDTH,
                                                           constants.IMAGE_HEIGHT)
+            except:
+                pixbuf = get_placeholder_pixbuf()
             self.set_value(iter, self.IMAGE_COLUMN, pixbuf)
         elif self.show.downloading_season_image:
             pixbuf = get_downloading_pixbuf()

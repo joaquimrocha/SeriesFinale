@@ -29,6 +29,8 @@ from datetime import datetime
 from xml.sax import saxutils
 import gettext
 import locale
+import logging
+logging.basicConfig(level=logging.DEBUG)
 
 _ = gettext.gettext
 
@@ -580,9 +582,13 @@ class SeriesManager(gobject.GObject):
                     self.emit(self.UPDATED_SHOW_ART, show)
                     target_file = os.path.join(DATA_DIR,
                                                show.get_season_poster_prefix(season))
-                    image_file = os.path.abspath(image_downloader(url,
-                                                                  target_file))
-                    show.season_images[season] = image_file
+                    try:
+                        image_file = os.path.abspath(image_downloader(url,
+                                                                      target_file))
+                    except Exception, exception:
+                        logging.debug(str(exception))
+                    else:
+                        show.season_images[season] = image_file
                     show.downloading_season_image = False
                     self.emit(self.UPDATED_SHOW_ART, show)
             if show.image and len(show.season_images) == len(seasons):
