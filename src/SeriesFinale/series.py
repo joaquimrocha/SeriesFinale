@@ -3,7 +3,7 @@
 ###########################################################################
 #    SeriesFinale
 #    Copyright (C) 2009 Joaquim Rocha <jrocha@igalia.com>
-# 
+#
 #    This program is free software: you can redistribute it and/or modify
 #    it under the terms of the GNU General Public License as published by
 #    the Free Software Foundation, either version 3 of the License, or
@@ -32,7 +32,7 @@ import locale
 
 _ = gettext.gettext
 
-class Show(object):    
+class Show(object):
 
     def __init__(self, name, genre = None, overview = None, network = None,
                  rating = None, actors = [], episode_list = [], image = None,
@@ -52,12 +52,12 @@ class Show(object):
         self.language = language
         self.downloading_show_image = False
         self.downloading_season_image = downloading_season_image
-    
+
     def get_episodes_by_season(self, season_number):
         if season_number is None:
             return self.episode_list
         return [episode for episode in self.episode_list if episode.season_number == season_number]
-    
+
     def get_seasons(self):
         seasons = []
         for episode in self.episode_list:
@@ -65,7 +65,7 @@ class Show(object):
             if season_number not in seasons:
                 seasons.append(season_number)
         return seasons
-    
+
     def get_episode_list_by_season(self, season):
         return [episode for episode in self.episode_list \
                 if episode.season_number == season]
@@ -79,13 +79,13 @@ class Show(object):
                     ep.merge_episode(episode)
             if not exists:
                 self.episode_list.append(episode)
-    
+
     def delete_episode(self, episode):
         for i in xrange(len(self.episode_list)):
             if self.episode_list[i] == episode:
                 del self.episode_list[i]
                 break
-    
+
     def is_completely_watched(self):
         for episode in self.episode_list:
             if not episode.watched:
@@ -132,7 +132,7 @@ class Show(object):
             episodes_to_watch = episodes_info['episodes_to_watch']
             next_episode = episodes_info['next_episode']
             if next_episode and next_episode.already_aired():
-                color = get_color(constants.ACTIVE_TEXT_COLOR) 
+                color = get_color(constants.ACTIVE_TEXT_COLOR)
             show_info = '\n<small><span foreground="%s">' % color
             show_info += gettext.ngettext('%s season', '%s seasons', seasons) \
                          % seasons
@@ -219,7 +219,7 @@ class Show(object):
                 break
 
 class Episode(object):
-    
+
     def __init__(self, name, show, episode_number, season_number = '1',
                  overview = None, director = None, guest_stars = [],
                  rating = None, writer = None, watched = False,
@@ -242,14 +242,14 @@ class Episode(object):
 
     def __repr__(self):
         return _('Ep. %s: %s') % (self.get_episode_show_number(), self.name)
-    
+
     def __eq__(self, episode):
         if not episode:
             return False
         return self.show == episode.show and \
                self.episode_number == episode.episode_number and \
                self.season_number == episode.season_number
-    
+
     def merge_episode(self, episode):
         self.name = episode.name or self.name
         self.show = episode.show or self.show
@@ -262,7 +262,7 @@ class Episode(object):
         self.writer = episode.writer or self.writer
         self.watched = episode.watched or self.watched
         self.air_date = episode.air_date or self.air_date
-    
+
     def get_air_date_text(self):
         if not self.air_date:
             return ''
@@ -270,12 +270,12 @@ class Episode(object):
         if self.air_date.year != datetime.today().year:
             next_air_date_str += self.air_date.strftime(' %Y')
         return next_air_date_str
-    
+
     def already_aired(self):
         if self.air_date and self.air_date <= datetime.today().date():
             return True
         return False
-    
+
     def _get_episode_number(self):
         return self._episode_number
 
@@ -313,14 +313,14 @@ class Episode(object):
     air_date = property(_get_air_date, _set_air_date)
 
 class SeriesManager(gobject.GObject):
-    
+
     SEARCH_SERIES_COMPLETE_SIGNAL = 'search-shows-complete'
     GET_FULL_SHOW_COMPLETE_SIGNAL = 'get-full-show-complete'
     UPDATE_SHOW_EPISODES_COMPLETE_SIGNAL = 'update-show-episodes-complete'
     UPDATE_SHOWS_CALL_COMPLETE_SIGNAL = 'update-shows-call-complete'
     SHOW_LIST_CHANGED_SIGNAL = 'show-list-changed'
     UPDATED_SHOW_ART = 'updated-show-art'
-    
+
     __gsignals__ = {SEARCH_SERIES_COMPLETE_SIGNAL: (gobject.SIGNAL_RUN_LAST,
                                                     gobject.TYPE_NONE,
                                                     (gobject.TYPE_PYOBJECT,
@@ -344,7 +344,7 @@ class SeriesManager(gobject.GObject):
                                        gobject.TYPE_NONE,
                                        (gobject.TYPE_PYOBJECT,)),
                    }
-    
+
     def __init__(self):
         gobject.GObject.__init__(self)
 
@@ -352,8 +352,8 @@ class SeriesManager(gobject.GObject):
 
         self.thetvdb = thetvdbapi.TheTVDB(TVDB_API_KEY)
         self.async_worker = None
-        
-        # Cached values 
+
+        # Cached values
         self._cached_tvdb_shows = {}
 
         # Languages
@@ -384,7 +384,7 @@ class SeriesManager(gobject.GObject):
                     break
 
         return self.default_language
-            
+
     def search_shows(self, terms, language = "en"):
         if not terms:
             return []
@@ -394,7 +394,7 @@ class SeriesManager(gobject.GObject):
                                self._search_finished_callback)
         self.async_worker.queue.put(async_item)
         self.async_worker.start()
-    
+
     def _search_finished_callback(self, tvdbshows, error):
         shows = []
         if not error:
@@ -433,14 +433,14 @@ class SeriesManager(gobject.GObject):
         self.emit(self.UPDATE_SHOW_EPISODES_COMPLETE_SIGNAL, show, error)
         if last_call:
             self.emit(self.UPDATE_SHOWS_CALL_COMPLETE_SIGNAL, show, error)
-    
+
     def _search_show_to_update_callback(self, tvdbshows):
         if not tvdbshows:
             # FIXME: raise error
             return
         for show_id, show in tvdbshows:
             pass
-    
+
     def get_complete_show(self, show_name, language = "en"):
         show_id = self._cached_tvdb_shows.get(show_name, None)
         for show_id, show_title in self._cached_tvdb_shows.items():
@@ -482,7 +482,7 @@ class SeriesManager(gobject.GObject):
             if show.id == show_id:
                 return show
         return None
-    
+
     def get_show_by_name(self, show_name):
         for show in self.series_list:
             if show.name == show_name:
@@ -511,7 +511,7 @@ class SeriesManager(gobject.GObject):
         episode_obj.writer = thetvdb_episode.writer
         episode_obj.air_date = thetvdb_episode.first_aired or ''
         return episode_obj
-    
+
     def stop_request(self):
         if self.async_worker:
             self.async_worker.stop()
@@ -522,7 +522,7 @@ class SeriesManager(gobject.GObject):
             show.id = self._get_id_for_show()
         self.series_list.append(show)
         self.emit(self.SHOW_LIST_CHANGED_SIGNAL)
-    
+
     def delete_show(self, show):
         for i in xrange(len(self.series_list)):
             if self.series_list[i] == show:
@@ -594,7 +594,7 @@ class SeriesManager(gobject.GObject):
                 show.assign_image_to_season(os.path.join(DATA_DIR, archive))
             elif archive.startswith(show.get_poster_prefix()):
                 show.image = os.path.abspath(os.path.join(DATA_DIR, archive))
-            
+
     def save(self, save_file_path):
         dirname = os.path.dirname(save_file_path)
         if not (os.path.exists(dirname) and os.path.isdir(dirname)):
