@@ -78,8 +78,8 @@ class MainWindow(hildon.StackableWindow):
                                     (constants.SF_CONF_FILE,),
                                     self._load_finished)
         self.request = AsyncWorker()
-        self.request.queue.put(load_shows_item)
-        self.request.queue.put(load_conf_item)
+        self.request.queue.put((0, load_shows_item))
+        self.request.queue.put((0, load_conf_item))
         self.request.start()
 
         self.shows_view = ShowsSelectView()
@@ -210,8 +210,8 @@ class MainWindow(hildon.StackableWindow):
                                (constants.SF_CONF_FILE,),
                                self._save_finished_cb)
         async_worker = AsyncWorker()
-        async_worker.queue.put(save_shows_item)
-        async_worker.queue.put(save_conf_item)
+        async_worker.queue.put((0, save_shows_item))
+        async_worker.queue.put((0, save_conf_item))
         async_worker.start()
 
     def _save_finished_cb(self, dummy_arg, error):
