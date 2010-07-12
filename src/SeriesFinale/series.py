@@ -615,6 +615,7 @@ class SeriesManager(gobject.GObject):
             self.series_list = []
             return
         self.series_list = serializer.deserialize(file_path)
+        self.emit(self.SHOW_LIST_CHANGED_SIGNAL)
 
     def get_async_worker(self):
         if self.async_worker and self.async_worker.isAlive():
