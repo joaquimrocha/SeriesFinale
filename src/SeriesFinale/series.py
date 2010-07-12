@@ -390,7 +390,7 @@ class SeriesManager(gobject.GObject):
     def search_shows(self, terms, language = "en"):
         if not terms:
             return []
-        self.async_worker = AsyncWorker()
+        self.async_worker = self.get_async_worker()
         async_item = AsyncItem(self.thetvdb.get_matching_shows,
                                (terms, language,),
                                self._search_finished_callback)
@@ -410,7 +410,7 @@ class SeriesManager(gobject.GObject):
 
     def update_all_shows_episodes(self, show_list = []):
         show_list = show_list or self.series_list
-        async_worker = AsyncWorker()
+        async_worker = self.get_async_worker()
         i = 0
         n_shows = len(show_list)
         for i in range(n_shows):
@@ -450,7 +450,7 @@ class SeriesManager(gobject.GObject):
                 break
         if not show_id:
             return
-        self.async_worker = AsyncWorker()
+        self.async_worker = self.get_async_worker()
         async_item = AsyncItem(self._get_complete_show_from_id,
                                (show_id, language,),
                                self._get_complete_show_finished_cb)
@@ -472,7 +472,7 @@ class SeriesManager(gobject.GObject):
 
     def _get_complete_show_finished_cb(self, show, error):
         self.emit(self.GET_FULL_SHOW_COMPLETE_SIGNAL, show, error)
-        self.async_worker = AsyncWorker()
+        self.async_worker = self.get_async_worker()
         async_item = AsyncItem(self._set_show_images,
                                (show,),
                                None,)
@@ -615,3 +615,8 @@ class SeriesManager(gobject.GObject):
             self.series_list = []
             return
         self.series_list = serializer.deserialize(file_path)
+
+    def get_async_worker(self):
+        if self.async_worker and self.async_worker.isAlive():
+            return self.async_worker
+        return AsyncWorker()
