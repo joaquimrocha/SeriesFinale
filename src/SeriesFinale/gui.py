@@ -363,7 +363,7 @@ class ShowListStore(gtk.ListStore):
         self.clear()
         for show in shows:
             row = {self.IMAGE_COLUMN: None,
-                   self.INFO_COLUMN: show.name,
+                   self.INFO_COLUMN: saxutils.escape(show.name),
                    self.SHOW_COLUMN: show
                   }
             self.append(row.values())
