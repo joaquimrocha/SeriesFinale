@@ -85,8 +85,13 @@ class PriorityQueue(list):
         list.__init__(self)
 
     def put(self, item):
+        (item_priority, item_element) = item
+        for i in range(0, len(self)):
+            (last_priority, last_element) = self[i]
+            if (last_priority > item_priority):
+                self.insert(i, item)
+                return
         self.append(item)
-        self.sort()
 
     def get(self):
         if self:
