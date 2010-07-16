@@ -1,0 +1,239 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2010-05-21 17:49+0100\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: Misha K. <thezogg@gmail.com>\n"
+"Language-Team: Russian <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=3; plural=((((n%10)==1)&&((n%100)!=11))?(0):(((((n%10)>=2)&&((n%10)<=4))&&(((n%100)<10)||((n%100)>=20)))?(1):2));\n"
+
+#: gui.py:83 gui.py:977
+msgid "Add Shows"
+msgstr "Добавить сериалы"
+
+#: gui.py:88 gui.py:199
+msgid "Delete Shows"
+msgstr "Удалить сериалы"
+
+#: gui.py:117
+msgid "Gathering show information. Please wait..."
+msgstr "Сбор данных о сериале. Подождите пожалуйста..."
+
+#: gui.py:125 gui.py:405 gui.py:1054
+msgid "Please verify your internet connection is available"
+msgstr "Пожалуйста, убедитесь, что вы подключены к интернету"
+
+#: gui.py:128 gui.py:1056
+#, python-format
+msgid "An error occurred.%s"
+msgstr "Возникла ошибка.%s"
+
+#: gui.py:176 gui.py:177 gui.py:200 gui.py:892
+msgid "Delete"
+msgstr "Удалить"
+
+#: gui.py:210
+msgid "Please select one or more shows"
+msgstr "Выберите хотя бы один сериал"
+
+#: gui.py:257
+#, python-format
+msgid "%s season"
+msgid_plural "%s seasons"
+msgstr[0] "%s сезон"
+msgstr[1] "%s сезона"
+msgstr[2] "%s сезонов"
+
+#: gui.py:260 gui.py:466
+msgid "Completely watched"
+msgstr "Полностью просмотрено"
+
+#: gui.py:265 gui.py:469
+#, python-format
+msgid "%s episode not watched"
+msgid_plural "%s episodes not watched"
+msgstr[0] "%s сезон еще не просмотрен"
+msgstr[1] "%s сезона еще не просмотрено"
+msgstr[2] "%s сезонов еще не просмотрено"
+
+#: gui.py:270
+msgid "No episodes to watch"
+msgstr "Нет эпизодов для просмотра"
+
+#: gui.py:318
+msgid "Info"
+msgstr "Информация"
+
+#: gui.py:323 gui.py:862
+msgid "Edit Info"
+msgstr "Изменить информацию"
+
+#: gui.py:329
+msgid "Update Show"
+msgstr "Обновить сериал"
+
+#: gui.py:334 gui.py:567
+msgid "New Episode"
+msgstr "Новый эпизод"
+
+#: gui.py:345
+msgid "Updating show. Please wait..."
+msgstr "Обновление сериала. Подождите..."
+
+#: gui.py:349
+msgid "Show Details"
+msgstr "О сериале"
+
+#: gui.py:354
+msgid "Genre"
+msgstr "Жанр"
+
+#: gui.py:355
+msgid "Network"
+msgstr "Сеть"
+
+#: gui.py:356
+msgid "Actors"
+msgstr "Актеры"
+
+#: gui.py:357 gui.py:855
+msgid "Rating"
+msgstr "Рейтинг"
+
+#: gui.py:438 gui.py:455
+msgid "Special"
+msgstr "Дополнительнные"
+
+#: gui.py:440 gui.py:457
+#, python-format
+msgid "Season %s"
+msgstr "Сезон %s"
+
+#: gui.py:481
+#, python-format
+msgid "<i>Next to watch:</i> %s"
+msgstr "<i>Следующий для просмотра:</i> %s"
+
+#: gui.py:495
+msgid "Edit Show"
+msgstr "Изменить сериал"
+
+#: gui.py:499 gui.py:571
+msgid "Overview"
+msgstr "Обзор"
+
+#: gui.py:509 gui.py:605
+msgid "Name:"
+msgstr "Название:"
+
+#: gui.py:514
+msgid "Genre:"
+msgstr "Жанр"
+
+#: gui.py:515
+msgid "Network:"
+msgstr "Сеть:"
+
+#: gui.py:516 gui.py:616
+msgid "Rating:"
+msgstr "Рейтинг:"
+
+#: gui.py:517
+msgid "Actors:"
+msgstr "Актеры:"
+
+#: gui.py:577
+msgid "Number:"
+msgstr "Номер:"
+
+#: gui.py:586
+msgid "Season:"
+msgstr "Сезон:"
+
+#: gui.py:614
+msgid "Director:"
+msgstr "Режиссер:"
+
+#: gui.py:615
+msgid "Writer:"
+msgstr "Сценарист:"
+
+#: gui.py:617
+msgid "Guest Stars:"
+msgstr "Гости сериала:"
+
+#: gui.py:702
+msgid "A-Z"
+msgstr "A-Z"
+
+#: gui.py:707
+msgid "Z-A"
+msgstr "Z-A"
+
+#: gui.py:716
+msgid "Mark All"
+msgstr "Отметить все"
+
+#: gui.py:721
+msgid "Mark None"
+msgstr "Снять отметки"
+
+#: gui.py:726 gui.py:891
+msgid "Delete Episodes"
+msgstr "Удалить эпизоды"
+
+#: gui.py:852
+msgid "Director"
+msgstr "Режиссер"
+
+#: gui.py:853
+msgid "Writer"
+msgstr "Сценарист"
+
+#: gui.py:854
+msgid "Guest Stars"
+msgstr "Гости сериала"
+
+#: gui.py:902
+msgid "Please select one or more episodes"
+msgstr "Пожалуйста, выберите хотя бы один эпизод"
+
+#: gui.py:958
+#, python-format
+msgid ""
+"\n"
+"%(label)s: %(contents)s"
+msgstr ""
+"\n"
+"%(label)s: %(contents)s"
+
+#: gui.py:980
+msgid "Search Shows"
+msgstr "Поиск сериалов"
+
+#: gui.py:983
+msgid "Add Manually"
+msgstr "Добавить вручнную"
+
+#: gui.py:1001
+msgid "Search shows"
+msgstr "Поиск сериалов"
+
+#: gui.py:1019
+msgid "Search"
+msgstr "Поиск"
+
+#: series.py:100
+#, python-format
+msgid "Ep. %(number)s: %(name)s"
+msgstr "Эпизод %(number)s: %(name)s"
