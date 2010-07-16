@@ -1,3 +1,14 @@
+seriesfinale (0.6.1-1) unstable; urgency=low
+  * Fix showing next episode
+  * Use only one AsyncWorker at a time for shows' tasks
+  * Fix updating shows
+  * Add Russian translation (thanks to Misha Ketslah)
+  * Add THANKS file
+  * Add TheTVDB credits
+  * Prevent problems when downloading and using images
+  * Use a priority queue for updating the shows info and images
+ -- Joaquim Rocha <jrocha@igalia.com>  Fri, 16 Jul 2010 10:20:48 +0100
+
 seriesfinale (0.6-1) unstable; urgency=low
 
   * Fix deleting shows
