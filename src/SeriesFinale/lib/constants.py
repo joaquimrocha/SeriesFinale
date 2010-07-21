@@ -24,7 +24,7 @@ import gtk
 
 SF_NAME = 'SeriesFinale'
 SF_COMPACT_NAME = 'seriesfinale'
-SF_VERSION = '0.6'
+SF_VERSION = '0.6.1'
 SF_DESCRIPTION = 'SeriesFinale is a TV series browser and tracker application'
 SF_URL = 'http://www.igalia.com'
 SF_COPYRIGHT = 'Copyright © 2010 Igalia S. L.'

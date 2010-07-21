@@ -40,10 +40,10 @@ _ = gettext.gettext
 gtk.gdk.threads_init()
 
 class MainWindow(hildon.Window):
-    
+
     def __init__(self):
         super(MainWindow, self).__init__()
-        
+
         # i18n
         languages = []
         lc, encoding = locale.getdefaultlocale()
@@ -58,7 +58,7 @@ class MainWindow(hildon.Window):
                                        languages = languages,
                                        fallback = True)
         _ = language.gettext
-        
+
         self.series_manager = SeriesManager()
 	self.progress = show_progress(self, _('Loading...'))
         load_shows_item = AsyncItem(self.series_manager.load,
@@ -73,14 +73,14 @@ class MainWindow(hildon.Window):
                                     self._update_all_shows_complete_cb)
         self.series_manager.connect('updated-show-art',
                                     self._update_show_art)
-        
+
         self.settings = Settings()
         load_conf_item = AsyncItem(self.settings.load,
                                     (constants.SF_CONF_FILE,),
                                     self._load_finished)
         self.request = AsyncWorker()
-        self.request.queue.put(load_shows_item)
-        self.request.queue.put(load_conf_item)
+        self.request.queue.put((0, load_shows_item))
+        self.request.queue.put((0, load_conf_item))
         self.request.start()
 
         self.shows_view = ShowsSelectView()
@@ -91,7 +91,7 @@ class MainWindow(hildon.Window):
         winscroll.add(self.shows_view)
         winscroll.set_policy(gtk.POLICY_AUTOMATIC, gtk.POLICY_AUTOMATIC)
         self.add(winscroll)
-        
+
         self.connect('delete-event', self._exit_cb)
         self._update_delete_menu_visibility()
 
@@ -105,11 +105,11 @@ class MainWindow(hildon.Window):
 
     def _create_menu(self):
         menu = gtk.Menu()
-        
+
         menuitem = gtk.MenuItem(_('Add Shows'))
         menuitem.connect('activate', self._add_shows_cb)
         menu.append(menuitem)
-        
+
         self.delete_menu = gtk.MenuItem(_('Delete Shows'))
         self.delete_menu.connect('activate', self._delete_shows_cb)
         menu.append(self.delete_menu)
@@ -121,10 +121,10 @@ class MainWindow(hildon.Window):
         self.about_menu = gtk.MenuItem(_('About'))
         self.about_menu.connect('activate', self._about_menu_clicked_cb)
         menu.append(self.about_menu)
-        
+
         menu.show_all()
         return menu
-    
+
     def _add_shows_cb(self, button):
         new_show_dialog = NewShowsDialog()
         response = new_show_dialog.run()
@@ -133,7 +133,7 @@ class MainWindow(hildon.Window):
             self._launch_search_shows_dialog()
         elif response == NewShowsDialog.ADD_MANUALLY_RESPONSE:
             self._new_show_dialog()
-    
+
     def _delete_shows_cb(self, button):
         selection = self.shows_view.get_selection()
         selected_rows = selection.get_selected_rows()
@@ -144,7 +144,7 @@ class MainWindow(hildon.Window):
         for path in paths:
             self.series_manager.delete_show(model[path][2])
         self._have_deleted = True
-    
+
     def _launch_search_shows_dialog(self):
         search_dialog = SearchShowsDialog(self, self.series_manager)
         response = search_dialog.run()
@@ -159,7 +159,7 @@ class MainWindow(hildon.Window):
                 else:
                     self.series_manager.get_complete_show(search_dialog.chosen_show)
         search_dialog.destroy()
-        
+
     def _get_show_complete_cb(self, series_manager, show, error):
         if error:
             error_message = ''
@@ -172,7 +172,7 @@ class MainWindow(hildon.Window):
             self.shows_view.set_shows(self.series_manager.series_list)
             self._update_delete_menu_visibility()
         self.progress.destroy()
-    
+
     def _row_activated_cb(self, view, path, column):
         show = self.shows_view.get_show_from_path(path)
         seasons_view = SeasonsView(self.settings, self.series_manager, show)
@@ -194,7 +194,7 @@ class MainWindow(hildon.Window):
             show.actors = show_info['actors']
             self.series_manager.add_show(show)
         new_show_dialog.destroy()
-    
+
     def _exit_cb(self, window, event):
         if self.request:
             self.request.stop()
@@ -212,8 +212,8 @@ class MainWindow(hildon.Window):
                                (constants.SF_CONF_FILE,),
                                self._save_finished_cb)
         async_worker = AsyncWorker()
-        async_worker.queue.put(save_shows_item)
-        async_worker.queue.put(save_conf_item)
+        async_worker.queue.put((0, save_shows_item))
+        async_worker.queue.put((0, save_conf_item))
         async_worker.start()
 
     def _save_finished_cb(self, dummy_arg, error):
@@ -224,7 +224,7 @@ class MainWindow(hildon.Window):
         self.shows_view.set_shows(self.series_manager.series_list)
         self._update_delete_menu_visibility()
         return False
-    
+
     def _update_delete_menu_visibility(self):
         if not self.series_manager.series_list or self.request:
             self.delete_menu.hide()
@@ -293,11 +293,11 @@ class ShowsSelectView(gtk.TreeView):
     def get_show_from_path(self, path):
         model = self.get_model()
         return model[path][model.SHOW_COLUMN]
-    
+
     def sort_descending(self):
         model = self.get_model()
         model.set_sort_column_id(model.INFO_COLUMN, gtk.SORT_DESCENDING)
-    
+
     def sort_ascending(self):
         model = self.get_model()
         model.set_sort_column_id(model.INFO_COLUMN, gtk.SORT_ASCENDING)
@@ -321,7 +321,7 @@ class ShowListStore(gtk.ListStore):
         self.clear()
         for show in shows:
             row = {self.IMAGE_COLUMN: None,
-                   self.INFO_COLUMN: show.name,
+                   self.INFO_COLUMN: saxutils.escape(show.name),
                    self.SHOW_COLUMN: show
                   }
             self.append(row.values())
@@ -341,10 +341,14 @@ class ShowListStore(gtk.ListStore):
         if pixbuf_is_cover(pixbuf):
             return
         if show.image and os.path.isfile(show.image):
-            pixbuf = self.cached_pixbufs.get(show.image) or \
-                     gtk.gdk.pixbuf_new_from_file_at_size(show.image,
+            pixbuf = self.cached_pixbufs.get(show.image)
+            if not pixbuf:
+                try:
+                    pixbuf = gtk.gdk.pixbuf_new_from_file_at_size(show.image,
                                                           constants.IMAGE_WIDTH,
                                                           constants.IMAGE_HEIGHT)
+                except:
+                    pixbuf = get_placeholder_pixbuf()
             self.cached_pixbufs[show.image] = pixbuf
             self.set_value(iter, self.IMAGE_COLUMN, pixbuf)
         elif show.downloading_show_image:
@@ -355,13 +359,13 @@ class ShowListStore(gtk.ListStore):
             self.set_value(iter, self.IMAGE_COLUMN, pixbuf)
 
 class SeasonsView(hildon.Window):
-    
+
     def __init__(self, settings, series_manager, show):
         super(SeasonsView, self).__init__()
         self.set_title(show.name)
-        
+
         self.settings = settings
-        
+
         self.series_manager = series_manager
         self.series_manager.connect('update-show-episodes-complete',
                                     self._update_show_episodes_complete_cb)
@@ -377,12 +381,12 @@ class SeasonsView(hildon.Window):
         self.seasons_select_view.set_seasons(seasons)
         self.seasons_select_view.connect('row-activated', self._row_activated_cb)
         self.connect('delete-event', self._delete_event_cb)
-        
+
         winscroll = gtk.ScrolledWindow()
         winscroll.add(self.seasons_select_view)
         winscroll.set_policy(gtk.POLICY_AUTOMATIC, gtk.POLICY_AUTOMATIC)
         self.add(winscroll)
-    
+
         self.request = None
         self._update_menu_visibility()
 
@@ -403,27 +407,27 @@ class SeasonsView(hildon.Window):
         seasons = self.show.get_seasons();
         self.seasons_select_view.set_seasons(seasons)
         self._update_menu_visibility()
-    
+
     def _create_menu(self):
         menu = gtk.Menu()
-        
+
         menuitem = gtk.MenuItem(_('Info'))
         menuitem.connect('activate', self._show_info_cb)
         menu.append(menuitem)
-        
+
         menuitem = gtk.MenuItem(_('Edit Info'))
         menuitem.connect('activate', self._edit_show_info)
         menu.append(menuitem)
-    	
+
         if str(self.show.thetvdb_id) != '-1':
             self.update_menu = gtk.MenuItem(_('Update Show'))
             self.update_menu.connect('activate', self._update_series_cb)
             menu.append(self.update_menu)
-        
+
         menuitem = gtk.MenuItem(_('New Episode'))
         menuitem.connect('activate', self._new_episode_cb)
         menu.append(menuitem)
-        
+
         menu.show_all()
         return menu
 
@@ -440,7 +444,7 @@ class SeasonsView(hildon.Window):
         self.progress = show_progress(self, _('Updating show. Please wait...'))
         self.set_sensitive(False)
         self._update_menu_visibility()
-    
+
     def _show_info_cb(self, button):
         dialog = gtk.Dialog(parent = self,
                             buttons = (gtk.STOCK_OK, gtk.RESPONSE_ACCEPT))
@@ -461,7 +465,7 @@ class SeasonsView(hildon.Window):
         dialog.vbox.show_all()
         dialog.run()
         dialog.destroy()
-    
+
     def _edit_show_info(self, button):
         edit_series_dialog = EditShowsDialog(self, self.show)
         response = edit_series_dialog.run()
@@ -475,7 +479,7 @@ class SeasonsView(hildon.Window):
             self.show.rating = info['rating']
             self.show.actors = info['actors']
         self.set_title(self.show.name)
-    
+
     def _new_episode_cb(self, button):
         new_episode_dialog = NewEpisodeDialog(self,
                                               self.show)
@@ -497,7 +501,7 @@ class SeasonsView(hildon.Window):
             seasons = self.show.get_seasons()
             self.seasons_select_view.set_seasons(seasons)
         new_episode_dialog.destroy()
-    
+
     def _update_show_episodes_complete_cb(self, series_manager, show, error):
         if error and self.request:
             error_message = ''
@@ -561,9 +565,12 @@ class SeasonListStore(gtk.ListStore):
         if pixbuf_is_cover(pixbuf):
             return
         if image and os.path.isfile(image):
-            pixbuf = gtk.gdk.pixbuf_new_from_file_at_size(image,
+            try:
+                pixbuf = gtk.gdk.pixbuf_new_from_file_at_size(image,
                                                           constants.IMAGE_WIDTH,
                                                           constants.IMAGE_HEIGHT)
+            except:
+                pixbuf = get_placeholder_pixbuf()
             self.set_value(iter, self.IMAGE_COLUMN, pixbuf)
         elif self.show.downloading_season_image:
             pixbuf = get_downloading_pixbuf()
@@ -603,12 +610,12 @@ class SeasonSelectView(gtk.TreeView):
             model.update()
 
 class NewShowDialog(gtk.Dialog):
-    
+
     def __init__(self, parent):
         super(NewShowDialog, self).__init__(parent = parent,
                                             buttons = (gtk.STOCK_ADD, gtk.RESPONSE_ACCEPT,
                                                        gtk.STOCK_CANCEL, gtk.RESPONSE_REJECT))
-        
+
         self.set_title(_('Edit Show'))
         self.set_default_size(600, -1);
         self.show_name = gtk.Entry()
@@ -618,19 +625,19 @@ class NewShowDialog(gtk.Dialog):
         self.show_network = gtk.Entry()
         self.show_rating = gtk.Entry()
         self.show_actors = gtk.Entry()
-        
+
         winscroll = gtk.ScrolledWindow()
         winscroll.add(self.show_overview)
         winscroll.set_policy(gtk.POLICY_AUTOMATIC, gtk.POLICY_ALWAYS)
 
         contents = gtk.VBox(False, 0)
-        
+
         row = gtk.HBox(False, 12)
         row.pack_start(gtk.Label(_('Name:')), False, False, 0)
         row.pack_start(self.show_name, True, True, 0)
         contents.pack_start(row, False, False, 0)
         contents.pack_start(winscroll, False, False, 0)
-        
+
         fields = [(_('Genre:'), self.show_genre),
                   (_('Network:'), self.show_network),
                   (_('Rating:'), self.show_rating),
@@ -644,10 +651,10 @@ class NewShowDialog(gtk.Dialog):
             row.pack_start(label, False, False, 0)
             row.pack_start(widget, True, True, 0)
             contents.pack_start(row, False, False, 0)
-                
+
         self.vbox.add(contents)
         self.vbox.show_all()
-    
+
     def get_info(self):
         buffer = self.show_overview.get_buffer()
         start_iter = buffer.get_start_iter()
@@ -662,10 +669,10 @@ class NewShowDialog(gtk.Dialog):
         return info
 
 class EditShowsDialog(NewShowDialog):
-    
+
     def __init__(self, parent, show):
         super(EditShowsDialog, self).__init__(parent)
-        
+
         self.show_name.set_text(show.name)
         self.show_overview.get_buffer().set_text(show.overview)
         self.show_genre.set_text(str(show.genre))
@@ -674,12 +681,12 @@ class EditShowsDialog(NewShowDialog):
         self.show_actors.set_text(str(show.actors))
 
 class NewEpisodeDialog(gtk.Dialog):
-    
+
     def __init__(self, parent, show):
         super(NewEpisodeDialog, self).__init__(parent = parent,
                                                buttons = (gtk.STOCK_ADD, gtk.RESPONSE_ACCEPT,
                                                           gtk.STOCK_CANCEL, gtk.RESPONSE_REJECT))
-        
+
         self.set_title(_('New Episode'))
         self.set_default_size(600, 400);
 
@@ -707,15 +714,15 @@ class NewEpisodeDialog(gtk.Dialog):
         else:
             self.episode_season.append_text('1')
             self.episode_season.set_active(0)
-        
+
         self.episode_director = gtk.Entry()
         self.episode_writer = gtk.Entry()
         self.episode_air_date = gtk.Entry()
         self.episode_rating = gtk.Entry()
         self.episode_guest_stars = gtk.Entry()
-        
+
         contents = gtk.VBox(False, 0)
-        
+
         row = gtk.HBox(False, 12)
         row.pack_start(gtk.Label(_('Name:')), False, False, 0)
         row.pack_start(self.episode_name, True, True, 0)
@@ -725,7 +732,7 @@ class NewEpisodeDialog(gtk.Dialog):
         row.add(self.episode_season)
         row.add(self.episode_number)
         contents.pack_start(row, False, False, 0)
-        
+
         fields = [[(_('Director:'), self.episode_director),
                    (_('Writer:'), self.episode_writer),
                   ],
@@ -741,13 +748,13 @@ class NewEpisodeDialog(gtk.Dialog):
             for text, widget in fields_group:
                 label = gtk.Label(text)
                 row.pack_start(label, False, False, 0)
-                row.pack_start(widget, True, True, 0)
+		row.pack_start(widget, True, True, 0)
 
             contents.pack_start(row, False, False, 0)
 
         self.vbox.add(contents)
         self.vbox.show_all()
-    
+
     def get_info(self):
         buffer = self.episode_overview.get_buffer()
         start_iter = buffer.get_start_iter()
@@ -765,10 +772,10 @@ class NewEpisodeDialog(gtk.Dialog):
         return info
 
 class EditEpisodeDialog(NewEpisodeDialog):
-    
+
     def __init__(self, parent, episode):
         super(EditEpisodeDialog, self).__init__(parent, episode.show)
-        
+
         self.episode_name.set_text(episode.name)
         self.episode_overview.get_buffer().set_text(episode.overview)
         self.episode_season.child.set_text(episode.season_number)
@@ -780,19 +787,19 @@ class EditEpisodeDialog(NewEpisodeDialog):
         self.episode_guest_stars.set_text(str(episode.guest_stars))
 
 class EpisodesView(hildon.Window):
-    
+
     EPISODES_LIST_CHANGED_SIGNAL = 'episode-list-changed'
-    
+
     __gsignals__ = {EPISODES_LIST_CHANGED_SIGNAL: (gobject.SIGNAL_RUN_LAST,
                                                    gobject.TYPE_NONE,
                                                    ()),
                    }
-    
+
     def __init__(self, settings, show, season_number = None):
         super(EpisodesView, self).__init__()
-        
+
         self.settings = settings
-        
+
         self.show = show
         self.season_number = season_number
         self.set_title(self.show.name)
@@ -802,7 +809,7 @@ class EpisodesView(hildon.Window):
                                                           self._watched_renderer_toggled_cb,
                                                           self.episodes_check_view.get_model())
         self.episodes_check_view.connect('row-activated', self._row_activated_cb)
-        
+
         winscroll = gtk.ScrolledWindow()
         winscroll.add(self.episodes_check_view)
         winscroll.set_policy(gtk.POLICY_AUTOMATIC, gtk.POLICY_AUTOMATIC)
@@ -815,7 +822,7 @@ class EpisodesView(hildon.Window):
     
     def _create_menu(self):
         menu = gtk.Menu()
-        
+
         menuitem = gtk.RadioMenuItem(label = _('A-Z'))
         menuitem.connect('activate', self._sort_ascending_cb)
         menu.append(menuitem)
@@ -831,7 +838,7 @@ class EpisodesView(hildon.Window):
         menuitem = gtk.MenuItem(_('Mark All'))
         menuitem.connect('activate', self._select_all_cb)
         menu.append(menuitem)
-        
+
         menuitem= gtk.MenuItem(_('Mark None'))
         menuitem.connect('activate', self._select_none_cb)
         menu.append(menuitem)
@@ -842,7 +849,7 @@ class EpisodesView(hildon.Window):
 
         menu.show_all()
         return menu
-    
+
     def _delete_episodes_cb(self, button):
         selection = self.episodes_check_view.get_selection()
         selected_rows = selection.get_selected_rows()
@@ -853,20 +860,20 @@ class EpisodesView(hildon.Window):
         for path in paths:
             self.show.delete_episode(model[path][2])
         self._update_episodes_list_cb(None, None);
-    
+
     def _select_all_cb(self, button):
         self.episodes_check_view.select_all()
-    
+
     def _select_none_cb(self, button):
         self.episodes_check_view.select_none()
-    
+
     def _row_activated_cb(self, view, path, column):
         episode = self.episodes_check_view.get_episode_from_path(path)
         if self.episodes_check_view.get_column(1) == column:
             episodes_view = EpisodeView(episode)
             episodes_view.connect('delete-event', self._update_episodes_list_cb)
             episodes_view.show_all()
-    
+
     def _update_episodes_list_cb(self, widget, event = None):
         self.emit(self.EPISODES_LIST_CHANGED_SIGNAL)
         episodes = self.show.get_episodes_by_season(self.season_number)
@@ -875,7 +882,7 @@ class EpisodesView(hildon.Window):
         else:
             self.destroy()
         return False
-    
+
     def _watched_renderer_toggled_cb(self, renderer, path, model):
         episode = self.episodes_check_view.get_episode_from_path(path)
         episode.watched = not episode.watched
@@ -885,7 +892,7 @@ class EpisodesView(hildon.Window):
     def _sort_ascending_cb(self, button):
         self.episodes_check_view.sort_ascending()
         self.settings.episodes_order = self.settings.ASCENDING_ORDER
-    
+
     def _sort_descending_cb(self, button):
         self.episodes_check_view.sort_descending()
         self.settings.episodes_order = self.settings.DESCENDING_ORDER
@@ -935,7 +942,7 @@ class EpisodesCheckView(gtk.TreeView):
         self.append_column(column)
         self.set_model(model)
         self.get_model().set_sort_func(2, self._sort_func)
-    
+
     def _sort_func(self, model, iter1, iter2):
         episode1 = model.get_value(iter1, model.EPISODE_COLUMN)
         episode2 = model.get_value(iter2, model.EPISODE_COLUMN)
@@ -954,12 +961,12 @@ class EpisodesCheckView(gtk.TreeView):
         iter = model.get_iter(path)
         episode = model.get_value(iter, model.EPISODE_COLUMN)
         return episode
-    
+
     def sort_descending(self):
         model = self.get_model()
         model.set_sort_column_id(model.EPISODE_COLUMN,
                                  gtk.SORT_DESCENDING)
-    
+
     def sort_ascending(self):
         model = self.get_model()
         model.set_sort_column_id(model.EPISODE_COLUMN,
@@ -978,13 +985,13 @@ class EpisodesCheckView(gtk.TreeView):
                 path[model.EPISODE_COLUMN].watched = mark
 
 class EpisodeView(hildon.Window):
-    
+
     def __init__(self, episode):
         super(EpisodeView, self).__init__()
         self.episode = episode
-        
+
         self.set_title(str(self.episode))
-        
+
         self.infotextview = InfoTextView()
         self._update_info_text_view()
 
@@ -1008,17 +1015,17 @@ class EpisodeView(hildon.Window):
         self.infotextview.add_field(self.episode.guest_stars, _('Guest Stars'))
         self.infotextview.add_field(self.episode.rating, _('Rating'))
         self.set_title(self.episode.name)
-    
+
     def _create_menu(self):
         menu = gtk.Menu()
-        
+
         menuitem = gtk.MenuItem(_('Edit Info'))
         menuitem.connect('activate', self._edit_episode_cb)
         menu.append(menuitem)
-        
+
         menu.show_all()
         return menu
-    
+
     def _edit_episode_cb(self, button):
         edit_episode_dialog = EditEpisodeDialog(self,
                                                self.episode)
@@ -1038,7 +1045,7 @@ class EpisodeView(hildon.Window):
         edit_episode_dialog.destroy()
 
 class EpisodesSelectView(gtk.TreeView):
-    
+
     def __init__(self):
         super(EpisodesSelectView, self).__init__()
         model = gtk.ListStore(str, gobject.TYPE_PYOBJECT)
@@ -1060,10 +1067,10 @@ class EpisodesSelectView(gtk.TreeView):
         return episode
 
 class InfoTextView(gtk.TextView):
-    
+
     def __init__(self):
         super(InfoTextView, self).__init__()
-        
+
         buffer = gtk.TextBuffer()
         self.iter = buffer.get_start_iter()
 
@@ -1071,7 +1078,7 @@ class InfoTextView(gtk.TextView):
         self.set_wrap_mode(gtk.WRAP_WORD)
         self.set_editable(False)
         self.set_cursor_visible(False)
-    
+
     def set_title(self, title):
         if not title:
             return
@@ -1082,7 +1089,7 @@ class InfoTextView(gtk.TextView):
         tag_table = self.get_buffer().get_tag_table()
         tag_table.add(title_tag)
         self.get_buffer().insert_with_tags(self.iter, str(title) + '\n', title_tag)
-    
+
     def add_field(self, contents, label = None):
         if not contents:
             return
@@ -1091,7 +1098,7 @@ class InfoTextView(gtk.TextView):
                                                          'contents': contents,
                                                         }
         self.get_buffer().insert(self.iter, contents)
-    
+
     def clear(self):
         buffer = self.get_buffer()
         if not buffer:
@@ -1100,10 +1107,10 @@ class InfoTextView(gtk.TextView):
         self.iter = buffer.get_start_iter()
 
 class NewShowsDialog(gtk.Dialog):
-    
+
     ADD_AUTOMATICALLY_RESPONSE = 1 << 0
     ADD_MANUALLY_RESPONSE      = 1 << 1
-    
+
     def __init__(self):
         super(NewShowsDialog, self).__init__()
         self.set_title(_('Add Shows'))
@@ -1148,19 +1155,19 @@ class FoundShowListStore(gtk.ListStore):
             self.append(row.values())
 
 class SearchShowsDialog(gtk.Dialog):
-    
+
     def __init__(self, parent, series_manager):
         super(SearchShowsDialog, self).__init__(parent = parent)
         self.set_title(_('Search shows'))
-        
+
         self.series_manager = series_manager
         self.series_manager.connect('search-shows-complete', self._search_shows_complete_cb)
-        
+
         self.connect('response', self._response_cb)
-        
+
         self.chosen_show = None
         self.chosen_lang = None
-        
+
         self.shows_view = gtk.TreeView()
         model = FoundShowListStore()
         model.series_manager = series_manager
@@ -1169,7 +1176,7 @@ class SearchShowsDialog(gtk.Dialog):
         column = gtk.TreeViewColumn('Name', show_renderer, markup = model.MARKUP_COLUMN)
         self.shows_view.set_model(model)
         self.shows_view.append_column(column)
-        
+
         self.search_entry = gtk.Entry()
         self.search_entry.connect('changed', self._search_entry_changed_cb)
         self.search_entry.connect('activate', self._search_entry_activated_cb)
@@ -1193,26 +1200,26 @@ class SearchShowsDialog(gtk.Dialog):
         cell = gtk.CellRendererText()
         self.lang_combo.pack_start(cell, True)
         self.lang_combo.add_attribute(cell, 'text', 1)
-        
+
         try:
             self.lang_combo.set_active(self.series_manager.get_languages().keys().index(self.series_manager.get_default_language()))
         except ValueError:
             pass
-        
+
         winscroll = gtk.ScrolledWindow()
         winscroll.add(self.shows_view)
         winscroll.set_policy(gtk.POLICY_AUTOMATIC, gtk.POLICY_AUTOMATIC)
         self.vbox.add(winscroll)
-        
+
         self.action_area.pack_start(self.lang_combo, True, True, 0)
         self.ok_button = self.add_button(gtk.STOCK_OK, gtk.RESPONSE_ACCEPT)
         self.ok_button.set_sensitive(False)
         cancel_button = self.add_button(gtk.STOCK_CANCEL, gtk.RESPONSE_ACCEPT)
         self.action_area.show_all()        
-        
+
         self.vbox.show_all()
         self.set_size_request(-1, 400)
-    
+
     def _search_entry_changed_cb(self, entry):
         enable = self.search_entry.get_text().strip()
         self.search_button.set_sensitive(bool(enable))
@@ -1255,11 +1262,11 @@ class SearchShowsDialog(gtk.Dialog):
                 self.ok_button.set_sensitive(False)
         self.progress.destroy()
         self._set_controls_sensitive(True)
-    
+
     def _set_controls_sensitive(self, sensitive):
         self.search_entry.set_sensitive(sensitive)
         self.search_button.set_sensitive(sensitive)
-    
+
     def _response_cb(self, dialog, response):
         selection = self.shows_view.get_selection()
         model, paths = selection.get_selected_rows()

@@ -1,8 +1,19 @@
-seriesfinale (0.6-1diablo) unstable; urgency=low
+seriesfinale (0.6.1-1diablo) unstable; urgency=low
 
   * Diablo-ized version
 
- -- Juan A. Suarez Romero <jasuarez@igalia.com>  Thu, 13 May 2010 17:13:59 +0200
+ -- Juan A. Suarez Romero <jasuarez@igalia.com>  Wed, 21 Jul 2010 20:49:07 +0200
+
+seriesfinale (0.6.1-1) unstable; urgency=low
+  * Fix showing next episode
+  * Use only one AsyncWorker at a time for shows' tasks
+  * Fix updating shows
+  * Add Russian translation (thanks to Misha Ketslah)
+  * Add THANKS file
+  * Add TheTVDB credits
+  * Prevent problems when downloading and using images
+  * Use a priority queue for updating the shows info and images
+ -- Joaquim Rocha <jrocha@igalia.com>  Fri, 16 Jul 2010 10:20:48 +0100
 
 seriesfinale (0.6-1) unstable; urgency=low
 
