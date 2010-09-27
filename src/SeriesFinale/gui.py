@@ -100,6 +100,10 @@ class MainWindow(hildon.StackableWindow):
         hildon.hildon_gtk_window_set_progress_indicator(self, False)
         self.request = None
         self._update_delete_menu_visibility()
+        self.shows_view.sort()
+        self.sort_by_name_filter.set_active(
+                                 self.settings.getConf(Settings.SHOWS_SORT) != \
+                                 Settings.RECENT_EPISODE)
 
     def _create_menu(self):
         menu = hildon.AppMenu()
@@ -108,6 +112,22 @@ class MainWindow(hildon.StackableWindow):
         button.set_label(_('Add Shows'))
         button.connect('clicked', self._add_shows_cb)
         menu.append(button)
+
+        self.sort_by_ep_filter = hildon.GtkRadioButton(
+                                        gtk.HILDON_SIZE_FINGER_HEIGHT)
+        self.sort_by_ep_filter.set_mode(False)
+        self.sort_by_ep_filter.set_label(_('Sort by ep. date'))
+        self.sort_by_ep_filter.connect('clicked',
+                                lambda w: self.shows_view.sort_by_recent_date())
+        menu.add_filter(self.sort_by_ep_filter)
+        self.sort_by_name_filter = hildon.GtkRadioButton(
+                                          gtk.HILDON_SIZE_FINGER_HEIGHT,
+                                          group = self.sort_by_ep_filter)
+        self.sort_by_name_filter.set_mode(False)
+        self.sort_by_name_filter.set_label(_('Sort by name'))
+        self.sort_by_name_filter.connect('clicked',
+                             lambda w: self.shows_view.sort_by_name_ascending())
+        menu.add_filter(self.sort_by_name_filter)
 
         self.delete_menu = hildon.GtkButton(gtk.HILDON_SIZE_FINGER_HEIGHT)
         self.delete_menu.set_label(_('Delete Shows'))
@@ -326,7 +346,7 @@ class ShowsSelectView(gtk.TreeView):
         column = gtk.TreeViewColumn('Name', show_renderer, markup = model.INFO_COLUMN)
         self.set_model(model)
         self.append_column(column)
-        self.sort_ascending()
+        self.sort_by_name_ascending()
 
     def set_shows(self, shows):
         model = self.get_model()
@@ -336,35 +356,50 @@ class ShowsSelectView(gtk.TreeView):
         model = self.get_model()
         return model[path][model.SHOW_COLUMN]
 
-    def sort_descending(self):
+    def sort_by_recent_date(self):
         model = self.get_model()
-        model.set_sort_column_id(model.INFO_COLUMN, gtk.SORT_DESCENDING)
+        model.set_sort_column_id(model.NEXT_EPISODE_COLUMN,
+                                 gtk.SORT_ASCENDING)
+        Settings().setConf(Settings.SHOWS_SORT, Settings.RECENT_EPISODE)
 
-    def sort_ascending(self):
+    def sort_by_name_ascending(self):
         model = self.get_model()
-        model.set_sort_column_id(model.INFO_COLUMN, gtk.SORT_ASCENDING)
+        model.set_sort_column_id(model.INFO_COLUMN,
+                                 gtk.SORT_ASCENDING)
+        Settings().setConf(Settings.SHOWS_SORT, Settings.ASCENDING_ORDER)
 
     def update(self):
         model = self.get_model()
         if model:
             model.update()
+            self.sort()
+
+    def sort(self):
+        shows_sort_order = Settings().getConf(Settings.SHOWS_SORT)
+        if shows_sort_order == Settings.RECENT_EPISODE:
+            self.sort_by_recent_date()
+        else:
+            self.sort_by_name_ascending()
 
 class ShowListStore(gtk.ListStore):
 
     IMAGE_COLUMN = 0
     INFO_COLUMN = 1
     SHOW_COLUMN = 2
+    NEXT_EPISODE_COLUMN = 3
 
     def __init__(self):
-        super(ShowListStore, self).__init__(gtk.gdk.Pixbuf, str, gobject.TYPE_PYOBJECT)
+        super(ShowListStore, self).__init__(gtk.gdk.Pixbuf, str, gobject.TYPE_PYOBJECT, gobject.TYPE_PYOBJECT)
         self.cached_pixbufs = {}
+        self.set_sort_func(self.NEXT_EPISODE_COLUMN, self._sort_func)
 
     def add_shows(self, shows):
         self.clear()
         for show in shows:
             row = {self.IMAGE_COLUMN: None,
                    self.INFO_COLUMN: saxutils.escape(show.name),
-                   self.SHOW_COLUMN: show
+                   self.SHOW_COLUMN: show,
+                   self.NEXT_EPISODE_COLUMN: None
                   }
             self.append(row.values())
         self.update()
@@ -402,6 +437,23 @@ class ShowListStore(gtk.ListStore):
         else:
             pixbuf = get_placeholder_pixbuf()
             self.set_value(iter, self.IMAGE_COLUMN, pixbuf)
+
+    def _sort_func(self, model, iter1, iter2):
+        episode1 = model.get_value(iter1, self.NEXT_EPISODE_COLUMN)
+        episode2 = model.get_value(iter2, self.NEXT_EPISODE_COLUMN)
+        if not episode1:
+            if episode2:
+                return 1
+            return 0
+        if not episode2:
+            if episode1:
+                return -1
+        most_recent = (episode1 or episode2).get_most_recent(episode2)
+        if not most_recent:
+            return 0
+        if episode1 == most_recent:
+            return -1
+        return 1
 
 class SeasonsView(hildon.StackableWindow):
 
@@ -865,7 +917,8 @@ class EpisodesView(hildon.StackableWindow):
         episodes_area.add(self.episodes_check_view)
         self.add(episodes_area)
         self.set_app_menu(self._create_menu())
-        if self.settings.episodes_order == self.settings.ASCENDING_ORDER:
+        if self.settings.getConf(self.settings.EPISODES_ORDER_CONF_NAME) == \
+           self.settings.ASCENDING_ORDER:
             self._sort_ascending_cb(None)
         else:
             self._sort_descending_cb(None)
@@ -883,7 +936,8 @@ class EpisodesView(hildon.StackableWindow):
         button.set_label(_('Z-A'))
         button.connect('clicked', self._sort_descending_cb)
         menu.add_filter(button)
-        if self.settings.episodes_order == self.settings.DESCENDING_ORDER:
+        if self.settings.getConf(self.settings.EPISODES_ORDER_CONF_NAME) == \
+           self.settings.DESCENDING_ORDER:
             button.set_active(True)
         else:
             button.set_active(False)
@@ -944,11 +998,13 @@ class EpisodesView(hildon.StackableWindow):
 
     def _sort_ascending_cb(self, button):
         self.episodes_check_view.sort_ascending()
-        self.settings.episodes_order = self.settings.ASCENDING_ORDER
+        self.settings.setConf(self.settings.EPISODES_ORDER_CONF_NAME,
+                              self.settings.ASCENDING_ORDER)
 
     def _sort_descending_cb(self, button):
         self.episodes_check_view.sort_descending()
-        self.settings.episodes_order = self.settings.DESCENDING_ORDER
+        self.settings.setConf(self.settings.EPISODES_ORDER_CONF_NAME,
+                              self.settings.DESCENDING_ORDER)
 
 class EpisodeListStore(gtk.ListStore):
 
