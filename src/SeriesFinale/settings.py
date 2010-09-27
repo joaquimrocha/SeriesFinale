@@ -3,7 +3,7 @@
 ###########################################################################
 #    SeriesFinale
 #    Copyright (C) 2009 Joaquim Rocha <jrocha@igalia.com>
-# 
+#
 #    This program is free software: you can redistribute it and/or modify
 #    it under the terms of the GNU General Public License as published by
 #    the Free Software Foundation, either version 3 of the License, or
@@ -23,7 +23,7 @@ from lib import constants
 from xml.etree import ElementTree as ET
 
 class Settings(object):
-    
+
     ASCENDING_ORDER = 0
     DESCENDING_ORDER = 1
     RECENT_EPISODE = 1
@@ -42,7 +42,7 @@ class Settings(object):
     def load(self, conf_file):
         if not (os.path.exists(conf_file) and os.path.isfile(conf_file)):
             return
-        
+
         tree = ET.ElementTree()
         tree.parse(conf_file)
         root = tree.getroot()
