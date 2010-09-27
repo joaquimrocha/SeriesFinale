@@ -126,11 +126,11 @@ class Show(object):
     def __str__(self):
         return self.name
 
-    def get_info_markup(self):
+    def get_info_markup(self, info = None):
         seasons = len(self.get_seasons())
         if seasons:
             color = get_color(constants.SECONDARY_TEXT_COLOR)
-            episodes_info = self.get_episodes_info()
+            episodes_info = info or self.get_episodes_info()
             episodes_to_watch = episodes_info['episodes_to_watch']
             next_episode = episodes_info['next_episode']
             if next_episode and next_episode.already_aired():

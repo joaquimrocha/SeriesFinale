@@ -378,8 +378,11 @@ class ShowListStore(gtk.ListStore):
     def _update_iter(self, iter):
         show = self.get_value(iter, self.SHOW_COLUMN)
         pixbuf = self.get_value(iter, self.IMAGE_COLUMN)
-        info = show.get_info_markup()
-        self.set_value(iter, self.INFO_COLUMN, info)
+        info = show.get_episodes_info()
+        info_markup = show.get_info_markup(info)
+        self.set_value(iter, self.INFO_COLUMN, info_markup)
+        self.set_value(iter, self.NEXT_EPISODE_COLUMN,
+                       info['next_episode'])
         if pixbuf_is_cover(pixbuf):
             return
         if show.image and os.path.isfile(show.image):
