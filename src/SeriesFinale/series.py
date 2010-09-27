@@ -314,6 +314,24 @@ class Episode(object):
     episode_number = property(_get_episode_number, _set_episode_number)
     air_date = property(_get_air_date, _set_air_date)
 
+    def get_most_recent(self, other_episode):
+        if not other_episode:
+            if self.already_aired():
+                return self
+            else:
+                return None
+        if other_episode.already_aired() and not self.already_aired():
+            return other_episode
+        if self.already_aired() and not other_episode.already_aired():
+            return self
+        if not self.already_aired() and not other_episode.already_aired():
+            return None
+        if self.air_date > other_episode.air_date:
+            return self
+        if self.air_date < other_episode.air_date:
+            return other_episode
+        return None
+
 class SeriesManager(gobject.GObject):
 
     SEARCH_SERIES_COMPLETE_SIGNAL = 'search-shows-complete'
