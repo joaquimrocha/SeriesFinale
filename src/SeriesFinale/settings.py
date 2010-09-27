@@ -26,12 +26,19 @@ class Settings(object):
     
     ASCENDING_ORDER = 0
     DESCENDING_ORDER = 1
-    
+    RECENT_EPISODE = 1
+
     EPISODES_ORDER_CONF_NAME = 'episodes_order'
-    
-    def __init__(self):
-        self.episodes_order = self.DESCENDING_ORDER
-        
+    SHOWS_SORT = 'shows_sort'
+
+    TYPES = {EPISODES_ORDER_CONF_NAME: int,
+             SHOWS_SORT: int}
+    DEFAULTS = {EPISODES_ORDER_CONF_NAME: DESCENDING_ORDER,
+                SHOWS_SORT: RECENT_EPISODE,
+                }
+
+    conf = dict(DEFAULTS)
+
     def load(self, conf_file):
         if not (os.path.exists(conf_file) and os.path.isfile(conf_file)):
             return
@@ -39,16 +46,23 @@ class Settings(object):
         tree = ET.ElementTree()
         tree.parse(conf_file)
         root = tree.getroot()
-        
-        episodes_order = root.find(self.EPISODES_ORDER_CONF_NAME)
-        if episodes_order != None:
-            try:
-                self.episodes_order = int(episodes_order.text)
-            except ValueError:
-                self.episodes_order = self.DESCENDING_ORDER
-    
+        for key in self.DEFAULTS.keys():
+            key_element = root.find(key)
+            if key_element is not None:
+                if self.TYPES[key] == bool:
+                    self.setConf(key, key_element.text.lower() == 'true')
+                    continue
+                self.setConf(key, self.TYPES[key](key_element.text))
+
     def save(self, conf_file):
         root = ET.Element(constants.SF_COMPACT_NAME)
-        episodes_order_element = ET.SubElement(root, self.EPISODES_ORDER_CONF_NAME)
-        episodes_order_element.text = str(self.episodes_order)
+        for key, value in self.__class__.conf.items():
+            element = ET.SubElement(root, key)
+            element.text = str(value)
         return ET.ElementTree(root).write(conf_file, 'UTF-8')
+
+    def setConf(self, key, value):
+        self.__class__.conf[key] = value
+
+    def getConf(self, key):
+        return self.TYPES[key](self.__class__.conf[key])
