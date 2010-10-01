@@ -159,7 +159,7 @@ class MainWindow(hildon.StackableWindow):
         return menu
 
     def _add_shows_cb(self, button):
-        new_show_dialog = NewShowsDialog()
+        new_show_dialog = NewShowsDialog(self)
         response = new_show_dialog.run()
         new_show_dialog.destroy()
         if response == NewShowsDialog.ADD_AUTOMATICALLY_RESPONSE:
@@ -1269,8 +1269,8 @@ class NewShowsDialog(gtk.Dialog):
     ADD_AUTOMATICALLY_RESPONSE = 1 << 0
     ADD_MANUALLY_RESPONSE      = 1 << 1
 
-    def __init__(self):
-        super(NewShowsDialog, self).__init__()
+    def __init__(self, parent):
+        super(NewShowsDialog, self).__init__(parent = parent)
         self.set_title(_('Add Shows'))
         contents = gtk.HBox(True, 0)
         self.search_shows_button = hildon.GtkButton(gtk.HILDON_SIZE_FINGER_HEIGHT)
