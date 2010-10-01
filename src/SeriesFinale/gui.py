@@ -60,7 +60,8 @@ class MainWindow(hildon.StackableWindow):
         _ = language.gettext
 
 	# Autorotation
- 	FremantleRotation(constants.SF_COMPACT_NAME, self)
+ 	self._rotation_manager = FremantleRotation(constants.SF_COMPACT_NAME,
+                                                  self)
 
         self.series_manager = SeriesManager()
         hildon.hildon_gtk_window_set_progress_indicator(self, True)
@@ -108,6 +109,7 @@ class MainWindow(hildon.StackableWindow):
         self.sort_by_name_filter.set_active(
                                  self.settings.getConf(Settings.SHOWS_SORT) != \
                                  Settings.RECENT_EPISODE)
+        self._applyRotation()
 
     def _create_menu(self):
         menu = hildon.AppMenu()
@@ -301,6 +303,15 @@ class MainWindow(hildon.StackableWindow):
         settings_dialog = SettingsDialog(self)
         response = settings_dialog.run()
         settings_dialog.destroy()
+        if response == gtk.RESPONSE_ACCEPT:
+            self._applyRotation()
+
+    def _applyRotation(self):
+        configured_mode = self.settings.getConf(Settings.SCREEN_ROTATION)
+        modes = [self._rotation_manager.AUTOMATIC,
+                 self._rotation_manager.ALWAYS,
+                 self._rotation_manager.NEVER]
+        self._rotation_manager.set_mode(modes[configured_mode])
 
 class DeleteView(hildon.StackableWindow):
 
