@@ -25,6 +25,7 @@ from lib.util import get_color, image_downloader
 from xml.etree import ElementTree as ET
 from asyncworker import AsyncWorker, AsyncItem
 from lib.constants import TVDB_API_KEY, DATA_DIR, DEFAULT_LANGUAGES
+from settings import Settings
 from datetime import datetime
 from xml.sax import saxutils
 import gettext
@@ -219,6 +220,13 @@ class Show(object):
             if prefix.endswith(season) and not self.season_images.get(season):
                 self.season_images[season] = image
                 break
+
+    def is_special_season(self, season_number):
+        try:
+            season_number = int(season_number)
+        except ValueError:
+            return False
+        return season_number == 0
 
 class Episode(object):
 
@@ -486,8 +494,13 @@ class SeriesManager(gobject.GObject):
         show.id = self._get_id_for_show()
         show.episode_list = []
         for tvdb_ep in tvdb_show_episodes[1]:
-            show.episode_list.append(self._convert_thetvdbepisode_to_episode(tvdb_ep,
-                                                                             show))
+            episode = self._convert_thetvdbepisode_to_episode(tvdb_ep,
+                                                              show)
+            add_special_seasons = Settings().getConf(Settings.ADD_SPECIAL_SEASONS)
+            if not add_special_seasons and \
+               show.is_special_season(episode.season_number):
+                continue
+            show.episode_list.append(episode)
         self.series_list.append(show)
         return show
 
