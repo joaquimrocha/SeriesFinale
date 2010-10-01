@@ -144,6 +144,11 @@ class MainWindow(hildon.StackableWindow):
         menu.append(self.update_all_menu)
 
         button = hildon.GtkButton(gtk.HILDON_SIZE_FINGER_HEIGHT)
+        button.set_label(_('Settings'))
+        button.connect('clicked', self._settings_menu_clicked_cb)
+        menu.append(button)
+
+        button = hildon.GtkButton(gtk.HILDON_SIZE_FINGER_HEIGHT)
         button.set_label(_('About'))
         button.connect('clicked', self._about_menu_clicked_cb)
         menu.append(button)
@@ -291,6 +296,11 @@ class MainWindow(hildon.StackableWindow):
         about_dialog.set_license(saxutils.escape(constants.SF_LICENSE))
         about_dialog.run()
         about_dialog.destroy()
+
+    def _settings_menu_clicked_cb(self, menu):
+        settings_dialog = SettingsDialog(self)
+        response = settings_dialog.run()
+        settings_dialog.destroy()
 
 class DeleteView(hildon.StackableWindow):
 
@@ -1486,6 +1496,49 @@ class AboutDialog(gtk.Dialog):
         authors = '\n'.join(authors_list)
         self._writers_label.set_text(authors)
         self._writers_contents.show_all()
+
+class SettingsDialog(gtk.Dialog):
+
+    def __init__(self, parent):
+        super(SettingsDialog, self).__init__(parent = parent,
+                                         title = _('Settings'),
+                                         flags = gtk.DIALOG_DESTROY_WITH_PARENT,
+                                         buttons = (gtk.STOCK_SAVE,
+                                                    gtk.RESPONSE_ACCEPT))
+        self.settings = Settings()
+        self.vbox.pack_start(self._create_screen_rotation_settings())
+        self.vbox.pack_start(self._create_shows_settings())
+        self.vbox.show_all()
+
+    def _create_screen_rotation_settings(self):
+        picker_button = hildon.PickerButton(gtk.HILDON_SIZE_FINGER_HEIGHT,
+                                            hildon.BUTTON_ARRANGEMENT_HORIZONTAL)
+        picker_button.set_alignment(0, 0.5, 0, 1)
+        picker_button.set_done_button_text(_('Done'))
+        selector = hildon.TouchSelector(text = True)
+        picker_button.set_title(_('Screen Rotation:'))
+        modes = [_('Automatic'), _('Portrait'), _('Landscape')]
+        for mode in modes:
+            selector.append_text(mode)
+        picker_button.set_selector(selector)
+        picker_button.set_active(self.settings.getConf(Settings.SCREEN_ROTATION))
+        picker_button.connect('value-changed',
+                              self._screen_rotation_picker_button_changed_cb)
+        return picker_button
+
+    def _create_shows_settings(self):
+        check_button = hildon.CheckButton(gtk.HILDON_SIZE_FINGER_HEIGHT)
+        check_button.set_label(_('Add special seasons'))
+        check_button.set_active(self.settings.getConf(Settings.ADD_SPECIAL_SEASONS))
+        check_button.connect('toggled',
+                             self._special_seasons_check_button_toggled_cb)
+        return check_button
+
+    def _special_seasons_check_button_toggled_cb(self, button):
+        self.settings.setConf(Settings.ADD_SPECIAL_SEASONS, button.get_active())
+
+    def _screen_rotation_picker_button_changed_cb(self, button):
+        self.settings.setConf(Settings.SCREEN_ROTATION, button.get_active())
 
 def show_information(parent, message):
     hildon.hildon_banner_show_information(parent,
