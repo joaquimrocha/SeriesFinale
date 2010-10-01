@@ -28,14 +28,23 @@ class Settings(object):
     DESCENDING_ORDER = 1
     RECENT_EPISODE = 1
 
+    AUTOMATIC = 0
+    PORTRAIT = 1
+    LANDSCAPE = 2
+
     EPISODES_ORDER_CONF_NAME = 'episodes_order'
     SHOWS_SORT = 'shows_sort'
+    SCREEN_ROTATION = 'screen_rotation'
+    ADD_SPECIAL_SEASONS = 'add_special_seasons'
 
     TYPES = {EPISODES_ORDER_CONF_NAME: int,
-             SHOWS_SORT: int}
+             SHOWS_SORT: int,
+             SCREEN_ROTATION: int,
+             ADD_SPECIAL_SEASONS: bool}
     DEFAULTS = {EPISODES_ORDER_CONF_NAME: DESCENDING_ORDER,
                 SHOWS_SORT: RECENT_EPISODE,
-                }
+                SCREEN_ROTATION: AUTOMATIC,
+                ADD_SPECIAL_SEASONS: True}
 
     conf = dict(DEFAULTS)
 
