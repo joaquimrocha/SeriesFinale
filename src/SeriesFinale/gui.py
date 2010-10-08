@@ -207,7 +207,7 @@ class MainWindow(hildon.StackableWindow):
         seasons_view = SeasonsView(self.settings, self.series_manager, show)
         seasons_view.connect('delete-event',
                      lambda w, e:
-                        self.shows_view.set_shows(self.series_manager.series_list))
+                        self.shows_view.update(show))
         seasons_view.show_all()
 
     def _new_show_dialog(self):
@@ -285,7 +285,7 @@ class MainWindow(hildon.StackableWindow):
         show_information(self, _('Updated "%s"') % show.name)
 
     def _update_show_art(self, series_manager, show):
-        self.shows_view.update()
+        self.shows_view.update(show)
 
     def _about_menu_clicked_cb(self, menu):
         about_dialog = AboutDialog(self)
@@ -393,10 +393,10 @@ class ShowsSelectView(gtk.TreeView):
                                  gtk.SORT_ASCENDING)
         Settings().setConf(Settings.SHOWS_SORT, Settings.ASCENDING_ORDER)
 
-    def update(self):
+    def update(self, show = None):
         model = self.get_model()
         if model:
-            model.update()
+            model.update(show)
             self.sort()
 
     def sort(self):
@@ -427,12 +427,14 @@ class ShowListStore(gtk.ListStore):
                    self.NEXT_EPISODE_COLUMN: None
                   }
             self.append(row.values())
-        self.update()
+        self.update(None)
 
-    def update(self):
+    def update(self, show):
         iter = self.get_iter_first()
         while iter:
-            self._update_iter(iter)
+            current_show = self.get_value(iter, self.SHOW_COLUMN)
+            if show is None or show == current_show:
+                self._update_iter(iter)
             iter = self.iter_next(iter)
 
     def _update_iter(self, iter):
