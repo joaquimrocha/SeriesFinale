@@ -74,6 +74,7 @@ class Show(object):
                 if episode.season_number == season]
 
     def update_episode_list(self, episode_list):
+        add_special_seasons = Settings().getConf(Settings.ADD_SPECIAL_SEASONS)
         for episode in episode_list:
             exists = False
             for ep in self.episode_list:
@@ -81,6 +82,9 @@ class Show(object):
                     exists = True
                     ep.merge_episode(episode)
             if not exists:
+                if not add_special_seasons and \
+                   self.is_special_season(episode.season_number):
+                    continue
                 self.episode_list.append(episode)
 
     def delete_episode(self, episode):
