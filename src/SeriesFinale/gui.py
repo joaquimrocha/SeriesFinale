@@ -1146,9 +1146,11 @@ class EpisodesCheckView(gtk.TreeView):
 
     def select_all(self):
         self._set_episodes_selection(True)
+        self.get_model().update()
 
     def select_none(self):
         self._set_episodes_selection(False)
+        self.get_model().update()
 
     def _set_episodes_selection(self, mark):
         model = self.get_model()
