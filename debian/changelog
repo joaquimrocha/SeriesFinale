@@ -1,3 +1,15 @@
+seriesfinale (0.6.5-1) unstable; urgency=low
+  * Add sorting shows by most recent episode or name
+  * Add auto-rotation support
+  * Add settings dialog
+  * Fix problems with threads
+  * Fix episodes highlight when checking/unchecking all episodes
+  * Rewrite settings
+  * Add special seasons addition preferences
+  * Make returning to the shows view faster
+  * Add delete seasons view
+ -- Joaquim Rocha <jrocha@igalia.com>  Fri, 08 Oct 2010 18:05:48 +0100
+
 seriesfinale (0.6.1-1) unstable; urgency=low
   * Fix showing next episode
   * Use only one AsyncWorker at a time for shows' tasks
