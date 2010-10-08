@@ -93,6 +93,11 @@ class Show(object):
                 del self.episode_list[i]
                 break
 
+    def delete_season(self, season):
+        episodes = self.get_episode_list_by_season(season)
+        for episode in episodes:
+            self.delete_episode(episode)
+
     def is_completely_watched(self):
         for episode in self.episode_list:
             if not episode.watched:

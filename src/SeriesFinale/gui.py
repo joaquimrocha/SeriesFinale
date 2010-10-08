@@ -552,6 +552,11 @@ class SeasonsView(hildon.StackableWindow):
             menu.append(self.update_menu)
 
         button = hildon.GtkButton(gtk.HILDON_SIZE_FINGER_HEIGHT)
+        button.set_label(_('Delete Season'))
+        button.connect('clicked', self._delete_seasons_cb)
+        menu.append(button)
+
+        button = hildon.GtkButton(gtk.HILDON_SIZE_FINGER_HEIGHT)
         button.set_label(_('New Episode'))
         button.connect('clicked', self._new_episode_cb)
         menu.append(button)
@@ -650,6 +655,37 @@ class SeasonsView(hildon.StackableWindow):
     def _update_show_art(self, series_manager, show):
         if show == self.show:
             self.seasons_select_view.update()
+
+    def _delete_seasons_cb(self, button):
+        seasons_delete_view = SeasonsDeleteView(self.series_manager,
+                                                self.seasons_select_view)
+        seasons = self.show.get_seasons()
+        seasons_delete_view.show_all()
+
+class SeasonsDeleteView(DeleteView):
+
+    def __init__(self, series_manager, seasons_select_view):
+        self.seasons_select_view = SeasonSelectView(seasons_select_view.show)
+        self.seasons_select_view.set_model(seasons_select_view.get_model())
+        super(SeasonsDeleteView, self).__init__(self.seasons_select_view,
+                                               _('Delete Seasons'),
+                                               _('Delete'))
+        self.series_manager = series_manager
+        self.toolbar.connect('button-clicked',
+                             self._button_clicked_cb)
+
+    def _button_clicked_cb(self, button):
+        selection = self.seasons_select_view.get_selection()
+        selected_rows = selection.get_selected_rows()
+        model, paths = selected_rows
+        if not paths:
+            show_information(self, _('Please select one or more seasons'))
+            return
+        for path in paths:
+            self.seasons_select_view.show.delete_season(
+                 model[path][SeasonListStore.SEASON_COLUMN])
+            model.remove(model.get_iter(path))
+        self.destroy()
 
 class SeasonListStore(gtk.ListStore):
 
