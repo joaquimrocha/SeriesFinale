@@ -31,6 +31,7 @@ import os
 from xml.sax import saxutils
 from series import SeriesManager, Show, Episode
 from lib import constants
+from lib.portrait import FremantleRotation
 from lib.util import get_color
 from settings import Settings
 from asyncworker import AsyncWorker, AsyncItem
@@ -58,6 +59,10 @@ class MainWindow(hildon.Window):
                                        languages = languages,
                                        fallback = True)
         _ = language.gettext
+
+	# Autorotation
+ 	self._rotation_manager = FremantleRotation(constants.SF_COMPACT_NAME,
+                                                  self)
 
         self.series_manager = SeriesManager()
 	self.progress = show_progress(self, _('Loading...'))
@@ -102,6 +107,11 @@ class MainWindow(hildon.Window):
 	self.progress.destroy()
         self.request = None
         self._update_delete_menu_visibility()
+        self.shows_view.sort()
+        self.sort_by_name_filter.set_active(
+                                 self.settings.getConf(Settings.SHOWS_SORT) != \
+                                 Settings.RECENT_EPISODE)
+        self._applyRotation()
 
     def _create_menu(self):
         menu = gtk.Menu()
@@ -110,13 +120,31 @@ class MainWindow(hildon.Window):
         menuitem.connect('activate', self._add_shows_cb)
         menu.append(menuitem)
 
-        self.delete_menu = gtk.MenuItem(_('Delete Shows'))
+        self.sort_by_ep_filter = gtk.RadioMenuItem()
+		self.sort_by_ep_filter.set_mode(False);
+		self.sort_by_ep_filter.set_label(_('Sort by ep. date'))
+		self.sort_by_ep_filter.connect('activate',
+                                lambda w: self.shows_view.sort_by_recent_date())
+		menu.append(self.sort_by_ep_filter)
+		self.sort_by_name_filter = gtk.RadioMenuItem(
+										group = self.sort_by_ep_filter)
+		self.sort_by_name_filter.set_mode(False)
+		self.sort_by_name_filter.set_label(_('Sort by name'))
+        self.sort_by_name_filter.connect('activate',
+                             lambda w: self.shows_view.sort_by_name_ascending())
+		menu.append(self.sort_by_name_filter)
+
+		self.delete_menu = gtk.MenuItem(_('Delete Shows'))
         self.delete_menu.connect('activate', self._delete_shows_cb)
         menu.append(self.delete_menu)
 
         self.update_all_menu = gtk.MenuItem(_('Update All'))
         self.update_all_menu.connect('activate', self._update_all_shows_cb)
         menu.append(self.update_all_menu)
+
+        menuitem = gtk.MenuItem(_('Settings'))
+        menuitem.connect('activate', self._settings_menu_clicked_cb)
+        menu.append(menuitem)
 
         self.about_menu = gtk.MenuItem(_('About'))
         self.about_menu.connect('activate', self._about_menu_clicked_cb)
@@ -126,7 +154,7 @@ class MainWindow(hildon.Window):
         return menu
 
     def _add_shows_cb(self, button):
-        new_show_dialog = NewShowsDialog()
+        new_show_dialog = NewShowsDialog(self)
         response = new_show_dialog.run()
         new_show_dialog.destroy()
         if response == NewShowsDialog.ADD_AUTOMATICALLY_RESPONSE:
@@ -178,7 +206,7 @@ class MainWindow(hildon.Window):
         seasons_view = SeasonsView(self.settings, self.series_manager, show)
         seasons_view.connect('delete-event',
                      lambda w, e:
-                        self.shows_view.set_shows(self.series_manager.series_list))
+                        self.shows_view.update(show))
         seasons_view.show_all()
 
     def _new_show_dialog(self):
@@ -256,7 +284,7 @@ class MainWindow(hildon.Window):
         show_information(self, _('Updated "%s"') % show.name)
 
     def _update_show_art(self, series_manager, show):
-        self.shows_view.update()
+        self.shows_view.update(show)
 
     def _about_menu_clicked_cb(self, menu):
         about_dialog = AboutDialog(self)
@@ -269,6 +297,20 @@ class MainWindow(hildon.Window):
         about_dialog.set_license(saxutils.escape(constants.SF_LICENSE))
         about_dialog.run()
         about_dialog.destroy()
+
+    def _settings_menu_clicked_cb(self, menu):
+        settings_dialog = SettingsDialog(self)
+        response = settings_dialog.run()
+        settings_dialog.destroy()
+        if response == gtk.RESPONSE_ACCEPT:
+            self._applyRotation()
+
+    def _applyRotation(self):
+        configured_mode = self.settings.getConf(Settings.SCREEN_ROTATION)
+        modes = [self._rotation_manager.AUTOMATIC,
+                 self._rotation_manager.ALWAYS,
+                 self._rotation_manager.NEVER]
+        self._rotation_manager.set_mode(modes[configured_mode])
 
 class ShowsSelectView(gtk.TreeView):
     
@@ -284,7 +326,7 @@ class ShowsSelectView(gtk.TreeView):
         column = gtk.TreeViewColumn('Name', show_renderer, markup = model.INFO_COLUMN)
         self.set_model(model)
         self.append_column(column)
-        self.sort_ascending()
+        self.sort_by_name_ascending()
 
     def set_shows(self, shows):
         model = self.get_model()
@@ -294,50 +336,70 @@ class ShowsSelectView(gtk.TreeView):
         model = self.get_model()
         return model[path][model.SHOW_COLUMN]
 
-    def sort_descending(self):
+    def sort_by_recent_date(self):
         model = self.get_model()
-        model.set_sort_column_id(model.INFO_COLUMN, gtk.SORT_DESCENDING)
+        model.set_sort_column_id(model.NEXT_EPISODE_COLUMN,
+                                 gtk.SORT_ASCENDING)
+        Settings().setConf(Settings.SHOWS_SORT, Settings.RECENT_EPISODE)
 
-    def sort_ascending(self):
+    def sort_by_name_ascending(self):
         model = self.get_model()
-        model.set_sort_column_id(model.INFO_COLUMN, gtk.SORT_ASCENDING)
+        model.set_sort_column_id(model.INFO_COLUMN,
+                                 gtk.SORT_ASCENDING)
+        Settings().setConf(Settings.SHOWS_SORT, Settings.ASCENDING_ORDER)
 
-    def update(self):
+    def update(self, show = None):
         model = self.get_model()
         if model:
-            model.update()
+            model.update(show)
+            self.sort()
+
+    def sort(self):
+        shows_sort_order = Settings().getConf(Settings.SHOWS_SORT)
+        if shows_sort_order == Settings.RECENT_EPISODE:
+            self.sort_by_recent_date()
+        else:
+            self.sort_by_name_ascending()
 
 class ShowListStore(gtk.ListStore):
 
     IMAGE_COLUMN = 0
     INFO_COLUMN = 1
     SHOW_COLUMN = 2
+    NEXT_EPISODE_COLUMN = 3
 
     def __init__(self):
-        super(ShowListStore, self).__init__(gtk.gdk.Pixbuf, str, gobject.TYPE_PYOBJECT)
+        super(ShowListStore, self).__init__(gtk.gdk.Pixbuf, str, gobject.TYPE_PYOBJECT, gobject.TYPE_PYOBJECT)
         self.cached_pixbufs = {}
+        self.set_sort_func(self.NEXT_EPISODE_COLUMN, self._sort_func)
 
     def add_shows(self, shows):
         self.clear()
         for show in shows:
             row = {self.IMAGE_COLUMN: None,
                    self.INFO_COLUMN: saxutils.escape(show.name),
-                   self.SHOW_COLUMN: show
+                   self.SHOW_COLUMN: show,
+                   self.NEXT_EPISODE_COLUMN: None
                   }
             self.append(row.values())
-        self.update()
+        self.update(None)
 
-    def update(self):
+    def update(self, show):
         iter = self.get_iter_first()
         while iter:
-            self._update_iter(iter)
+            current_show = self.get_value(iter, self.SHOW_COLUMN)
+            if show is None or show == current_show:
+                self._update_iter(iter)
             iter = self.iter_next(iter)
 
     def _update_iter(self, iter):
         show = self.get_value(iter, self.SHOW_COLUMN)
         pixbuf = self.get_value(iter, self.IMAGE_COLUMN)
-        info = show.get_info_markup()
-        self.set_value(iter, self.INFO_COLUMN, info)
+        info = show.get_episodes_info()
+        info_markup = show.get_info_markup(info)
+        self.set_value(iter, self.INFO_COLUMN, info_markup)
+        self.set_value(iter, self.NEXT_EPISODE_COLUMN,
+                       info['next_episode'])
         if pixbuf_is_cover(pixbuf):
             return
         if show.image and os.path.isfile(show.image):
@@ -358,7 +420,28 @@ class ShowListStore(gtk.ListStore):
             pixbuf = get_placeholder_pixbuf()
             self.set_value(iter, self.IMAGE_COLUMN, pixbuf)
 
+<<<<<<< HEAD
 class SeasonsView(hildon.Window):
+=======
+    def _sort_func(self, model, iter1, iter2):
+        episode1 = model.get_value(iter1, self.NEXT_EPISODE_COLUMN)
+        episode2 = model.get_value(iter2, self.NEXT_EPISODE_COLUMN)
+        if not episode1:
+            if episode2:
+                return 1
+            return 0
+        if not episode2:
+            if episode1:
+                return -1
+        most_recent = (episode1 or episode2).get_most_recent(episode2)
+        if not most_recent:
+            return 0
+        if episode1 == most_recent:
+            return -1
+        return 1
+
+class SeasonsView(hildon.StackableWindow):
+>>>>>>> v0.6.5
 
     def __init__(self, settings, series_manager, show):
         super(SeasonsView, self).__init__()
@@ -424,9 +507,21 @@ class SeasonsView(hildon.Window):
             self.update_menu.connect('activate', self._update_series_cb)
             menu.append(self.update_menu)
 
+<<<<<<< HEAD
         menuitem = gtk.MenuItem(_('New Episode'))
         menuitem.connect('activate', self._new_episode_cb)
         menu.append(menuitem)
+=======
+        button = hildon.GtkButton(gtk.HILDON_SIZE_FINGER_HEIGHT)
+        button.set_label(_('Delete Season'))
+        button.connect('clicked', self._delete_seasons_cb)
+        menu.append(button)
+
+        button = hildon.GtkButton(gtk.HILDON_SIZE_FINGER_HEIGHT)
+        button.set_label(_('New Episode'))
+        button.connect('clicked', self._new_episode_cb)
+        menu.append(button)
+>>>>>>> v0.6.5
 
         menu.show_all()
         return menu
@@ -523,6 +618,37 @@ class SeasonsView(hildon.Window):
     def _update_show_art(self, series_manager, show):
         if show == self.show:
             self.seasons_select_view.update()
+
+    def _delete_seasons_cb(self, button):
+        seasons_delete_view = SeasonsDeleteView(self.series_manager,
+                                                self.seasons_select_view)
+        seasons = self.show.get_seasons()
+        seasons_delete_view.show_all()
+
+class SeasonsDeleteView(DeleteView):
+
+    def __init__(self, series_manager, seasons_select_view):
+        self.seasons_select_view = SeasonSelectView(seasons_select_view.show)
+        self.seasons_select_view.set_model(seasons_select_view.get_model())
+        super(SeasonsDeleteView, self).__init__(self.seasons_select_view,
+                                               _('Delete Seasons'),
+                                               _('Delete'))
+        self.series_manager = series_manager
+        self.toolbar.connect('button-clicked',
+                             self._button_clicked_cb)
+
+    def _button_clicked_cb(self, button):
+        selection = self.seasons_select_view.get_selection()
+        selected_rows = selection.get_selected_rows()
+        model, paths = selected_rows
+        if not paths:
+            show_information(self, _('Please select one or more seasons'))
+            return
+        for path in paths:
+            self.seasons_select_view.show.delete_season(
+                 model[path][SeasonListStore.SEASON_COLUMN])
+            model.remove(model.get_iter(path))
+        self.destroy()
 
 class SeasonListStore(gtk.ListStore):
 
@@ -810,6 +936,7 @@ class EpisodesView(hildon.Window):
                                                           self.episodes_check_view.get_model())
         self.episodes_check_view.connect('row-activated', self._row_activated_cb)
 
+<<<<<<< HEAD
         winscroll = gtk.ScrolledWindow()
         winscroll.add(self.episodes_check_view)
         winscroll.set_policy(gtk.POLICY_AUTOMATIC, gtk.POLICY_AUTOMATIC)
@@ -834,6 +961,36 @@ class EpisodesView(hildon.Window):
         menu.append(menuitem)
         if self.settings.episodes_order == self.settings.DESCENDING_ORDER:
 		menuitem.set_active(True)
+=======
+        episodes_area = hildon.PannableArea()
+        episodes_area.add(self.episodes_check_view)
+        self.add(episodes_area)
+        self.set_app_menu(self._create_menu())
+        if self.settings.getConf(self.settings.EPISODES_ORDER_CONF_NAME) == \
+           self.settings.ASCENDING_ORDER:
+            self._sort_ascending_cb(None)
+        else:
+            self._sort_descending_cb(None)
+
+    def _create_menu(self):
+        menu = hildon.AppMenu()
+
+        button = hildon.GtkRadioButton(gtk.HILDON_SIZE_FINGER_HEIGHT)
+        button.set_mode(False)
+        button.set_label(_('A-Z'))
+        button.connect('clicked', self._sort_ascending_cb)
+        menu.add_filter(button)
+        button = hildon.GtkRadioButton(gtk.HILDON_SIZE_FINGER_HEIGHT, group = button)
+        button.set_mode(False)
+        button.set_label(_('Z-A'))
+        button.connect('clicked', self._sort_descending_cb)
+        menu.add_filter(button)
+        if self.settings.getConf(self.settings.EPISODES_ORDER_CONF_NAME) == \
+           self.settings.DESCENDING_ORDER:
+            button.set_active(True)
+        else:
+            button.set_active(False)
+>>>>>>> v0.6.5
 
         menuitem = gtk.MenuItem(_('Mark All'))
         menuitem.connect('activate', self._select_all_cb)
@@ -891,11 +1048,13 @@ class EpisodesView(hildon.Window):
 
     def _sort_ascending_cb(self, button):
         self.episodes_check_view.sort_ascending()
-        self.settings.episodes_order = self.settings.ASCENDING_ORDER
+        self.settings.setConf(self.settings.EPISODES_ORDER_CONF_NAME,
+                              self.settings.ASCENDING_ORDER)
 
     def _sort_descending_cb(self, button):
         self.episodes_check_view.sort_descending()
-        self.settings.episodes_order = self.settings.DESCENDING_ORDER
+        self.settings.setConf(self.settings.EPISODES_ORDER_CONF_NAME,
+                              self.settings.DESCENDING_ORDER)
 
 class EpisodeListStore(gtk.ListStore):
 
@@ -974,9 +1133,11 @@ class EpisodesCheckView(gtk.TreeView):
 
     def select_all(self):
         self._set_episodes_selection(True)
+        self.get_model().update()
 
     def select_none(self):
         self._set_episodes_selection(False)
+        self.get_model().update()
 
     def _set_episodes_selection(self, mark):
         model = self.get_model()
@@ -1111,8 +1272,8 @@ class NewShowsDialog(gtk.Dialog):
     ADD_AUTOMATICALLY_RESPONSE = 1 << 0
     ADD_MANUALLY_RESPONSE      = 1 << 1
 
-    def __init__(self):
-        super(NewShowsDialog, self).__init__()
+    def __init__(self, parent):
+        super(NewShowsDialog, self).__init__(parent = parent)
         self.set_title(_('Add Shows'))
         contents = gtk.HBox(True, 0)
         self.search_shows_button = gtk.Button()
@@ -1353,6 +1514,49 @@ class AboutDialog(gtk.Dialog):
         authors = '\n'.join(authors_list)
         self._writers_label.set_text(authors)
         self._writers_contents.show_all()
+
+class SettingsDialog(gtk.Dialog):
+
+    def __init__(self, parent):
+        super(SettingsDialog, self).__init__(parent = parent,
+                                         title = _('Settings'),
+                                         flags = gtk.DIALOG_DESTROY_WITH_PARENT,
+                                         buttons = (gtk.STOCK_SAVE,
+                                                    gtk.RESPONSE_ACCEPT))
+        self.settings = Settings()
+        self.vbox.pack_start(self._create_screen_rotation_settings())
+        self.vbox.pack_start(self._create_shows_settings())
+        self.vbox.show_all()
+
+    def _create_screen_rotation_settings(self):
+        picker_button = hildon.PickerButton(gtk.HILDON_SIZE_FINGER_HEIGHT,
+                                            hildon.BUTTON_ARRANGEMENT_HORIZONTAL)
+        picker_button.set_alignment(0, 0.5, 0, 1)
+        picker_button.set_done_button_text(_('Done'))
+        selector = hildon.TouchSelector(text = True)
+        picker_button.set_title(_('Screen Rotation:'))
+        modes = [_('Automatic'), _('Portrait'), _('Landscape')]
+        for mode in modes:
+            selector.append_text(mode)
+        picker_button.set_selector(selector)
+        picker_button.set_active(self.settings.getConf(Settings.SCREEN_ROTATION))
+        picker_button.connect('value-changed',
+                              self._screen_rotation_picker_button_changed_cb)
+        return picker_button
+
+    def _create_shows_settings(self):
+        check_button = hildon.CheckButton(gtk.HILDON_SIZE_FINGER_HEIGHT)
+        check_button.set_label(_('Add special seasons'))
+        check_button.set_active(self.settings.getConf(Settings.ADD_SPECIAL_SEASONS))
+        check_button.connect('toggled',
+                             self._special_seasons_check_button_toggled_cb)
+        return check_button
+
+    def _special_seasons_check_button_toggled_cb(self, button):
+        self.settings.setConf(Settings.ADD_SPECIAL_SEASONS, button.get_active())
+
+    def _screen_rotation_picker_button_changed_cb(self, button):
+        self.settings.setConf(Settings.SCREEN_ROTATION, button.get_active())
 
 def show_information(parent, message):
     hildon.hildon_banner_show_information(parent,

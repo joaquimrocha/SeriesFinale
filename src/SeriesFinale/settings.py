@@ -3,7 +3,7 @@
 ###########################################################################
 #    SeriesFinale
 #    Copyright (C) 2009 Joaquim Rocha <jrocha@igalia.com>
-# 
+#
 #    This program is free software: you can redistribute it and/or modify
 #    it under the terms of the GNU General Public License as published by
 #    the Free Software Foundation, either version 3 of the License, or
@@ -23,32 +23,55 @@ from lib import constants
 from xml.etree import ElementTree as ET
 
 class Settings(object):
-    
+
     ASCENDING_ORDER = 0
     DESCENDING_ORDER = 1
-    
+    RECENT_EPISODE = 1
+
+    AUTOMATIC = 0
+    PORTRAIT = 1
+    LANDSCAPE = 2
+
     EPISODES_ORDER_CONF_NAME = 'episodes_order'
-    
-    def __init__(self):
-        self.episodes_order = self.DESCENDING_ORDER
-        
+    SHOWS_SORT = 'shows_sort'
+    SCREEN_ROTATION = 'screen_rotation'
+    ADD_SPECIAL_SEASONS = 'add_special_seasons'
+
+    TYPES = {EPISODES_ORDER_CONF_NAME: int,
+             SHOWS_SORT: int,
+             SCREEN_ROTATION: int,
+             ADD_SPECIAL_SEASONS: bool}
+    DEFAULTS = {EPISODES_ORDER_CONF_NAME: DESCENDING_ORDER,
+                SHOWS_SORT: RECENT_EPISODE,
+                SCREEN_ROTATION: AUTOMATIC,
+                ADD_SPECIAL_SEASONS: True}
+
+    conf = dict(DEFAULTS)
+
     def load(self, conf_file):
         if not (os.path.exists(conf_file) and os.path.isfile(conf_file)):
             return
-        
+
         tree = ET.ElementTree()
         tree.parse(conf_file)
         root = tree.getroot()
-        
-        episodes_order = root.find(self.EPISODES_ORDER_CONF_NAME)
-        if episodes_order != None:
-            try:
-                self.episodes_order = int(episodes_order.text)
-            except ValueError:
-                self.episodes_order = self.DESCENDING_ORDER
-    
+        for key in self.DEFAULTS.keys():
+            key_element = root.find(key)
+            if key_element is not None:
+                if self.TYPES[key] == bool:
+                    self.setConf(key, key_element.text.lower() == 'true')
+                    continue
+                self.setConf(key, self.TYPES[key](key_element.text))
+
     def save(self, conf_file):
         root = ET.Element(constants.SF_COMPACT_NAME)
-        episodes_order_element = ET.SubElement(root, self.EPISODES_ORDER_CONF_NAME)
-        episodes_order_element.text = str(self.episodes_order)
+        for key, value in self.__class__.conf.items():
+            element = ET.SubElement(root, key)
+            element.text = str(value)
         return ET.ElementTree(root).write(conf_file, 'UTF-8')
+
+    def setConf(self, key, value):
+        self.__class__.conf[key] = value
+
+    def getConf(self, key):
+        return self.TYPES[key](self.__class__.conf[key])

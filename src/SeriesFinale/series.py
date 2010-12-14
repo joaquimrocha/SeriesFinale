@@ -25,6 +25,7 @@ from lib.util import get_color, image_downloader
 from xml.etree import ElementTree as ET
 from asyncworker import AsyncWorker, AsyncItem
 from lib.constants import TVDB_API_KEY, DATA_DIR, DEFAULT_LANGUAGES
+from settings import Settings
 from datetime import datetime
 from xml.sax import saxutils
 import gettext
@@ -73,6 +74,7 @@ class Show(object):
                 if episode.season_number == season]
 
     def update_episode_list(self, episode_list):
+        add_special_seasons = Settings().getConf(Settings.ADD_SPECIAL_SEASONS)
         for episode in episode_list:
             exists = False
             for ep in self.episode_list:
@@ -80,6 +82,9 @@ class Show(object):
                     exists = True
                     ep.merge_episode(episode)
             if not exists:
+                if not add_special_seasons and \
+                   self.is_special_season(episode.season_number):
+                    continue
                 self.episode_list.append(episode)
 
     def delete_episode(self, episode):
@@ -87,6 +92,11 @@ class Show(object):
             if self.episode_list[i] == episode:
                 del self.episode_list[i]
                 break
+
+    def delete_season(self, season):
+        episodes = self.get_episode_list_by_season(season)
+        for episode in episodes:
+            self.delete_episode(episode)
 
     def is_completely_watched(self):
         for episode in self.episode_list:
@@ -126,11 +136,11 @@ class Show(object):
     def __str__(self):
         return self.name
 
-    def get_info_markup(self):
+    def get_info_markup(self, info = None):
         seasons = len(self.get_seasons())
         if seasons:
             color = get_color(constants.SECONDARY_TEXT_COLOR)
-            episodes_info = self.get_episodes_info()
+            episodes_info = info or self.get_episodes_info()
             episodes_to_watch = episodes_info['episodes_to_watch']
             next_episode = episodes_info['next_episode']
             if next_episode and next_episode.already_aired():
@@ -219,6 +229,13 @@ class Show(object):
             if prefix.endswith(season) and not self.season_images.get(season):
                 self.season_images[season] = image
                 break
+
+    def is_special_season(self, season_number):
+        try:
+            season_number = int(season_number)
+        except ValueError:
+            return False
+        return season_number == 0
 
 class Episode(object):
 
@@ -314,6 +331,24 @@ class Episode(object):
     episode_number = property(_get_episode_number, _set_episode_number)
     air_date = property(_get_air_date, _set_air_date)
 
+    def get_most_recent(self, other_episode):
+        if not other_episode:
+            if self.already_aired():
+                return self
+            else:
+                return None
+        if other_episode.already_aired() and not self.already_aired():
+            return other_episode
+        if self.already_aired() and not other_episode.already_aired():
+            return self
+        if not self.already_aired() and not other_episode.already_aired():
+            return None
+        if self.air_date > other_episode.air_date:
+            return self
+        if self.air_date < other_episode.air_date:
+            return other_episode
+        return None
+
 class SeriesManager(gobject.GObject):
 
     SEARCH_SERIES_COMPLETE_SIGNAL = 'search-shows-complete'
@@ -362,6 +397,9 @@ class SeriesManager(gobject.GObject):
         #self.languages = self.thetvdb.get_available_languages()
         self.languages = None
         self.default_language = None
+
+    def emit(self, *args):
+        gobject.idle_add(gobject.GObject.emit, self, *args)
 
     def get_languages(self):
         if self.languages is None:
@@ -465,8 +503,13 @@ class SeriesManager(gobject.GObject):
         show.id = self._get_id_for_show()
         show.episode_list = []
         for tvdb_ep in tvdb_show_episodes[1]:
-            show.episode_list.append(self._convert_thetvdbepisode_to_episode(tvdb_ep,
-                                                                             show))
+            episode = self._convert_thetvdbepisode_to_episode(tvdb_ep,
+                                                              show)
+            add_special_seasons = Settings().getConf(Settings.ADD_SPECIAL_SEASONS)
+            if not add_special_seasons and \
+               show.is_special_season(episode.season_number):
+                continue
+            show.episode_list.append(episode)
         self.series_list.append(show)
         return show
 
