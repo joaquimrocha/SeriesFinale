@@ -103,9 +103,11 @@ class MainWindow(hildon.Window):
         self.request = None
         self._update_delete_menu_visibility()
         self.shows_view.sort()
-        self.sort_by_name_filter.set_active(
-                                 self.settings.getConf(Settings.SHOWS_SORT) != \
-                                 Settings.RECENT_EPISODE)
+        if self.settings.getConf(Settings.SHOWS_SORT) == \
+                Settings.RECENT_EPISODE:
+            self.sort_by_ep_filter.set_active(True)
+        else:
+            self.sort_by_name_filter.set_active(True)
 
     def _create_menu(self):
         menu = gtk.Menu()
@@ -116,14 +118,12 @@ class MainWindow(hildon.Window):
 
         self.sort_by_ep_filter = gtk.RadioMenuItem(
             label = _('Sort by ep. date'))
-        #self.sort_by_ep_filter.set_mode(False);
         self.sort_by_ep_filter.connect('activate',
                                        lambda w: self.shows_view.sort_by_recent_date())
         menu.append(self.sort_by_ep_filter)
         self.sort_by_name_filter = gtk.RadioMenuItem(
             label = _('Sort by name'),
             group = self.sort_by_ep_filter)
-        #self.sort_by_name_filter.set_mode(False)
         self.sort_by_name_filter.connect('activate',
                                          lambda w: self.shows_view.sort_by_name_ascending())
         menu.append(self.sort_by_name_filter)
@@ -593,17 +593,16 @@ class SeasonsView(hildon.Window):
             self.seasons_select_view.update()
 
     def _delete_seasons_cb(self, button):
-        selection = self.seasons_check_view.get_selection()
+        selection = self.seasons_select_view.get_selection()
         selected_rows = selection.get_selected_rows()
         model, paths = selected_rows
         if not paths:
             show_information(self, _('Please select one or more seasons'))
             return
         for path in paths:
-            self.seasons_check_view.show.delete_season(
+            self.seasons_select_view.show.delete_season(
                 model[path][SeasonListStore.SEASON_COLUMN])
             model.remove(model.get_iter(path))
-        self.destroy()
 
 class SeasonListStore(gtk.ListStore):
 
@@ -1456,7 +1455,7 @@ class SettingsDialog(gtk.Dialog):
         self.vbox.show_all()
 
     def _create_shows_settings(self):
-        check_button = hildon.CheckButton(gtk.HILDON_SIZE_FINGER_HEIGHT)
+        check_button = gtk.CheckButton()
         check_button.set_label(_('Add special seasons'))
         check_button.set_active(self.settings.getConf(Settings.ADD_SPECIAL_SEASONS))
         check_button.connect('toggled',
