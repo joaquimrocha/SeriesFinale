@@ -1,6 +1,7 @@
 seriesfinale (0.6.5-1diablo) unstable; urgency=low
 
   * Diablo-ized version
+  * Get rid of auto-rotation support
 
  -- Juan A. Suarez Romero <jasuarez@igalia.com>  Thu, 11 Nov 2010 16:48:17 +0100
 

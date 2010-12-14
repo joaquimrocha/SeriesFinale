@@ -31,7 +31,6 @@ import os
 from xml.sax import saxutils
 from series import SeriesManager, Show, Episode
 from lib import constants
-from lib.portrait import FremantleRotation
 from lib.util import get_color
 from settings import Settings
 from asyncworker import AsyncWorker, AsyncItem
@@ -59,10 +58,6 @@ class MainWindow(hildon.Window):
                                        languages = languages,
                                        fallback = True)
         _ = language.gettext
-
-	# Autorotation
- 	self._rotation_manager = FremantleRotation(constants.SF_COMPACT_NAME,
-                                                  self)
 
         self.series_manager = SeriesManager()
 	self.progress = show_progress(self, _('Loading...'))
@@ -111,7 +106,6 @@ class MainWindow(hildon.Window):
         self.sort_by_name_filter.set_active(
                                  self.settings.getConf(Settings.SHOWS_SORT) != \
                                  Settings.RECENT_EPISODE)
-        self._applyRotation()
 
     def _create_menu(self):
         menu = gtk.Menu()
@@ -302,15 +296,6 @@ class MainWindow(hildon.Window):
         settings_dialog = SettingsDialog(self)
         response = settings_dialog.run()
         settings_dialog.destroy()
-        if response == gtk.RESPONSE_ACCEPT:
-            self._applyRotation()
-
-    def _applyRotation(self):
-        configured_mode = self.settings.getConf(Settings.SCREEN_ROTATION)
-        modes = [self._rotation_manager.AUTOMATIC,
-                 self._rotation_manager.ALWAYS,
-                 self._rotation_manager.NEVER]
-        self._rotation_manager.set_mode(modes[configured_mode])
 
 class ShowsSelectView(gtk.TreeView):
     
@@ -1467,25 +1452,8 @@ class SettingsDialog(gtk.Dialog):
                                          buttons = (gtk.STOCK_SAVE,
                                                     gtk.RESPONSE_ACCEPT))
         self.settings = Settings()
-        self.vbox.pack_start(self._create_screen_rotation_settings())
         self.vbox.pack_start(self._create_shows_settings())
         self.vbox.show_all()
-
-    def _create_screen_rotation_settings(self):
-        picker_button = hildon.PickerButton(gtk.HILDON_SIZE_FINGER_HEIGHT,
-                                            hildon.BUTTON_ARRANGEMENT_HORIZONTAL)
-        picker_button.set_alignment(0, 0.5, 0, 1)
-        picker_button.set_done_button_text(_('Done'))
-        selector = hildon.TouchSelector(text = True)
-        picker_button.set_title(_('Screen Rotation:'))
-        modes = [_('Automatic'), _('Portrait'), _('Landscape')]
-        for mode in modes:
-            selector.append_text(mode)
-        picker_button.set_selector(selector)
-        picker_button.set_active(self.settings.getConf(Settings.SCREEN_ROTATION))
-        picker_button.connect('value-changed',
-                              self._screen_rotation_picker_button_changed_cb)
-        return picker_button
 
     def _create_shows_settings(self):
         check_button = hildon.CheckButton(gtk.HILDON_SIZE_FINGER_HEIGHT)
@@ -1497,9 +1465,6 @@ class SettingsDialog(gtk.Dialog):
 
     def _special_seasons_check_button_toggled_cb(self, button):
         self.settings.setConf(Settings.ADD_SPECIAL_SEASONS, button.get_active())
-
-    def _screen_rotation_picker_button_changed_cb(self, button):
-        self.settings.setConf(Settings.SCREEN_ROTATION, button.get_active())
 
 def show_information(parent, message):
     hildon.hildon_banner_show_information(parent,
