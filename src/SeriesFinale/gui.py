@@ -907,8 +907,9 @@ class EpisodesView(hildon.Window):
         menuitem = gtk.RadioMenuItem(label = _('A-Z'))
         menuitem.connect('activate', self._sort_ascending_cb)
         menu.append(menuitem)
-	if self.settings.episodes_order == self.settings.ASCENDING_ORDER:
-		menuitem.set_active(True)
+	if self.settings.getConf(self.settings.EPISODES_ORDER_CONF_NAME) == \
+                self.settings.ASCENDING_ORDER:
+            menuitem.set_active(True)
 
         menuitem = gtk.RadioMenuItem(label = _('Z-A'), group = menuitem)
         menuitem.connect('activate', self._sort_descending_cb)
