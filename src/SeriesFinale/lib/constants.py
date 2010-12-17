@@ -29,7 +29,7 @@ SF_DESCRIPTION = 'SeriesFinale is a TV series browser and tracker application'
 SF_URL = 'http://www.igalia.com'
 SF_COPYRIGHT = 'Copyright © 2010 Igalia S. L.'
 SF_AUTHORS = ['Joaquim Rocha <jrocha@igalia.com>',
-              'Juan Suarez <jasuarez@igalia.com>']
+              'Juan A. Suarez <jasuarez@igalia.com>']
 SF_LICENSE = \
 """%(sf_name)s is free software: you can redistribute it and/or modify \
 it under the terms of the GNU General Public License as published by \
