@@ -1,3 +1,8 @@
+seriesfinale (0.6.5-2diablo) unstable; urgency=low
+  * Unable to show episodes: fixed
+
+ -- Juan A. Suarez Romero <jasuarez@igalia.com>  Fri, 17 Dec 2010 18:39:59 +0100
+
 seriesfinale (0.6.5-1diablo) unstable; urgency=low
 
   * Diablo-ized version
