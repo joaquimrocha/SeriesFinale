@@ -115,7 +115,7 @@ class MainWindow(hildon.StackableWindow):
         menu = hildon.AppMenu()
 
         button = hildon.GtkButton(gtk.HILDON_SIZE_FINGER_HEIGHT)
-        button.set_label(_('Add Shows'))
+        button.set_label(_('Add shows'))
         button.connect('clicked', self._add_shows_cb)
         menu.append(button)
 
@@ -136,12 +136,12 @@ class MainWindow(hildon.StackableWindow):
         menu.add_filter(self.sort_by_name_filter)
 
         self.delete_menu = hildon.GtkButton(gtk.HILDON_SIZE_FINGER_HEIGHT)
-        self.delete_menu.set_label(_('Delete Shows'))
+        self.delete_menu.set_label(_('Delete shows'))
         self.delete_menu.connect('clicked', self._delete_shows_cb)
         menu.append(self.delete_menu)
 
         self.update_all_menu = hildon.GtkButton(gtk.HILDON_SIZE_FINGER_HEIGHT)
-        self.update_all_menu.set_label(_('Update All'))
+        self.update_all_menu.set_label(_('Update all'))
         self.update_all_menu.connect('clicked', self._update_all_shows_cb)
         menu.append(self.update_all_menu)
 
@@ -196,7 +196,7 @@ class MainWindow(hildon.StackableWindow):
                 error_message = '\n ' + _('Please verify your internet connection '
                                           'is available')
                 show_information(self,
-                                 _('An error occurred.%s') % error_message)
+                                 _('An error occurred. %s') % error_message)
         else:
             self.shows_view.set_shows(self.series_manager.series_list)
             self._update_delete_menu_visibility()
@@ -340,7 +340,7 @@ class ShowsDeleteView(DeleteView):
     def __init__(self, series_manager):
         self.shows_select_view = ShowsSelectView()
         super(ShowsDeleteView, self).__init__(self.shows_select_view,
-                                               _('Delete Shows'),
+                                               _('Delete shows'),
                                                _('Delete'))
         self.series_manager = series_manager
         self.toolbar.connect('button-clicked',
@@ -540,24 +540,24 @@ class SeasonsView(hildon.StackableWindow):
         menu.append(button)
 
         button = hildon.GtkButton(gtk.HILDON_SIZE_FINGER_HEIGHT)
-        button.set_label(_('Edit Info'))
+        button.set_label(_('Edit info'))
         button.connect('clicked', self._edit_show_info)
         menu.append(button)
 
         self.update_menu = None
         if str(self.show.thetvdb_id) != '-1':
             self.update_menu = hildon.GtkButton(gtk.HILDON_SIZE_FINGER_HEIGHT)
-            self.update_menu.set_label(_('Update Show'))
+            self.update_menu.set_label(_('Update show'))
             self.update_menu.connect('clicked', self._update_series_cb)
             menu.append(self.update_menu)
 
         button = hildon.GtkButton(gtk.HILDON_SIZE_FINGER_HEIGHT)
-        button.set_label(_('Delete Season'))
+        button.set_label(_('Delete season'))
         button.connect('clicked', self._delete_seasons_cb)
         menu.append(button)
 
         button = hildon.GtkButton(gtk.HILDON_SIZE_FINGER_HEIGHT)
-        button.set_label(_('New Episode'))
+        button.set_label(_('New episode'))
         button.connect('clicked', self._new_episode_cb)
         menu.append(button)
 
@@ -581,7 +581,7 @@ class SeasonsView(hildon.StackableWindow):
 
     def _show_info_cb(self, button):
         dialog = gtk.Dialog(parent = self)
-        dialog.set_title(_('Show Details'))
+        dialog.set_title(_('Show details'))
         infotextview = InfoTextView()
         infotextview.set_title(self.show.name)
         infotextview.add_field (self.show.overview)
@@ -668,7 +668,7 @@ class SeasonsDeleteView(DeleteView):
         self.seasons_select_view = SeasonSelectView(seasons_select_view.show)
         self.seasons_select_view.set_model(seasons_select_view.get_model())
         super(SeasonsDeleteView, self).__init__(self.seasons_select_view,
-                                               _('Delete Seasons'),
+                                               _('Delete seasons'),
                                                _('Delete'))
         self.series_manager = series_manager
         self.toolbar.connect('button-clicked',
@@ -779,7 +779,7 @@ class NewShowDialog(gtk.Dialog):
                                              buttons = (gtk.STOCK_ADD,
                                                         gtk.RESPONSE_ACCEPT))
 
-        self.set_title(_('Edit Show'))
+        self.set_title(_('Edit show'))
 
         self.show_name = hildon.Entry(gtk.HILDON_SIZE_FINGER_HEIGHT)
         self.show_overview = hildon.TextView()
@@ -851,7 +851,7 @@ class NewEpisodeDialog(gtk.Dialog):
                                                buttons = (gtk.STOCK_ADD,
                                                           gtk.RESPONSE_ACCEPT))
 
-        self.set_title(_('New Episode'))
+        self.set_title(_('New episode'))
 
         self.episode_name = hildon.Entry(gtk.HILDON_SIZE_FINGER_HEIGHT)
         self.episode_overview = hildon.TextView()
@@ -903,7 +903,7 @@ class NewEpisodeDialog(gtk.Dialog):
                   (_('Writer:'), self.episode_writer),
                   (_('Original air date:'), self.episode_air_date),
                   (_('Rating:'), self.episode_rating),
-                  (_('Guest Stars:'), self.episode_guest_stars),
+                  (_('Guest stars:'), self.episode_guest_stars),
                  ]
         size_group = gtk.SizeGroup(gtk.SIZE_GROUP_BOTH)
         for text, widget in fields:
@@ -1006,17 +1006,17 @@ class EpisodesView(hildon.StackableWindow):
             button.set_active(False)
 
         button = hildon.GtkButton(gtk.HILDON_SIZE_FINGER_HEIGHT)
-        button.set_label(_('Mark All'))
+        button.set_label(_('Mark all'))
         button.connect('clicked', self._select_all_cb)
         menu.append(button)
 
         button = hildon.GtkButton(gtk.HILDON_SIZE_FINGER_HEIGHT)
-        button.set_label(_('Mark None'))
+        button.set_label(_('Mark none'))
         button.connect('clicked', self._select_none_cb)
         menu.append(button)
 
         button = hildon.GtkButton(gtk.HILDON_SIZE_FINGER_HEIGHT)
-        button.set_label(_('Delete Episodes'))
+        button.set_label(_('Delete episodes'))
         button.connect('clicked', self._delete_episodes_cb)
         menu.append(button)
 
@@ -1187,7 +1187,7 @@ class EpisodeView(hildon.StackableWindow):
                                     _('Original air date'))
         self.infotextview.add_field(self.episode.director, _('Director'))
         self.infotextview.add_field(self.episode.writer, _('Writer'))
-        self.infotextview.add_field(self.episode.guest_stars, _('Guest Stars'))
+        self.infotextview.add_field(self.episode.guest_stars, _('Guest stars'))
         self.infotextview.add_field(self.episode.rating, _('Rating'))
         self.set_title(self.episode.name)
 
@@ -1195,7 +1195,7 @@ class EpisodeView(hildon.StackableWindow):
         menu = hildon.AppMenu()
 
         button = hildon.GtkButton(gtk.HILDON_SIZE_FINGER_HEIGHT)
-        button.set_label(_('Edit Info'))
+        button.set_label(_('Edit info'))
         button.connect('clicked', self._edit_episode_cb)
         menu.append(button)
 
@@ -1225,7 +1225,7 @@ class EpisodesDeleteView(DeleteView):
     def __init__(self, show):
         self.episodes_select_view = EpisodesSelectView()
         super(EpisodesDeleteView, self).__init__(self.episodes_select_view,
-                                                 _('Delete Episodes'),
+                                                 _('Delete episodes'),
                                                  _('Delete'))
         self.show = show
         self.toolbar.connect('button-clicked',
@@ -1311,13 +1311,13 @@ class NewShowsDialog(gtk.Dialog):
 
     def __init__(self, parent):
         super(NewShowsDialog, self).__init__(parent = parent)
-        self.set_title(_('Add Shows'))
+        self.set_title(_('Add shows'))
         contents = gtk.HBox(True, 0)
         self.search_shows_button = hildon.GtkButton(gtk.HILDON_SIZE_FINGER_HEIGHT)
-        self.search_shows_button.set_label(_('Search Shows'))
+        self.search_shows_button.set_label(_('Search shows'))
         self.search_shows_button.connect('clicked', self._button_clicked_cb)
         self.manual_add_button = hildon.GtkButton(gtk.HILDON_SIZE_FINGER_HEIGHT)
-        self.manual_add_button.set_label(_('Add Manually'))
+        self.manual_add_button.set_label(_('Add manually'))
         self.manual_add_button.connect('clicked', self._button_clicked_cb)
         contents.add(self.search_shows_button)
         contents.add(self.manual_add_button)
@@ -1445,7 +1445,7 @@ class SearchShowsDialog(gtk.Dialog):
             if 'socket' in str(error).lower():
                 error_message = '\n ' + _('Please verify your internet connection '
                                           'is available')
-                show_information(self, _('An error occurred.%s') % error_message)
+                show_information(self, _('An error occurred. %s') % error_message)
         else:
             model = self.shows_view.get_model()
             if not model:
@@ -1567,7 +1567,7 @@ class SettingsDialog(gtk.Dialog):
         picker_button.set_alignment(0, 0.5, 0, 1)
         picker_button.set_done_button_text(_('Done'))
         selector = hildon.TouchSelector(text = True)
-        picker_button.set_title(_('Screen Rotation:'))
+        picker_button.set_title(_('Screen rotation:'))
         modes = [_('Automatic'), _('Portrait'), _('Landscape')]
         for mode in modes:
             selector.append_text(mode)

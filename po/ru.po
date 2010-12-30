@@ -3,50 +3,295 @@
 # This file is distributed under the same license as the PACKAGE package.
 # FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
 #
-#, fuzzy
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2010-05-21 17:49+0100\n"
+"POT-Creation-Date: 2010-12-30 01:12+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: Misha K. <thezogg@gmail.com>\n"
 "Language-Team: Russian <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=3; plural=((((n%10)==1)&&((n%100)!=11))?(0):(((((n%10)>=2)&&((n%10)<=4))&&(((n%100)<10)||((n%100)>=20)))?(1):2));\n"
+"Plural-Forms: nplurals=3; plural=((((n%10)==1)&&((n%100)!=11))?(0):(((((n%10)"
+">=2)&&((n%10)<=4))&&(((n%100)<10)||((n%100)>=20)))?(1):2));\n"
 
-#: gui.py:83 gui.py:977
-msgid "Add Shows"
+#: ../src/SeriesFinale/gui.py:118 ../src/SeriesFinale/gui.py:1314
+msgid "Add shows"
 msgstr "Добавить сериалы"
 
-#: gui.py:88 gui.py:199
-msgid "Delete Shows"
+#: ../src/SeriesFinale/gui.py:125
+msgid "Sort by ep. date"
+msgstr ""
+
+#: ../src/SeriesFinale/gui.py:133
+msgid "Sort by name"
+msgstr ""
+
+#: ../src/SeriesFinale/gui.py:139 ../src/SeriesFinale/gui.py:343
+msgid "Delete shows"
 msgstr "Удалить сериалы"
 
-#: gui.py:117
+#: ../src/SeriesFinale/gui.py:144
+msgid "Update all"
+msgstr "Обновить сериал"
+
+#: ../src/SeriesFinale/gui.py:149 ../src/SeriesFinale/gui.py:1555
+msgid "Settings"
+msgstr ""
+
+#: ../src/SeriesFinale/gui.py:154
+msgid "About"
+msgstr ""
+
+#: ../src/SeriesFinale/gui.py:184
 msgid "Gathering show information. Please wait..."
 msgstr "Сбор данных о сериале. Подождите пожалуйста..."
 
-#: gui.py:125 gui.py:405 gui.py:1054
+#: ../src/SeriesFinale/gui.py:196 ../src/SeriesFinale/gui.py:275
+#: ../src/SeriesFinale/gui.py:641 ../src/SeriesFinale/gui.py:1446
 msgid "Please verify your internet connection is available"
 msgstr "Пожалуйста, убедитесь, что вы подключены к интернету"
 
-#: gui.py:128 gui.py:1056
-#, python-format
-msgid "An error occurred.%s"
-msgstr "Возникла ошибка.%s"
+#: ../src/SeriesFinale/gui.py:199 ../src/SeriesFinale/gui.py:1448
+msgid "An error occurred. %s"
+msgstr "Возникла ошибка. %s"
 
-#: gui.py:176 gui.py:177 gui.py:200 gui.py:892
+#: ../src/SeriesFinale/gui.py:278
+msgid "Finished updating the shows"
+msgstr ""
+
+#: ../src/SeriesFinale/gui.py:285
+msgid "Updated \"%s\""
+msgstr "Обновить сериал"
+
+#: ../src/SeriesFinale/gui.py:320 ../src/SeriesFinale/gui.py:321
+#: ../src/SeriesFinale/gui.py:344 ../src/SeriesFinale/gui.py:672
+#: ../src/SeriesFinale/gui.py:1229
 msgid "Delete"
 msgstr "Удалить"
 
-#: gui.py:210
+#: ../src/SeriesFinale/gui.py:354
 msgid "Please select one or more shows"
 msgstr "Выберите хотя бы один сериал"
 
-#: gui.py:257
+#: ../src/SeriesFinale/gui.py:538
+msgid "Info"
+msgstr "Информация"
+
+#: ../src/SeriesFinale/gui.py:543 ../src/SeriesFinale/gui.py:1198
+msgid "Edit info"
+msgstr "Изменить информацию"
+
+#: ../src/SeriesFinale/gui.py:550
+msgid "Update show"
+msgstr "Обновить сериал"
+
+#: ../src/SeriesFinale/gui.py:555
+msgid "Delete season"
+msgstr "Удалить эпизоды"
+
+#: ../src/SeriesFinale/gui.py:560 ../src/SeriesFinale/gui.py:854
+msgid "New episode"
+msgstr "Новый эпизод"
+
+#: ../src/SeriesFinale/gui.py:579
+msgid "Updating show. Please wait..."
+msgstr "Обновление сериала. Подождите..."
+
+#: ../src/SeriesFinale/gui.py:584
+msgid "Show details"
+msgstr "О сериале"
+
+#: ../src/SeriesFinale/gui.py:589
+msgid "Genre"
+msgstr "Жанр"
+
+#: ../src/SeriesFinale/gui.py:590
+msgid "Network"
+msgstr "Сеть"
+
+#: ../src/SeriesFinale/gui.py:591
+msgid "Actors"
+msgstr "Актеры"
+
+#: ../src/SeriesFinale/gui.py:592 ../src/SeriesFinale/gui.py:1191
+msgid "Rating"
+msgstr "Рейтинг"
+
+#: ../src/SeriesFinale/gui.py:671
+msgid "Delete seasons"
+msgstr "Удалить сериалы"
+
+#: ../src/SeriesFinale/gui.py:682
+msgid "Please select one or more seasons"
+msgstr "Выберите хотя бы один сериал"
+
+#: ../src/SeriesFinale/gui.py:706 ../src/SeriesFinale/series.py:180
+msgid "Special"
+msgstr "Дополнительнные"
+
+#: ../src/SeriesFinale/gui.py:708 ../src/SeriesFinale/series.py:182
+#, python-format
+msgid "Season %s"
+msgstr "Сезон %s"
+
+#: ../src/SeriesFinale/gui.py:782
+msgid "Edit show"
+msgstr "Изменить сериал"
+
+#: ../src/SeriesFinale/gui.py:786 ../src/SeriesFinale/gui.py:858
+msgid "Overview"
+msgstr "Обзор"
+
+#: ../src/SeriesFinale/gui.py:796 ../src/SeriesFinale/gui.py:893
+msgid "Name:"
+msgstr "Название:"
+
+#: ../src/SeriesFinale/gui.py:801
+msgid "Genre:"
+msgstr "Жанр"
+
+#: ../src/SeriesFinale/gui.py:802
+msgid "Network:"
+msgstr "Сеть:"
+
+#: ../src/SeriesFinale/gui.py:803 ../src/SeriesFinale/gui.py:905
+msgid "Rating:"
+msgstr "Рейтинг:"
+
+#: ../src/SeriesFinale/gui.py:804
+msgid "Actors:"
+msgstr "Актеры:"
+
+#: ../src/SeriesFinale/gui.py:864
+msgid "Number:"
+msgstr "Номер:"
+
+#: ../src/SeriesFinale/gui.py:873
+msgid "Season:"
+msgstr "Сезон:"
+
+#: ../src/SeriesFinale/gui.py:902
+msgid "Director:"
+msgstr "Режиссер:"
+
+#: ../src/SeriesFinale/gui.py:903
+msgid "Writer:"
+msgstr "Сценарист:"
+
+#: ../src/SeriesFinale/gui.py:904
+msgid "Original air date:"
+msgstr ""
+
+#: ../src/SeriesFinale/gui.py:906
+msgid "Guest stars:"
+msgstr "Гости сериала:"
+
+#: ../src/SeriesFinale/gui.py:994
+msgid "A-Z"
+msgstr "A-Z"
+
+#: ../src/SeriesFinale/gui.py:999
+msgid "Z-A"
+msgstr "Z-A"
+
+#: ../src/SeriesFinale/gui.py:1009
+msgid "Mark all"
+msgstr "Отметить все"
+
+#: ../src/SeriesFinale/gui.py:1014
+msgid "Mark none"
+msgstr "Снять отметки"
+
+#: ../src/SeriesFinale/gui.py:1019 ../src/SeriesFinale/gui.py:1228
+msgid "Delete episodes"
+msgstr "Удалить эпизоды"
+
+#: ../src/SeriesFinale/gui.py:1187
+msgid "Original air date"
+msgstr ""
+
+#: ../src/SeriesFinale/gui.py:1188
+msgid "Director"
+msgstr "Режиссер"
+
+#: ../src/SeriesFinale/gui.py:1189
+msgid "Writer"
+msgstr "Сценарист"
+
+#: ../src/SeriesFinale/gui.py:1190
+msgid "Guest stars"
+msgstr "Гости сериала"
+
+#: ../src/SeriesFinale/gui.py:1239
+msgid "Please select one or more episodes"
+msgstr "Пожалуйста, выберите хотя бы один эпизод"
+
+#: ../src/SeriesFinale/gui.py:1295
+#, python-format
+msgid ""
+"\n"
+"%(label)s: %(contents)s"
+msgstr ""
+"\n"
+"%(label)s: %(contents)s"
+
+#: ../src/SeriesFinale/gui.py:1317 ../src/SeriesFinale/gui.py:1359
+msgid "Search shows"
+msgstr "Поиск сериалов"
+
+#: ../src/SeriesFinale/gui.py:1320
+msgid "Add manually"
+msgstr "Добавить вручнную"
+
+#: ../src/SeriesFinale/gui.py:1382
+msgid "Search"
+msgstr "Поиск"
+
+#: ../src/SeriesFinale/gui.py:1395
+msgid "Language"
+msgstr ""
+
+#: ../src/SeriesFinale/gui.py:1496
+msgid "Authors:"
+msgstr "Актеры:"
+
+#: ../src/SeriesFinale/gui.py:1527
+#, python-format
+msgid "About %s"
+msgstr ""
+
+#: ../src/SeriesFinale/gui.py:1544
+msgid "License:"
+msgstr ""
+
+#: ../src/SeriesFinale/gui.py:1568
+msgid "Done"
+msgstr ""
+
+#: ../src/SeriesFinale/gui.py:1570
+msgid "Screen rotation:"
+msgstr ""
+
+#: ../src/SeriesFinale/gui.py:1571
+msgid "Automatic"
+msgstr ""
+
+#: ../src/SeriesFinale/gui.py:1571
+msgid "Portrait"
+msgstr ""
+
+#: ../src/SeriesFinale/gui.py:1571
+msgid "Landscape"
+msgstr ""
+
+#: ../src/SeriesFinale/gui.py:1582
+msgid "Add special seasons"
+msgstr ""
+
+#: ../src/SeriesFinale/series.py:149
 #, python-format
 msgid "%s season"
 msgid_plural "%s seasons"
@@ -54,11 +299,11 @@ msgstr[0] "%s сезон"
 msgstr[1] "%s сезона"
 msgstr[2] "%s сезонов"
 
-#: gui.py:260 gui.py:466
+#: ../src/SeriesFinale/series.py:152 ../src/SeriesFinale/series.py:193
 msgid "Completely watched"
 msgstr "Полностью просмотрено"
 
-#: gui.py:265 gui.py:469
+#: ../src/SeriesFinale/series.py:156 ../src/SeriesFinale/series.py:196
 #, python-format
 msgid "%s episode not watched"
 msgid_plural "%s episodes not watched"
@@ -66,174 +311,27 @@ msgstr[0] "%s сезон еще не просмотрен"
 msgstr[1] "%s сезона еще не просмотрено"
 msgstr[2] "%s сезонов еще не просмотрено"
 
-#: gui.py:270
+#: ../src/SeriesFinale/series.py:163 ../src/SeriesFinale/series.py:203
+msgid "<i>Next episode:</i> %s on %s"
+msgstr "<i>Следующий для просмотра:</i> %s"
+
+#: ../src/SeriesFinale/series.py:167 ../src/SeriesFinale/series.py:207
+msgid "<i>Next episode:</i> %s"
+msgstr "<i>Следующий для просмотра:</i> %s"
+
+#: ../src/SeriesFinale/series.py:172
 msgid "No episodes to watch"
 msgstr "Нет эпизодов для просмотра"
 
-#: gui.py:318
-msgid "Info"
-msgstr "Информация"
-
-#: gui.py:323 gui.py:862
-msgid "Edit Info"
-msgstr "Изменить информацию"
-
-#: gui.py:329
-msgid "Update Show"
-msgstr "Обновить сериал"
-
-#: gui.py:334 gui.py:567
-msgid "New Episode"
-msgstr "Новый эпизод"
-
-#: gui.py:345
-msgid "Updating show. Please wait..."
-msgstr "Обновление сериала. Подождите..."
-
-#: gui.py:349
-msgid "Show Details"
-msgstr "О сериале"
-
-#: gui.py:354
-msgid "Genre"
-msgstr "Жанр"
-
-#: gui.py:355
-msgid "Network"
-msgstr "Сеть"
-
-#: gui.py:356
-msgid "Actors"
-msgstr "Актеры"
-
-#: gui.py:357 gui.py:855
-msgid "Rating"
-msgstr "Рейтинг"
-
-#: gui.py:438 gui.py:455
-msgid "Special"
-msgstr "Дополнительнные"
-
-#: gui.py:440 gui.py:457
+#: ../src/SeriesFinale/series.py:263
 #, python-format
-msgid "Season %s"
-msgstr "Сезон %s"
-
-#: gui.py:481
-#, python-format
-msgid "<i>Next to watch:</i> %s"
-msgstr "<i>Следующий для просмотра:</i> %s"
-
-#: gui.py:495
-msgid "Edit Show"
-msgstr "Изменить сериал"
-
-#: gui.py:499 gui.py:571
-msgid "Overview"
-msgstr "Обзор"
-
-#: gui.py:509 gui.py:605
-msgid "Name:"
-msgstr "Название:"
-
-#: gui.py:514
-msgid "Genre:"
-msgstr "Жанр"
-
-#: gui.py:515
-msgid "Network:"
-msgstr "Сеть:"
-
-#: gui.py:516 gui.py:616
-msgid "Rating:"
-msgstr "Рейтинг:"
-
-#: gui.py:517
-msgid "Actors:"
-msgstr "Актеры:"
-
-#: gui.py:577
-msgid "Number:"
-msgstr "Номер:"
-
-#: gui.py:586
-msgid "Season:"
-msgstr "Сезон:"
-
-#: gui.py:614
-msgid "Director:"
-msgstr "Режиссер:"
-
-#: gui.py:615
-msgid "Writer:"
-msgstr "Сценарист:"
-
-#: gui.py:617
-msgid "Guest Stars:"
-msgstr "Гости сериала:"
-
-#: gui.py:702
-msgid "A-Z"
-msgstr "A-Z"
-
-#: gui.py:707
-msgid "Z-A"
-msgstr "Z-A"
-
-#: gui.py:716
-msgid "Mark All"
-msgstr "Отметить все"
-
-#: gui.py:721
-msgid "Mark None"
-msgstr "Снять отметки"
-
-#: gui.py:726 gui.py:891
-msgid "Delete Episodes"
-msgstr "Удалить эпизоды"
-
-#: gui.py:852
-msgid "Director"
-msgstr "Режиссер"
-
-#: gui.py:853
-msgid "Writer"
-msgstr "Сценарист"
-
-#: gui.py:854
-msgid "Guest Stars"
-msgstr "Гости сериала"
-
-#: gui.py:902
-msgid "Please select one or more episodes"
-msgstr "Пожалуйста, выберите хотя бы один эпизод"
-
-#: gui.py:958
-#, python-format
-msgid ""
-"\n"
-"%(label)s: %(contents)s"
+msgid "Ep. %s: %s"
 msgstr ""
-"\n"
-"%(label)s: %(contents)s"
 
-#: gui.py:980
-msgid "Search Shows"
-msgstr "Поиск сериалов"
+#: ../data/seriesfinale.desktop.in.h:1
+msgid "A TV series browser and tracker application."
+msgstr ""
 
-#: gui.py:983
-msgid "Add Manually"
-msgstr "Добавить вручнную"
-
-#: gui.py:1001
-msgid "Search shows"
-msgstr "Поиск сериалов"
-
-#: gui.py:1019
-msgid "Search"
-msgstr "Поиск"
-
-#: series.py:100
-#, python-format
-msgid "Ep. %(number)s: %(name)s"
-msgstr "Эпизод %(number)s: %(name)s"
+#: ../data/seriesfinale.desktop.in.h:2
+msgid "SeriesFinale"
+msgstr ""
