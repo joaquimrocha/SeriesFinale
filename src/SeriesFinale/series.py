@@ -402,21 +402,34 @@ class SeriesManager(gobject.GObject):
                                        (gobject.TYPE_PYOBJECT,)),
                    }
 
+    _instance = None
+    _instance_initialized = False
+
+    def __new__(cls, *args, **kwargs):
+        if cls._instance:
+            return cls._instance
+
+        cls._instance = super(SeriesManager, cls).__new__(
+            cls, *args, **kwargs)
+        return cls._instance
+
     def __init__(self):
-        gobject.GObject.__init__(self)
+        if not SeriesManager._instance_initialized:
+            SeriesManager._instance_initialized = True
+            gobject.GObject.__init__(self)
 
-        self.series_list = []
+            self.series_list = []
 
-        self.thetvdb = thetvdbapi.TheTVDB(TVDB_API_KEY)
-        self.async_worker = None
+            self.thetvdb = thetvdbapi.TheTVDB(TVDB_API_KEY)
+            self.async_worker = None
 
-        # Cached values
-        self._cached_tvdb_shows = {}
+            # Cached values
+            self._cached_tvdb_shows = {}
 
-        # Languages
-        #self.languages = self.thetvdb.get_available_languages()
-        self.languages = None
-        self.default_language = None
+            # Languages
+            # self.languages = self.thetvdb.get_available_languages()
+            self.languages = None
+            self.default_language = None
 
     def emit(self, *args):
         gobject.idle_add(gobject.GObject.emit, self, *args)
