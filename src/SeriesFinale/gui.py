@@ -65,9 +65,13 @@ class MainWindow(hildon.StackableWindow):
                                                   self)
 
         self.series_manager = SeriesManager()
+        self.settings = Settings()
         hildon.hildon_gtk_window_set_progress_indicator(self, True)
+        load_conf_item = AsyncItem(self.settings.load,
+                                   (constants.SF_CONF_FILE,))
         load_shows_item = AsyncItem(self.series_manager.load,
-                                    (constants.SF_DB_FILE,))
+                                    (constants.SF_DB_FILE,),
+                                    self._load_finished)
         self.series_manager.connect('show-list-changed',
                                     self._show_list_changed_cb)
         self.series_manager.connect('get-full-show-complete',
@@ -79,13 +83,9 @@ class MainWindow(hildon.StackableWindow):
         self.series_manager.connect('updated-show-art',
                                     self._update_show_art)
 
-        self.settings = Settings()
-        load_conf_item = AsyncItem(self.settings.load,
-                                    (constants.SF_CONF_FILE,),
-                                    self._load_finished)
         self.request = AsyncWorker()
-        self.request.queue.put((0, load_shows_item))
         self.request.queue.put((0, load_conf_item))
+        self.request.queue.put((0, load_shows_item))
         self.request.start()
 
         self.shows_view = ShowsSelectView()
@@ -134,17 +134,20 @@ class MainWindow(hildon.StackableWindow):
                                         gtk.HILDON_SIZE_FINGER_HEIGHT)
         self.sort_by_ep_filter.set_mode(False)
         self.sort_by_ep_filter.set_label(_('Sort by ep. date'))
-        self.sort_by_ep_filter.connect('clicked',
-                                lambda w: self.shows_view.sort_by_recent_date())
         menu.add_filter(self.sort_by_ep_filter)
         self.sort_by_name_filter = hildon.GtkRadioButton(
                                           gtk.HILDON_SIZE_FINGER_HEIGHT,
                                           group = self.sort_by_ep_filter)
         self.sort_by_name_filter.set_mode(False)
         self.sort_by_name_filter.set_label(_('Sort by name'))
+        menu.add_filter(self.sort_by_name_filter)
+        self.sort_by_name_filter.set_active(
+            self.settings.getConf(Settings.SHOWS_SORT) != \
+                Settings.RECENT_EPISODE)
+        self.sort_by_ep_filter.connect('clicked',
+                                lambda w: self.shows_view.sort_by_recent_date())
         self.sort_by_name_filter.connect('clicked',
                              lambda w: self.shows_view.sort_by_name_ascending())
-        menu.add_filter(self.sort_by_name_filter)
 
         self.delete_menu = hildon.GtkButton(gtk.HILDON_SIZE_FINGER_HEIGHT)
         self.delete_menu.set_label(_('Delete shows'))
@@ -390,7 +393,7 @@ class ShowsSelectView(gtk.TreeView):
         self.tree_filter = self.tree_model.filter_new()
         self.set_model(self.tree_filter)
         self.append_column(column)
-        self.sort_by_name_ascending()
+        self.sort()
 
     def set_shows(self, shows):
         self.tree_model.add_shows(shows)
@@ -1005,21 +1008,21 @@ class EpisodesView(hildon.StackableWindow):
     def _create_menu(self):
         menu = hildon.AppMenu()
 
-        button = hildon.GtkRadioButton(gtk.HILDON_SIZE_FINGER_HEIGHT)
-        button.set_mode(False)
-        button.set_label(_('A-Z'))
-        button.connect('clicked', self._sort_ascending_cb)
-        menu.add_filter(button)
-        button = hildon.GtkRadioButton(gtk.HILDON_SIZE_FINGER_HEIGHT, group = button)
-        button.set_mode(False)
-        button.set_label(_('Z-A'))
-        button.connect('clicked', self._sort_descending_cb)
-        menu.add_filter(button)
-        if self.settings.getConf(self.settings.EPISODES_ORDER_CONF_NAME) == \
-           self.settings.DESCENDING_ORDER:
-            button.set_active(True)
+        button_asc = hildon.GtkRadioButton(gtk.HILDON_SIZE_FINGER_HEIGHT)
+        button_asc.set_mode(False)
+        button_asc.set_label(_('A-Z'))
+        menu.add_filter(button_asc)
+        button_desc = hildon.GtkRadioButton(gtk.HILDON_SIZE_FINGER_HEIGHT, group = button_asc)
+        button_desc.set_mode(False)
+        button_desc.set_label(_('Z-A'))
+        menu.add_filter(button_desc)
+        if self.settings.getConf(Settings.EPISODES_ORDER_CONF_NAME) == \
+                Settings.ASCENDING_ORDER:
+            button_asc.set_active(True)
         else:
-            button.set_active(False)
+            button_desc.set_active(True)
+        button_asc.connect('clicked', self._sort_ascending_cb)
+        button_desc.connect('clicked', self._sort_descending_cb)
 
         button = hildon.GtkButton(gtk.HILDON_SIZE_FINGER_HEIGHT)
         button.set_label(_('Mark all'))

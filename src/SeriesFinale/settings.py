@@ -47,6 +47,7 @@ class Settings(object):
                 ADD_SPECIAL_SEASONS: True}
 
     conf = dict(DEFAULTS)
+    changed = False
 
     def load(self, conf_file):
         if not (os.path.exists(conf_file) and os.path.isfile(conf_file)):
@@ -62,16 +63,23 @@ class Settings(object):
                     self.setConf(key, key_element.text.lower() == 'true')
                     continue
                 self.setConf(key, self.TYPES[key](key_element.text))
+        self.__class__.changed = False
 
     def save(self, conf_file):
+        if not self.__class__.changed:
+            return
+
         root = ET.Element(constants.SF_COMPACT_NAME)
         for key, value in self.__class__.conf.items():
             element = ET.SubElement(root, key)
             element.text = str(value)
-        return ET.ElementTree(root).write(conf_file, 'UTF-8')
+        ET.ElementTree(root).write(conf_file, 'UTF-8')
+        self.__class__.changed = False
 
     def setConf(self, key, value):
-        self.__class__.conf[key] = value
+        if self.__class__.conf[key] != value:
+            self.__class__.conf[key] = value
+            self.__class__.changed = True
 
     def getConf(self, key):
         return self.TYPES[key](self.__class__.conf[key])
