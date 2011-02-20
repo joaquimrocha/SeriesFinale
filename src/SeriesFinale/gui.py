@@ -1060,7 +1060,7 @@ class EpisodesView(hildon.StackableWindow):
 
     def _row_activated_cb(self, view, path, column):
         episode = self.episodes_check_view.get_episode_from_path(path)
-        if self.episodes_check_view.get_column(1) == column:
+        if self.episodes_check_view.get_column(EpisodeListStore.INFO_COLUMN) == column:
             episodes_view = EpisodeView(episode)
             episodes_view.connect('delete-event', self._update_episodes_list_cb)
             episodes_view.show_all()
@@ -1078,7 +1078,7 @@ class EpisodesView(hildon.StackableWindow):
         episode = self.episodes_check_view.get_episode_from_path(path)
         episode.watched = not episode.watched
         episode.updated()
-        model[path][0] = episode.watched
+        model[path][model.CHECK_COLUMN] = episode.watched
         model.update_iter(model.get_iter(path))
 
     def _sort_ascending_cb(self, button):
@@ -1092,19 +1092,25 @@ class EpisodesView(hildon.StackableWindow):
                               self.settings.DESCENDING_ORDER)
 
 class EpisodeListStore(gtk.ListStore):
-
     CHECK_COLUMN = 0
     INFO_COLUMN = 1
     EPISODE_COLUMN = 2
 
     def __init__(self):
-        super(EpisodeListStore, self).__init__(bool, str, gobject.TYPE_PYOBJECT)
+        EpisodeListStore.CHECK_COLUMN = Settings().getConf(Settings.EPISODES_CHECK_POSITION)
+        EpisodeListStore.INFO_COLUMN = 1 - EpisodeListStore.CHECK_COLUMN
+        types = {self.CHECK_COLUMN: bool, self.INFO_COLUMN: str,
+                 self.EPISODE_COLUMN: gobject.TYPE_PYOBJECT}
+        super(EpisodeListStore, self).__init__(*types.values())
 
     def add(self, episode_list):
         self.clear()
         for episode in episode_list:
             name = str(episode)
-            self.append([episode.watched, name, episode])
+            row = {self.CHECK_COLUMN: episode.watched,
+                   self.INFO_COLUMN: name,
+                   self.EPISODE_COLUMN: episode}
+            self.append(row.values())
         self.update()
 
 
@@ -1124,16 +1130,18 @@ class EpisodesCheckView(gtk.TreeView):
     def __init__(self):
         super(EpisodesCheckView, self).__init__()
         model = EpisodeListStore()
+        episode_renderer = gtk.CellRendererText()
+        episode_renderer.set_property('ellipsize', pango.ELLIPSIZE_END)
+        if model.CHECK_COLUMN != 0:
+            episode_renderer.set_property('width', gtk.gdk.screen_get_default().get_width() - 150)
+        column = gtk.TreeViewColumn('Name', episode_renderer, markup = model.INFO_COLUMN)
+        self.append_column(column)
         self.watched_renderer = gtk.CellRendererToggle()
         self.watched_renderer.set_property('width', 100)
         self.watched_renderer.set_property('activatable', True)
         column = gtk.TreeViewColumn('Watched', self.watched_renderer)
         column.add_attribute(self.watched_renderer, "active", model.CHECK_COLUMN)
-        self.append_column(column)
-        episode_renderer = gtk.CellRendererText()
-        episode_renderer.set_property('ellipsize', pango.ELLIPSIZE_END)
-        column = gtk.TreeViewColumn('Name', episode_renderer, markup = model.INFO_COLUMN)
-        self.append_column(column)
+        self.insert_column(column, model.CHECK_COLUMN)
         self.set_model(model)
         self.get_model().set_sort_func(2, self._sort_func)
 
@@ -1649,6 +1657,7 @@ class SettingsDialog(gtk.Dialog):
         self.settings = Settings()
         self.vbox.pack_start(self._create_screen_rotation_settings())
         self.vbox.pack_start(self._create_shows_settings())
+        self.vbox.pack_start(self._create_episodes_check_settings())
         self.vbox.show_all()
 
     def _create_screen_rotation_settings(self):
@@ -1675,11 +1684,29 @@ class SettingsDialog(gtk.Dialog):
                              self._special_seasons_check_button_toggled_cb)
         return check_button
 
+    def _create_episodes_check_settings(self):
+        picker_button = hildon.PickerButton(gtk.HILDON_SIZE_FINGER_HEIGHT,
+                                            hildon.BUTTON_ARRANGEMENT_HORIZONTAL)
+        picker_button.set_title(_('Episodes check position:'))
+        picker_button.set_alignment(0, 0.5, 0, 1)
+        selector = hildon.TouchSelector(text = True)
+        selector.append_text(_('Left'))
+        selector.append_text(_('Right'))
+        picker_button.set_selector(selector)
+        picker_button.set_active(self.settings.getConf(Settings.EPISODES_CHECK_POSITION))
+        picker_button.connect('value-changed',
+                              self._episodes_check_picker_button_changed_cb)
+        return picker_button
+
     def _special_seasons_check_button_toggled_cb(self, button):
         self.settings.setConf(Settings.ADD_SPECIAL_SEASONS, button.get_active())
 
     def _screen_rotation_picker_button_changed_cb(self, button):
         self.settings.setConf(Settings.SCREEN_ROTATION, button.get_active())
+
+    def _episodes_check_picker_button_changed_cb(self, button):
+        self.settings.setConf(Settings.EPISODES_CHECK_POSITION,
+                              button.get_active())
 
 def show_information(parent, message):
     hildon.hildon_banner_show_information(parent,
