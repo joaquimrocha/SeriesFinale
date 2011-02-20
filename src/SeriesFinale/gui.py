@@ -629,6 +629,7 @@ class SeasonsView(hildon.StackableWindow):
             self.show.network = info['network']
             self.show.rating = info['rating']
             self.show.actors = info['actors']
+            self.series_manager.updated()
         self.set_title(self.show.name)
 
     def _new_episode_cb(self, button):
@@ -983,7 +984,8 @@ class EpisodesView(hildon.StackableWindow):
     def __init__(self, settings, show, season_number = None):
         super(EpisodesView, self).__init__()
 
-        self.settings = settings
+        self.settings = Settings()
+        self.series_manager = SeriesManager()
 
         self.show = show
         self.season_number = season_number
@@ -1075,6 +1077,7 @@ class EpisodesView(hildon.StackableWindow):
     def _watched_renderer_toggled_cb(self, renderer, path, model):
         episode = self.episodes_check_view.get_episode_from_path(path)
         episode.watched = not episode.watched
+        episode.updated()
         model[path][0] = episode.watched
         model.update_iter(model.get_iter(path))
 
@@ -1176,6 +1179,7 @@ class EpisodesCheckView(gtk.TreeView):
         for path in model or []:
             path[model.CHECK_COLUMN] = \
                 path[model.EPISODE_COLUMN].watched = mark
+            path[model.EPISODE_COLUMN].updated()
 
 class EpisodeView(hildon.StackableWindow):
 
@@ -1237,6 +1241,7 @@ class EpisodeView(hildon.StackableWindow):
             self.episode.writer = episode_info['writer']
             self.episode.rating = episode_info['rating']
             self.episode.guest_stars = episode_info['guest_stars']
+            self.episode.updated()
             self._update_info_text_view()
         edit_episode_dialog.destroy()
 

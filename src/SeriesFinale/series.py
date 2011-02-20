@@ -95,22 +95,27 @@ class Show(object):
 
     def update_episode_list(self, episode_list):
         add_special_seasons = Settings().getConf(Settings.ADD_SPECIAL_SEASONS)
+        series_manager = SeriesManager()
         for episode in episode_list:
             exists = False
             for ep in self.episode_list:
                 if ep == episode:
                     exists = True
                     ep.merge_episode(episode)
+                    series_manager.changed = True
             if not exists:
                 if not add_special_seasons and \
                    self.is_special_season(episode.season_number):
                     continue
                 self.episode_list.append(episode)
+                series_manager.changed = True
 
     def delete_episode(self, episode):
+        series_manager = SeriesManager()
         for i in xrange(len(self.episode_list)):
             if self.episode_list[i] == episode:
                 del self.episode_list[i]
+                series_manager.changed = True
                 break
 
     def delete_season(self, season):
@@ -348,6 +353,9 @@ class Episode(object):
         return '<span foreground="%s">%s\n%s</span>' % \
                (color, saxutils.escape(str(self)), self.get_air_date_text())
 
+    def updated(self):
+        SeriesManager().updated()
+
     episode_number = property(_get_episode_number, _set_episode_number)
     air_date = property(_get_air_date, _set_air_date)
 
@@ -422,6 +430,7 @@ class SeriesManager(gobject.GObject):
 
             self.thetvdb = thetvdbapi.TheTVDB(TVDB_API_KEY)
             self.async_worker = None
+            self.changed = False
 
             # Cached values
             self._cached_tvdb_shows = {}
@@ -544,6 +553,7 @@ class SeriesManager(gobject.GObject):
                 continue
             show.episode_list.append(episode)
         self.series_list.append(show)
+        self.changed = True
         return show
 
     def _get_complete_show_finished_cb(self, show, error):
@@ -599,6 +609,7 @@ class SeriesManager(gobject.GObject):
         if show.id == -1:
             show.id = self._get_id_for_show()
         self.series_list.append(show)
+        self.changed = True
         self.emit(self.SHOW_LIST_CHANGED_SIGNAL)
 
     def delete_show(self, show):
@@ -609,6 +620,7 @@ class SeriesManager(gobject.GObject):
                         if os.path.isfile(image):
                             os.remove(image)
                 del self.series_list[i]
+                self.changed = True
                 self.emit(self.SHOW_LIST_CHANGED_SIGNAL)
                 break
 
@@ -632,6 +644,7 @@ class SeriesManager(gobject.GObject):
         for key, image in show.season_images.items():
             if not os.path.isfile(image):
                 del show.season_images[key]
+                self.changed = True
         # Check if the download is needed
         if len(seasons) == len(show.season_images.keys()) and \
            show.image and os.path.isfile(show.image):
@@ -649,6 +662,7 @@ class SeriesManager(gobject.GObject):
                 image_file = os.path.abspath(image_downloader(url, target_file))
                 show.image = image_file
                 show.downloading_show_image = False
+                self.changed = True
                 self.emit(self.UPDATED_SHOW_ART, show)
             elif image_type == 'season':
                 season = image[3]
@@ -666,6 +680,7 @@ class SeriesManager(gobject.GObject):
                     else:
                         show.season_images[season] = image_file
                     show.downloading_season_image = False
+                    self.changed = True
                     self.emit(self.UPDATED_SHOW_ART, show)
             if show.image and len(show.season_images) == len(seasons):
                 break
@@ -674,10 +689,15 @@ class SeriesManager(gobject.GObject):
         for archive in os.listdir(DATA_DIR):
             if archive.startswith(show.get_season_poster_prefix()):
                 show.assign_image_to_season(os.path.join(DATA_DIR, archive))
+                self.changed = True
             elif archive.startswith(show.get_poster_prefix()):
                 show.image = os.path.abspath(os.path.join(DATA_DIR, archive))
+                self.changed = True
 
     def save(self, save_file_path):
+        if not self.changed:
+            return
+
         dirname = os.path.dirname(save_file_path)
         if not (os.path.exists(dirname) and os.path.isdir(dirname)):
             os.mkdir(dirname)
@@ -685,15 +705,20 @@ class SeriesManager(gobject.GObject):
         save_file = open(save_file_path, 'w')
         save_file.write(serialized)
         save_file.close()
+        self.changed = False
 
     def load(self, file_path):
         if not os.path.exists(file_path):
             self.series_list = []
             return
         self.series_list = serializer.deserialize(file_path)
+        self.changed = False
         self.emit(self.SHOW_LIST_CHANGED_SIGNAL)
 
     def get_async_worker(self):
         if self.async_worker and self.async_worker.isAlive():
             return self.async_worker
         return AsyncWorker()
+
+    def updated(self):
+        self.changed = True
