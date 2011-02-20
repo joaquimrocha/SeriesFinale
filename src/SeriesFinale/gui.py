@@ -27,6 +27,7 @@ import gettext
 import locale
 import pango
 import os
+import re
 from xml.sax import saxutils
 from series import SeriesManager, Show, Episode
 from lib import constants
@@ -91,12 +92,22 @@ class MainWindow(hildon.StackableWindow):
         self.shows_view.connect('row-activated', self._row_activated_cb)
         self.set_title(constants.SF_NAME)
         self.set_app_menu(self._create_menu())
+        self.live_search = LiveSearchEntry(self.shows_view.tree_model,
+                                           self.shows_view.tree_filter,
+                                           ShowListStore.SEARCH_COLUMN)
         area = hildon.PannableArea()
         area.add(self.shows_view)
-        self.add(area)
+        box = gtk.VBox()
+        box.pack_start(area)
+        box.pack_end(self.live_search, False, False)
+        self.add(box)
+        box.show_all()
+        self.live_search.hide()
 
         self.connect('delete-event', self._exit_cb)
         self._update_delete_menu_visibility()
+
+        self.connect('key-press-event', self._key_press_event_cb)
 
         self._have_deleted = False
 
@@ -209,6 +220,7 @@ class MainWindow(hildon.StackableWindow):
                      lambda w, e:
                         self.shows_view.update(show))
         seasons_view.show_all()
+        self.live_search.hide()
 
     def _new_show_dialog(self):
         new_show_dialog = NewShowDialog(self)
@@ -313,6 +325,12 @@ class MainWindow(hildon.StackableWindow):
                  self._rotation_manager.NEVER]
         self._rotation_manager.set_mode(modes[configured_mode])
 
+    def _key_press_event_cb(self, window, event):
+        char = gtk.gdk.keyval_to_unicode(event.keyval)
+        if self.live_search.is_focus() or char == 0 or not chr(char).strip():
+            return
+        self.live_search.show()
+
 class DeleteView(hildon.StackableWindow):
 
     def __init__(self,
@@ -361,42 +379,38 @@ class ShowsSelectView(gtk.TreeView):
 
     def __init__(self):
         super(ShowsSelectView, self).__init__()
-        model = ShowListStore()
+        self.tree_model = ShowListStore()
         show_image_renderer = gtk.CellRendererPixbuf()
         column = gtk.TreeViewColumn('Image', show_image_renderer,
-                                    pixbuf = model.IMAGE_COLUMN)
+                                    pixbuf = ShowListStore.IMAGE_COLUMN)
         self.append_column(column)
         show_renderer = gtk.CellRendererText()
         show_renderer.set_property('ellipsize', pango.ELLIPSIZE_END)
-        column = gtk.TreeViewColumn('Name', show_renderer, markup = model.INFO_COLUMN)
-        self.set_model(model)
+        column = gtk.TreeViewColumn('Name', show_renderer, markup = ShowListStore.INFO_COLUMN)
+        self.tree_filter = self.tree_model.filter_new()
+        self.set_model(self.tree_filter)
         self.append_column(column)
         self.sort_by_name_ascending()
 
     def set_shows(self, shows):
-        model = self.get_model()
-        model.add_shows(shows)
+        self.tree_model.add_shows(shows)
 
     def get_show_from_path(self, path):
-        model = self.get_model()
-        return model[path][model.SHOW_COLUMN]
+        return self.tree_model[path][self.tree_model.SHOW_COLUMN]
 
     def sort_by_recent_date(self):
-        model = self.get_model()
-        model.set_sort_column_id(model.NEXT_EPISODE_COLUMN,
-                                 gtk.SORT_ASCENDING)
+        self.tree_model.set_sort_column_id(self.tree_model.NEXT_EPISODE_COLUMN,
+                                           gtk.SORT_ASCENDING)
         Settings().setConf(Settings.SHOWS_SORT, Settings.RECENT_EPISODE)
 
     def sort_by_name_ascending(self):
-        model = self.get_model()
-        model.set_sort_column_id(model.INFO_COLUMN,
-                                 gtk.SORT_ASCENDING)
+        self.tree_model.set_sort_column_id(self.tree_model.INFO_COLUMN,
+                                           gtk.SORT_ASCENDING)
         Settings().setConf(Settings.SHOWS_SORT, Settings.ASCENDING_ORDER)
 
     def update(self, show = None):
-        model = self.get_model()
-        if model:
-            model.update(show)
+        if self.tree_model:
+            self.tree_model.update(show)
             self.sort()
 
     def sort(self):
@@ -411,10 +425,11 @@ class ShowListStore(gtk.ListStore):
     IMAGE_COLUMN = 0
     INFO_COLUMN = 1
     SHOW_COLUMN = 2
-    NEXT_EPISODE_COLUMN = 3
+    SEARCH_COLUMN = 3
+    NEXT_EPISODE_COLUMN = 4
 
     def __init__(self):
-        super(ShowListStore, self).__init__(gtk.gdk.Pixbuf, str, gobject.TYPE_PYOBJECT, gobject.TYPE_PYOBJECT)
+        super(ShowListStore, self).__init__(gtk.gdk.Pixbuf, str, gobject.TYPE_PYOBJECT, str, gobject.TYPE_PYOBJECT)
         self.cached_pixbufs = {}
         self.set_sort_func(self.NEXT_EPISODE_COLUMN, self._sort_func)
 
@@ -424,6 +439,7 @@ class ShowListStore(gtk.ListStore):
             row = {self.IMAGE_COLUMN: None,
                    self.INFO_COLUMN: saxutils.escape(show.name),
                    self.SHOW_COLUMN: show,
+                   self.SEARCH_COLUMN: saxutils.escape(show.name).lower(),
                    self.NEXT_EPISODE_COLUMN: None
                   }
             self.append(row.values())
@@ -1303,6 +1319,61 @@ class InfoTextView(hildon.TextView):
             return
         buffer.delete(buffer.get_start_iter(), buffer.get_end_iter())
         self.iter = buffer.get_start_iter()
+
+class LiveSearchEntry(gtk.HBox):
+
+    def __init__(self, tree_model, tree_filter, filter_column = 0):
+        super(LiveSearchEntry, self).__init__()
+        self.tree_model = tree_model
+        self.tree_filter = tree_filter
+        if not self.tree_model or not self.tree_filter:
+            return
+        self.filter_column = filter_column
+        self.tree_filter.set_visible_func(self._tree_filter_func)
+        self.entry = hildon.Entry(gtk.HILDON_SIZE_FINGER_HEIGHT)
+        self.entry.set_input_mode(gtk.HILDON_GTK_INPUT_MODE_FULL)
+        self.entry.show()
+        self.entry.connect('changed',
+                           self._entry_changed_cb)
+        self.cancel_button = hildon.GtkButton(gtk.HILDON_SIZE_FINGER_HEIGHT)
+        image = gtk.image_new_from_icon_name('general_close',
+                                             gtk.ICON_SIZE_LARGE_TOOLBAR)
+        if image:
+            self.cancel_button.set_image(image)
+        else:
+            self.cancel_button.set_label(_('Cancel'))
+        self.cancel_button.set_size_request(self.cancel_button.get_size_request()[1], -1)
+        self.cancel_button.show()
+        self.cancel_button.connect('clicked', self._cancel_button_clicked_cb)
+        self.pack_start(self.entry)
+        self.pack_start(self.cancel_button, False, False)
+
+    def _cancel_button_clicked_cb(self, button):
+        self.hide()
+        self.entry.set_text('')
+
+    def _tree_filter_func(self, model, iter):
+        info = model.get_value(iter, self.filter_column) or ''
+        text_to_filter = self.entry.get_text().strip()
+        if not text_to_filter:
+            return True
+        expr = re.compile('(.*\s+)*(%s)' % re.escape(text_to_filter.lower()))
+        if expr.match(info):
+            return True
+        return False
+
+    def _entry_changed_cb(self, entry):
+        self.tree_filter.refilter()
+        if not entry.get_text():
+            self.hide()
+
+    def show(self):
+        gtk.HBox.show(self)
+        self.entry.grab_focus()
+
+    def hide(self):
+        gtk.HBox.hide(self)
+        self.entry.set_text('')
 
 class NewShowsDialog(gtk.Dialog):
 
