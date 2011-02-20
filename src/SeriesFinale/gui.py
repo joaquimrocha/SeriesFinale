@@ -1180,9 +1180,9 @@ class EpisodeView(hildon.StackableWindow):
         super(EpisodeView, self).__init__()
         self.episode = episode
 
-        self.set_title(str(self.episode))
-
         contents_area = hildon.PannableArea()
+        contents_area.connect('horizontal-movement',
+                              self._horizontal_movement_cb)
         contents = gtk.VBox(False, 0)
         contents_area.add_with_viewport(contents)
 
@@ -1196,7 +1196,8 @@ class EpisodeView(hildon.StackableWindow):
 
     def _update_info_text_view(self):
         self.infotextview.clear()
-        self.infotextview.set_title(self.episode.name)
+        self.infotextview.set_title('%(number)s - %(name)s' % {'name': self.episode.name,
+                                                               'number': self.episode.get_episode_show_number()})
         self.infotextview.add_field(self.episode.overview)
         self.infotextview.add_field('\n')
         self.infotextview.add_field(self.episode.get_air_date_text(),
@@ -1235,6 +1236,16 @@ class EpisodeView(hildon.StackableWindow):
             self.episode.guest_stars = episode_info['guest_stars']
             self._update_info_text_view()
         edit_episode_dialog.destroy()
+
+    def _horizontal_movement_cb(self, pannable_area, direction,
+                                initial_x, initial_y):
+        if direction == hildon.MOVEMENT_LEFT:
+            episode = self.episode.show.get_next_episode(self.episode)
+        else:
+            episode = self.episode.show.get_previous_episode(self.episode)
+        if episode:
+            self.episode = episode
+            self._update_info_text_view()
 
 class EpisodesDeleteView(DeleteView):
 
