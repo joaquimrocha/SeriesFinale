@@ -431,6 +431,7 @@ class SeriesManager(gobject.GObject):
             self.thetvdb = thetvdbapi.TheTVDB(TVDB_API_KEY)
             self.async_worker = None
             self.changed = False
+            self.auto_save_id = None
 
             # Cached values
             self._cached_tvdb_shows = {}
@@ -696,7 +697,7 @@ class SeriesManager(gobject.GObject):
 
     def save(self, save_file_path):
         if not self.changed:
-            return
+            return True
 
         dirname = os.path.dirname(save_file_path)
         if not (os.path.exists(dirname) and os.path.isdir(dirname)):
@@ -706,6 +707,7 @@ class SeriesManager(gobject.GObject):
         save_file.write(serialized)
         save_file.close()
         self.changed = False
+        return True
 
     def load(self, file_path):
         if not os.path.exists(file_path):
@@ -722,3 +724,12 @@ class SeriesManager(gobject.GObject):
 
     def updated(self):
         self.changed = True
+
+    def auto_save(self, activate = True):
+        if activate and not self.auto_save_id:
+            self.auto_save_id = gobject.timeout_add(constants.SAVE_TIMEOUT_MS,
+                                                    self.save,
+                                                    constants.SF_DB_FILE)
+        elif self.auto_save_id and not activate:
+            gobject.source_remove(self.auto_save_id)
+            self.auto_save_id = None

@@ -121,6 +121,7 @@ class MainWindow(hildon.StackableWindow):
                                  self.settings.getConf(Settings.SHOWS_SORT) != \
                                  Settings.RECENT_EPISODE)
         self._applyRotation()
+        self.series_manager.auto_save(True)
 
     def _create_menu(self):
         menu = hildon.AppMenu()
@@ -250,6 +251,7 @@ class MainWindow(hildon.StackableWindow):
         if not self.series_manager.series_list and not self._have_deleted:
             gtk.main_quit()
             return
+        self.series_manager.auto_save(False)
         save_shows_item = AsyncItem(self.series_manager.save,
                                (constants.SF_DB_FILE,))
         save_conf_item = AsyncItem(self.settings.save,
