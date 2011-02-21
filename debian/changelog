@@ -1,3 +1,12 @@
+seriesfinale (0.6.6-1) unstable; urgency=low
+  * Add live search support for filtering shows
+  * Save database and settings only if there were changes
+  * Add quick access to previous/next episodes when viewing an episode
+  * Add an option to set the check-boxes position
+  * Use sentence case in the UI
+  * Updated Spanish translation
+ -- Joaquim Rocha <jrocha@igalia.com>  Mon, 21 Feb 2011 18:05:48 +0100
+
 seriesfinale (0.6.5-1) unstable; urgency=low
   * Add sorting shows by most recent episode or name
   * Add auto-rotation support
