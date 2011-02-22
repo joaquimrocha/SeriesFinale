@@ -464,6 +464,7 @@ class ShowListStore(gtk.ListStore):
         self.set_value(iter, self.INFO_COLUMN, info_markup)
         self.set_value(iter, self.NEXT_EPISODE_COLUMN,
                        info['next_episode'])
+        self.set_value(iter, self.SEARCH_COLUMN, show.name.lower())
         if pixbuf_is_cover(pixbuf):
             return
         if show.image and os.path.isfile(show.image):
