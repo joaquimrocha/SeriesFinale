@@ -399,7 +399,7 @@ class ShowsSelectView(gtk.TreeView):
         self.tree_model.add_shows(shows)
 
     def get_show_from_path(self, path):
-        return self.tree_model[path][self.tree_model.SHOW_COLUMN]
+        return self.get_model()[path][ShowListStore.SHOW_COLUMN]
 
     def sort_by_recent_date(self):
         self.tree_model.set_sort_column_id(self.tree_model.NEXT_EPISODE_COLUMN,
