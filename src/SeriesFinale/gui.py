@@ -28,6 +28,7 @@ import locale
 import pango
 import os
 import re
+import time
 from xml.sax import saxutils
 from series import SeriesManager, Show, Episode
 from lib import constants
@@ -67,6 +68,7 @@ class MainWindow(hildon.StackableWindow):
         self.series_manager = SeriesManager()
         self.settings = Settings()
         hildon.hildon_gtk_window_set_progress_indicator(self, True)
+        save_pid = AsyncItem(self.save_current_pid,())
         load_conf_item = AsyncItem(self.settings.load,
                                    (constants.SF_CONF_FILE,))
         load_shows_item = AsyncItem(self.series_manager.load,
@@ -84,9 +86,19 @@ class MainWindow(hildon.StackableWindow):
                                     self._update_show_art)
 
         self.request = AsyncWorker()
+        self.request.queue.put((0, save_pid))
         self.request.queue.put((0, load_conf_item))
         self.request.queue.put((0, load_shows_item))
-        self.request.start()
+
+        old_pid = self.get_previous_pid()
+
+        if old_pid:
+            show_information(self, _("Waiting for previous SeriesFinale to finish...."))
+            gobject.timeout_add(2000,
+                                self.run_after_pid_finish,
+                                old_pid, self.request.start)
+        else:
+            self.request.start()
 
         self.shows_view = ShowsSelectView()
         self.shows_view.connect('row-activated', self._row_activated_cb)
@@ -110,6 +122,31 @@ class MainWindow(hildon.StackableWindow):
         self.connect('key-press-event', self._key_press_event_cb)
 
         self._have_deleted = False
+
+    def save_current_pid(self):
+        pidfile = open(constants.SF_PID_FILE, 'w')
+        pidfile.write('%s' % os.getpid())
+        pidfile.close()
+
+    def get_previous_pid(self):
+        if not os.path.isfile(constants.SF_PID_FILE):
+            return None
+
+        pidfile = open(constants.SF_PID_FILE, 'r')
+        pid = pidfile.readline()
+        pidfile.close()
+        if os.path.exists('/proc/%s' % pid):
+            return pid
+        else:
+            os.remove(constants.SF_PID_FILE)
+            return None
+    
+    def run_after_pid_finish(self, pid, callback):
+        if os.path.exists('/proc/%s' % pid):
+            return True
+
+        callback()
+        return False
 
     def _load_finished(self, dummy_arg, error):
         self.shows_view.set_shows(self.series_manager.series_list)
@@ -252,6 +289,7 @@ class MainWindow(hildon.StackableWindow):
             gtk.main_quit()
             return
         self.series_manager.auto_save(False)
+
         save_shows_item = AsyncItem(self.series_manager.save,
                                (constants.SF_DB_FILE,))
         save_conf_item = AsyncItem(self.settings.save,
