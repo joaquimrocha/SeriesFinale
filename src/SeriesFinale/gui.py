@@ -32,6 +32,7 @@ import time
 from xml.sax import saxutils
 from series import SeriesManager, Show, Episode
 from lib import constants
+from lib.connectionmanager import ConnectionManager
 from lib.portrait import FremantleRotation
 from lib.util import get_color
 from settings import Settings
@@ -64,6 +65,10 @@ class MainWindow(hildon.StackableWindow):
 	# Autorotation
  	self._rotation_manager = FremantleRotation(constants.SF_COMPACT_NAME,
                                                   self)
+
+        self.connection_manager = ConnectionManager()
+        self.connection_manager.connect('connection-changed',
+                                        self._on_connection_changed)
 
         self.series_manager = SeriesManager()
         self.settings = Settings()
@@ -256,7 +261,7 @@ class MainWindow(hildon.StackableWindow):
 
     def _row_activated_cb(self, view, path, column):
         show = self.shows_view.get_show_from_path(path)
-        seasons_view = SeasonsView(self.settings, self.series_manager, show)
+        seasons_view = SeasonsView(self.settings, self.series_manager, self.connection_manager, show)
         seasons_view.connect('delete-event',
                      lambda w, e:
                         self.shows_view.update(show))
@@ -315,7 +320,7 @@ class MainWindow(hildon.StackableWindow):
             self.update_all_menu.hide()
         else:
             self.delete_menu.show()
-            self.update_all_menu.show()
+            self._on_connection_changed(self.connection_manager)
 
     def _update_all_shows_cb(self, button):
         hildon.hildon_gtk_window_set_progress_indicator(self, True)
@@ -373,6 +378,12 @@ class MainWindow(hildon.StackableWindow):
         if self.live_search.is_focus() or char == 0 or not chr(char).strip():
             return
         self.live_search.show()
+
+    def _on_connection_changed(self, connection_manager):
+        if connection_manager.is_online():
+            self.update_all_menu.show()
+        else:
+            self.update_all_menu.hide()
 
 class DeleteView(hildon.StackableWindow):
 
@@ -544,7 +555,7 @@ class ShowListStore(gtk.ListStore):
 
 class SeasonsView(hildon.StackableWindow):
 
-    def __init__(self, settings, series_manager, show):
+    def __init__(self, settings, series_manager, connection_manager, show):
         super(SeasonsView, self).__init__()
         self.set_title(show.name)
 
@@ -556,6 +567,9 @@ class SeasonsView(hildon.StackableWindow):
         self.series_manager.connect('updated-show-art',
                                     self._update_show_art)
 
+        self.connection_manager = connection_manager
+        self.connection_manager.connect('connection-changed',
+                                        self._on_connection_changed)
         self.show = show
         self.set_app_menu(self._create_menu())
         self.set_title(show.name)
@@ -631,6 +645,7 @@ class SeasonsView(hildon.StackableWindow):
             self.update_menu.hide()
         else:
             self.update_menu.show()
+            self._on_connection_changed(self.connection_manager)
 
     def _update_series_cb(self, button):
         self.request = self.series_manager.update_show_episodes(self.show)
@@ -722,6 +737,12 @@ class SeasonsView(hildon.StackableWindow):
                                                 self.seasons_select_view)
         seasons = self.show.get_seasons()
         seasons_delete_view.show_all()
+
+    def _on_connection_changed(self, connection_manager):
+        if connection_manager.is_online():
+            self.update_menu.show()
+        else:
+            self.update_menu.hide()
 
 class SeasonsDeleteView(DeleteView):
 
@@ -1461,6 +1482,9 @@ class NewShowsDialog(gtk.Dialog):
         contents.add(self.manual_add_button)
         self.vbox.add(contents)
         self.vbox.show_all()
+        parent.connection_manager.connect('connection-changed',
+                                          self._on_connection_changed)
+        self._on_connection_changed(parent.connection_manager)
 
     def _button_clicked_cb(self, button):
         if button == self.search_shows_button:
@@ -1468,6 +1492,11 @@ class NewShowsDialog(gtk.Dialog):
         elif button == self.manual_add_button:
             self.response(self.ADD_MANUALLY_RESPONSE)
 
+    def _on_connection_changed(self, connection_manager):
+        if connection_manager.is_online():
+            self.search_shows_button.show()
+        else:
+            self.search_shows_button.hide()
 
 class FoundShowListStore(gtk.ListStore):
 
