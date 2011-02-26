@@ -1133,9 +1133,8 @@ class EpisodesCheckView(gtk.TreeView):
         model = EpisodeListStore()
         episode_renderer = gtk.CellRendererText()
         episode_renderer.set_property('ellipsize', pango.ELLIPSIZE_END)
-        if model.CHECK_COLUMN != 0:
-            episode_renderer.set_property('width', gtk.gdk.screen_get_default().get_width() - 150)
         column = gtk.TreeViewColumn('Name', episode_renderer, markup = model.INFO_COLUMN)
+        column.set_property('expand', True)
         self.append_column(column)
         self.watched_renderer = gtk.CellRendererToggle()
         self.watched_renderer.set_property('width', 100)
