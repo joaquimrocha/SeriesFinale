@@ -1256,6 +1256,8 @@ class EpisodeView(hildon.StackableWindow):
         super(EpisodeView, self).__init__()
         self.episode = episode
 
+        self.set_app_menu(self._create_menu())
+
         contents_area = hildon.PannableArea()
         contents_area.connect('horizontal-movement',
                               self._horizontal_movement_cb)
@@ -1266,14 +1268,12 @@ class EpisodeView(hildon.StackableWindow):
         self._update_info_text_view()
         contents.add(self.infotextview)
 
-        self.set_app_menu(self._create_menu())
-
         self.add(contents_area)
 
     def _update_info_text_view(self):
         self.infotextview.clear()
-        self.infotextview.set_title('%(number)s - %(name)s' % {'name': self.episode.name,
-                                                               'number': self.episode.get_episode_show_number()})
+        self._set_episode_title()
+        self.check_button.set_active(self.episode.watched)
         self.infotextview.add_field(self.episode.overview)
         self.infotextview.add_field('\n')
         self.infotextview.add_field(self.episode.get_air_date_text(),
@@ -1284,6 +1284,11 @@ class EpisodeView(hildon.StackableWindow):
         self.infotextview.add_field(self.episode.rating, _('Rating'))
         self.set_title(self.episode.name)
 
+    def _set_episode_title(self):
+        self.infotextview.set_title('%(number)s - %(name)s' % {'name': self.episode.name,
+                                                               'number': self.episode.get_episode_show_number()},
+                                    self.episode.watched)
+
     def _create_menu(self):
         menu = hildon.AppMenu()
 
@@ -1291,6 +1296,12 @@ class EpisodeView(hildon.StackableWindow):
         button.set_label(_('Edit info'))
         button.connect('clicked', self._edit_episode_cb)
         menu.append(button)
+
+        self.check_button = hildon.CheckButton(gtk.HILDON_SIZE_FINGER_HEIGHT)
+        self.check_button.set_label(_('Watched'))
+        self.check_button.set_active(self.episode.watched)
+        self.check_button.connect('toggled', self._watched_button_toggled_cb)
+        menu.append(self.check_button)
 
         menu.show_all()
         return menu
@@ -1323,6 +1334,10 @@ class EpisodeView(hildon.StackableWindow):
         if episode:
             self.episode = episode
             self._update_info_text_view()
+
+    def _watched_button_toggled_cb(self, button):
+        self.episode.watched = button.get_active()
+        self._set_episode_title()
 
 class EpisodesDeleteView(DeleteView):
 
@@ -1370,27 +1385,39 @@ class EpisodesSelectView(gtk.TreeView):
 
 class InfoTextView(hildon.TextView):
 
+    TEXT_TAG = 'title'
+
     def __init__(self):
         super(InfoTextView, self).__init__()
 
         buffer = gtk.TextBuffer()
-        self.iter = buffer.get_start_iter()
 
         self.set_buffer(buffer)
         self.set_wrap_mode(gtk.WRAP_WORD)
         self.set_editable(False)
         self.set_cursor_visible(False)
 
-    def set_title(self, title):
+    def set_title(self, title, strike = False):
         if not title:
             return
-        title_tag = gtk.TextTag()
+        text_buffer = self.get_buffer()
+        tag_table = text_buffer.get_tag_table()
+        title_tag = tag_table.lookup(self.TEXT_TAG)
+        if not title_tag:
+            title_tag = gtk.TextTag(self.TEXT_TAG)
+            tag_table.add(title_tag)
+        else:
+            title_end_iter = text_buffer.get_start_iter()
+            if not title_end_iter.forward_to_tag_toggle(title_tag):
+                title_end_iter = text_buffer.get_start_iter()
+            text_buffer.delete(text_buffer.get_start_iter(),
+                               title_end_iter)
+
         title_tag.set_property('weight', pango.WEIGHT_BOLD)
         title_tag.set_property('size', pango.units_from_double(24.0))
         title_tag.set_property('underline-set', True)
-        tag_table = self.get_buffer().get_tag_table()
-        tag_table.add(title_tag)
-        self.get_buffer().insert_with_tags(self.iter, str(title) + '\n', title_tag)
+        title_tag.set_property('strikethrough', strike)
+        text_buffer.insert_with_tags(text_buffer.get_start_iter(), str(title) + '\n', title_tag)
 
     def add_field(self, contents, label = None):
         if not contents:
@@ -1399,14 +1426,13 @@ class InfoTextView(hildon.TextView):
             contents = _('\n%(label)s: %(contents)s') % {'label': label,
                                                          'contents': contents,
                                                         }
-        self.get_buffer().insert(self.iter, contents)
+        self.get_buffer().insert(self.get_buffer().get_end_iter(), contents)
 
     def clear(self):
         buffer = self.get_buffer()
         if not buffer:
             return
         buffer.delete(buffer.get_start_iter(), buffer.get_end_iter())
-        self.iter = buffer.get_start_iter()
 
 class LiveSearchEntry(gtk.HBox):
 
