@@ -1,3 +1,15 @@
+seriesfinale (0.6.7-1) unstable; urgency=low
+  * Fix getting the show when live search was used
+  * Update search column when shows are updated
+  * Remove covers only if package is removed.
+  * Fix episode's name column size in episodes view
+  * Autosave database every 5 minutes (mb#11121)
+  * Save on database on tmp file first
+  * Check if SeriesFinale is already running
+  * Hide/show buttons when offline/online
+  * Mark episode as watched from episode's view
+ -- Joaquim Rocha <jrocha@igalia.com>  Tue, 12 Apr 2011 18:05:48 +0100
+
 seriesfinale (0.6.6-1) unstable; urgency=low
   * Add live search support for filtering shows
   * Save database and settings only if there were changes
