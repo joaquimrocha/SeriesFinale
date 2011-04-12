@@ -1170,7 +1170,7 @@ class EpisodeListStore(gtk.ListStore):
         for episode in episode_list:
             name = str(episode)
             row = {self.CHECK_COLUMN: episode.watched,
-                   self.INFO_COLUMN: name,
+                   self.INFO_COLUMN: saxutils.escape(str(name)),
                    self.EPISODE_COLUMN: episode}
             self.append(row.values())
         self.update()
