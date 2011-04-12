@@ -62,24 +62,21 @@ class Show(object):
         return [episode for episode in self.episode_list if episode.season_number == season_number]
 
     def get_next_episode(self, episode):
-        episodes = self.get_episodes_by_season(episode.season_number)
-        next_ep_number = episode.episode_number + 1
-        for ep in episodes:
-            if ep.episode_number == next_ep_number:
-                return ep
-        if episodes:
-            return episodes[0]
-        return None
+        return self._get_episode_by_offset(episode, 1)
 
     def get_previous_episode(self, episode):
-        episodes = self.get_episodes_by_season(episode.season_number)
-        next_ep_number = episode.episode_number - 1
-        for ep in episodes:
-            if ep.episode_number == next_ep_number:
-                return ep
-        if episodes:
-            return episodes[-1]
-        return None
+        return self._get_episode_by_offset(episode, -1)
+
+    def _get_episode_by_offset(self, episode, offset):
+        episodes = [(ep.episode_number, ep) for ep in \
+                    self.get_episodes_by_season(episode.season_number)]
+        episodes.sort()
+        number_of_episodes = len(episodes)
+        for i in range(number_of_episodes):
+            current_episode = episodes[i][1]
+            if current_episode == episode:
+                return episodes[(i + offset) % number_of_episodes][1]
+        return episode
 
     def get_seasons(self):
         seasons = []
