@@ -1237,10 +1237,11 @@ class EpisodeListStore(gtk.ListStore):
 
 
     def update(self):
-        iter = self.get_iter_first()
+        iter = self.get_iter_root()
         while iter:
+            next_iter = self.iter_next(iter)
             self.update_iter(iter)
-            iter = self.iter_next(iter)
+            iter = next_iter
 
     def update_iter(self, iter):
         episode = self.get_value(iter, self.EPISODE_COLUMN)
