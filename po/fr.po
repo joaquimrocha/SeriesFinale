@@ -1,0 +1,354 @@
+# Spanish translations for SeriesFinale package.
+# Copyright (C) 2010 Joaquim Rocha <jrocha@igalia.com>
+# This file is distributed under the same license as the SeriesFinale package.
+# Juan A. Suárez Romero <jasuarez@igalia.com>, 2010.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: SeriesFinale\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2011-03-11 15:11+0100\n"
+"PO-Revision-Date: 2011-04-01 21:17+0100\n"
+"Last-Translator: David Landreau <pofman.maemo@free.fr>\n"
+"Language-Team: Français\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#: ../src/SeriesFinale/gui.py:129 ../src/SeriesFinale/gui.py:1412
+msgid "Add shows"
+msgstr "Ajouter une série"
+
+#: ../src/SeriesFinale/gui.py:136
+msgid "Sort by ep. date"
+msgstr "Trier par date"
+
+#: ../src/SeriesFinale/gui.py:142
+msgid "Sort by name"
+msgstr "Trier par nom"
+
+#: ../src/SeriesFinale/gui.py:153 ../src/SeriesFinale/gui.py:364
+msgid "Delete shows"
+msgstr "Supprimer des séries"
+
+#: ../src/SeriesFinale/gui.py:158
+msgid "Update all"
+msgstr "Tout mettre à jour"
+
+#: ../src/SeriesFinale/gui.py:163 ../src/SeriesFinale/gui.py:1653
+msgid "Settings"
+msgstr "Paramètres"
+
+#: ../src/SeriesFinale/gui.py:168
+msgid "About"
+msgstr "À propos"
+
+#: ../src/SeriesFinale/gui.py:198
+msgid "Gathering show information. Please wait..."
+msgstr "Récupération des informations de la série. Patientez..."
+
+#: ../src/SeriesFinale/gui.py:210 ../src/SeriesFinale/gui.py:290
+#: ../src/SeriesFinale/gui.py:661 ../src/SeriesFinale/gui.py:1544
+msgid "Please verify your internet connection is available"
+msgstr "Vérifiez que votre connexion internet est disponible"
+
+#: ../src/SeriesFinale/gui.py:213 ../src/SeriesFinale/gui.py:1546
+#, python-format
+msgid "An error occurred. %s"
+msgstr "Une erreur est apparue. %s"
+
+#: ../src/SeriesFinale/gui.py:293
+msgid "Finished updating the shows"
+msgstr "Mise à jour des séries terminée"
+
+#: ../src/SeriesFinale/gui.py:300
+#, python-format
+msgid "Updated \"%s\""
+msgstr "\"%s\" à jour"
+
+#: ../src/SeriesFinale/gui.py:341 ../src/SeriesFinale/gui.py:342
+#: ../src/SeriesFinale/gui.py:365 ../src/SeriesFinale/gui.py:692
+#: ../src/SeriesFinale/gui.py:1272
+msgid "Delete"
+msgstr "Supprimer"
+
+#: ../src/SeriesFinale/gui.py:375
+msgid "Please select one or more shows"
+msgstr "Sélectionnez une ou plusieurs séries"
+
+#: ../src/SeriesFinale/gui.py:557
+msgid "Info"
+msgstr "Informations"
+
+#: ../src/SeriesFinale/gui.py:562 ../src/SeriesFinale/gui.py:1230
+msgid "Edit info"
+msgstr "Modifier les informations"
+
+#: ../src/SeriesFinale/gui.py:569
+msgid "Update show"
+msgstr "Mettre à jour la série"
+
+#: ../src/SeriesFinale/gui.py:574
+msgid "Delete season"
+msgstr "Supprimer la saison"
+
+#: ../src/SeriesFinale/gui.py:579 ../src/SeriesFinale/gui.py:874
+msgid "New episode"
+msgstr "Nouvel épisode"
+
+#: ../src/SeriesFinale/gui.py:598
+msgid "Updating show. Please wait..."
+msgstr "Mise à jour de la série. Patientez..."
+
+#: ../src/SeriesFinale/gui.py:603
+msgid "Show details"
+msgstr "Détails de la série"
+
+#: ../src/SeriesFinale/gui.py:608
+msgid "Genre"
+msgstr "Genre"
+
+#: ../src/SeriesFinale/gui.py:609
+msgid "Network"
+msgstr "Réseau"
+
+#: ../src/SeriesFinale/gui.py:610
+msgid "Actors"
+msgstr "Acteurs"
+
+#: ../src/SeriesFinale/gui.py:611 ../src/SeriesFinale/gui.py:1223
+msgid "Rating"
+msgstr "Note"
+
+#: ../src/SeriesFinale/gui.py:691
+msgid "Delete seasons"
+msgstr "Supprimer des saisons"
+
+#: ../src/SeriesFinale/gui.py:702
+msgid "Please select one or more seasons"
+msgstr "Sélectionnez une ou plusieurs saisons"
+
+#: ../src/SeriesFinale/gui.py:726 ../src/SeriesFinale/series.py:205
+msgid "Special"
+msgstr "Spécial"
+
+#: ../src/SeriesFinale/gui.py:728 ../src/SeriesFinale/series.py:207
+#, python-format
+msgid "Season %s"
+msgstr "Saison %s"
+
+#: ../src/SeriesFinale/gui.py:802
+msgid "Edit show"
+msgstr "Modifier série"
+
+#: ../src/SeriesFinale/gui.py:806 ../src/SeriesFinale/gui.py:878
+msgid "Overview"
+msgstr "Description"
+
+#: ../src/SeriesFinale/gui.py:816 ../src/SeriesFinale/gui.py:913
+msgid "Name:"
+msgstr "Nom:"
+
+#: ../src/SeriesFinale/gui.py:821
+msgid "Genre:"
+msgstr "Genre:"
+
+#: ../src/SeriesFinale/gui.py:822
+msgid "Network:"
+msgstr "Réseau:"
+
+#: ../src/SeriesFinale/gui.py:823 ../src/SeriesFinale/gui.py:925
+msgid "Rating:"
+msgstr "Note:"
+
+#: ../src/SeriesFinale/gui.py:824
+msgid "Actors:"
+msgstr "Acteurs:"
+
+#: ../src/SeriesFinale/gui.py:884
+msgid "Number:"
+msgstr "Numéro:"
+
+#: ../src/SeriesFinale/gui.py:893
+msgid "Season:"
+msgstr "Saison:"
+
+#: ../src/SeriesFinale/gui.py:922
+msgid "Director:"
+msgstr "Réalisateur:"
+
+#: ../src/SeriesFinale/gui.py:923
+msgid "Writer:"
+msgstr "Scénariste:"
+
+#: ../src/SeriesFinale/gui.py:924
+msgid "Original air date:"
+msgstr "Date de première diffusion:"
+
+#: ../src/SeriesFinale/gui.py:926
+msgid "Guest stars:"
+msgstr "Guest stars:"
+
+#: ../src/SeriesFinale/gui.py:1015
+msgid "A-Z"
+msgstr "A-Z"
+
+#: ../src/SeriesFinale/gui.py:1019
+msgid "Z-A"
+msgstr "Z-A"
+
+#: ../src/SeriesFinale/gui.py:1030
+msgid "Mark all"
+msgstr "Tout cocher"
+
+#: ../src/SeriesFinale/gui.py:1035
+msgid "Mark none"
+msgstr "Tout décocher"
+
+#: ../src/SeriesFinale/gui.py:1040 ../src/SeriesFinale/gui.py:1271
+msgid "Delete episodes"
+msgstr "Supprimer des épisodes"
+
+#: ../src/SeriesFinale/gui.py:1219
+msgid "Original air date"
+msgstr "Date de première diffusion"
+
+#: ../src/SeriesFinale/gui.py:1220
+msgid "Director"
+msgstr "Réalisateur"
+
+#: ../src/SeriesFinale/gui.py:1221
+msgid "Writer"
+msgstr "Scénariste"
+
+#: ../src/SeriesFinale/gui.py:1222
+msgid "Guest stars"
+msgstr "Guest stars"
+
+#: ../src/SeriesFinale/gui.py:1282
+msgid "Please select one or more episodes"
+msgstr "Sélectionnez un ou plusieurs épisodes"
+
+#: ../src/SeriesFinale/gui.py:1338
+#, python-format
+msgid ""
+"\n"
+"%(label)s: %(contents)s"
+msgstr ""
+"\n"
+"%(label)s: %(contents)s"
+
+#: ../src/SeriesFinale/gui.py:1371
+msgid "Cancel"
+msgstr "Annuler"
+
+#: ../src/SeriesFinale/gui.py:1415 ../src/SeriesFinale/gui.py:1457
+msgid "Search shows"
+msgstr "Chercher des séries"
+
+#: ../src/SeriesFinale/gui.py:1418
+msgid "Add manually"
+msgstr "Ajouter manuellement"
+
+#: ../src/SeriesFinale/gui.py:1480
+msgid "Search"
+msgstr "Chercher"
+
+#: ../src/SeriesFinale/gui.py:1493
+msgid "Language"
+msgstr "Langue"
+
+#: ../src/SeriesFinale/gui.py:1594
+msgid "Authors:"
+msgstr "Auteurs:"
+
+#: ../src/SeriesFinale/gui.py:1625
+#, python-format
+msgid "About %s"
+msgstr "À propos de %s"
+
+#: ../src/SeriesFinale/gui.py:1642
+msgid "License:"
+msgstr "License:"
+
+#: ../src/SeriesFinale/gui.py:1667
+msgid "Done"
+msgstr "Terminé"
+
+#: ../src/SeriesFinale/gui.py:1669
+msgid "Screen rotation:"
+msgstr "Rotation de l'écran:"
+
+#: ../src/SeriesFinale/gui.py:1670
+msgid "Automatic"
+msgstr "Automatique"
+
+#: ../src/SeriesFinale/gui.py:1670
+msgid "Portrait"
+msgstr "Portrait"
+
+#: ../src/SeriesFinale/gui.py:1670
+msgid "Landscape"
+msgstr "Paysage"
+
+#: ../src/SeriesFinale/gui.py:1681
+msgid "Add special seasons"
+msgstr "Ajouter les saisons spéciales"
+
+#: ../src/SeriesFinale/gui.py:1690
+msgid "Episodes check position:"
+msgstr "Position de la case à cocher:"
+
+#: ../src/SeriesFinale/gui.py:1693
+msgid "Left"
+msgstr "Gauche"
+
+#: ../src/SeriesFinale/gui.py:1694
+msgid "Right"
+msgstr "Droite"
+
+#: ../src/SeriesFinale/series.py:174
+#, python-format
+msgid "%s season"
+msgid_plural "%s seasons"
+msgstr[0] "%s saison"
+msgstr[1] "%s saisons"
+
+#: ../src/SeriesFinale/series.py:177 ../src/SeriesFinale/series.py:218
+msgid "Completely watched"
+msgstr "Completement regardée"
+
+#: ../src/SeriesFinale/series.py:181 ../src/SeriesFinale/series.py:221
+#, python-format
+msgid "%s episode not watched"
+msgid_plural "%s episodes not watched"
+msgstr[0] "%s épisode non regardé"
+msgstr[1] "%s épisodes non regardés"
+
+#: ../src/SeriesFinale/series.py:188 ../src/SeriesFinale/series.py:228
+#, python-format
+msgid "<i>Next episode:</i> %s on %s"
+msgstr "<i>Prochain épisode:</i> %s le %s"
+
+#: ../src/SeriesFinale/series.py:192 ../src/SeriesFinale/series.py:232
+#, python-format
+msgid "<i>Next episode:</i> %s"
+msgstr "<i>Prochain épisode:</i> %s"
+
+#: ../src/SeriesFinale/series.py:197
+msgid "No episodes to watch"
+msgstr "Aucun épisode à regarder"
+
+#: ../src/SeriesFinale/series.py:288
+#, python-format
+msgid "Ep. %s: %s"
+msgstr "Ep. %s: %s"
+
+#: ../data/seriesfinale.desktop.in.h:1
+msgid "A TV series browser and tracker application."
+msgstr "Application de recherche et de suivi de séries TV."
+
+#: ../data/seriesfinale.desktop.in.h:2
+msgid "SeriesFinale"
+msgstr "SeriesFinale"
