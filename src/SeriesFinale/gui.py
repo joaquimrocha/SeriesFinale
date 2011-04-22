@@ -763,10 +763,10 @@ class SeasonsDeleteView(DeleteView):
         if not paths:
             show_information(self, _('Please select one or more seasons'))
             return
-        for path in paths:
-            self.seasons_select_view.show.delete_season(
-                 model[path][SeasonListStore.SEASON_COLUMN])
-            model.remove(model.get_iter(path))
+        seasons = [model[path][SeasonListStore.SEASON_COLUMN] for path in paths]
+        for season in seasons:
+            self.seasons_select_view.show.delete_season(season)
+            model.delete_season(season)
         self.destroy()
 
 class SeasonListStore(gtk.ListStore):
@@ -799,6 +799,14 @@ class SeasonListStore(gtk.ListStore):
         iter = self.get_iter_first()
         while iter:
             self._update_iter(iter)
+            iter = self.iter_next(iter)
+
+    def delete_season(self, season):
+        iter = self.get_iter_first()
+        while iter:
+            if self.get_value(iter, self.SEASON_COLUMN) == season:
+                self.remove(iter)
+                break
             iter = self.iter_next(iter)
 
     def _update_iter(self, iter):
