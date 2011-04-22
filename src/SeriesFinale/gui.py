@@ -584,6 +584,12 @@ class SeasonsView(hildon.StackableWindow):
         seasons_area.add(self.seasons_select_view)
         self.add(seasons_area)
 
+        if self.settings.getConf(self.settings.SEASONS_ORDER_CONF_NAME) == \
+           self.settings.ASCENDING_ORDER:
+            self._sort_ascending_cb(None)
+        else:
+            self._sort_descending_cb(None)
+
         self.request = None
         self._update_menu_visibility()
 
@@ -607,6 +613,23 @@ class SeasonsView(hildon.StackableWindow):
 
     def _create_menu(self):
         menu = hildon.AppMenu()
+
+        button_asc = hildon.GtkRadioButton(gtk.HILDON_SIZE_FINGER_HEIGHT)
+        button_asc.set_mode(False)
+        button_asc.set_label(_('A-Z'))
+        menu.add_filter(button_asc)
+        button_desc = hildon.GtkRadioButton(gtk.HILDON_SIZE_FINGER_HEIGHT,
+                                            group = button_asc)
+        button_desc.set_mode(False)
+        button_desc.set_label(_('Z-A'))
+        menu.add_filter(button_desc)
+        if self.settings.getConf(Settings.SEASONS_ORDER_CONF_NAME) == \
+                Settings.ASCENDING_ORDER:
+            button_asc.set_active(True)
+        else:
+            button_desc.set_active(True)
+        button_asc.connect('clicked', self._sort_ascending_cb)
+        button_desc.connect('clicked', self._sort_descending_cb)
 
         button = hildon.GtkButton(gtk.HILDON_SIZE_FINGER_HEIGHT)
         button.set_label(_('Info'))
@@ -744,6 +767,16 @@ class SeasonsView(hildon.StackableWindow):
         else:
             self.update_menu.hide()
 
+    def _sort_ascending_cb(self, button):
+        self.seasons_select_view.sort_ascending()
+        self.settings.setConf(self.settings.SEASONS_ORDER_CONF_NAME,
+                              self.settings.ASCENDING_ORDER)
+
+    def _sort_descending_cb(self, button):
+        self.seasons_select_view.sort_descending()
+        self.settings.setConf(self.settings.SEASONS_ORDER_CONF_NAME,
+                              self.settings.DESCENDING_ORDER)
+
 class SeasonsDeleteView(DeleteView):
 
     def __init__(self, series_manager, seasons_select_view):
@@ -778,7 +811,7 @@ class SeasonListStore(gtk.ListStore):
     def __init__(self, show):
         super(SeasonListStore, self).__init__(gtk.gdk.Pixbuf,
                                               str,
-                                              gobject.TYPE_PYOBJECT)
+                                              str)
         self.show = show
 
     def add(self, season_list):
@@ -861,6 +894,25 @@ class SeasonSelectView(gtk.TreeView):
         model = self.get_model()
         if model:
             model.update()
+
+    def _sort_func(self, model, iter1, iter2):
+        season1 = model.get_value(iter1, SeasonListStore.SEASON_COLUMN)
+        season2 = model.get_value(iter2, SeasonListStore.SEASON_COLUMN)
+        if season1 == None or season2 == None:
+            return 0
+        if season1 < season2:
+            return -1
+        return 1
+
+    def sort_descending(self):
+        model = self.get_model()
+        model.set_sort_column_id(SeasonListStore.SEASON_COLUMN,
+                                 gtk.SORT_DESCENDING)
+
+    def sort_ascending(self):
+        model = self.get_model()
+        model.set_sort_column_id(SeasonListStore.SEASON_COLUMN,
+                                 gtk.SORT_ASCENDING)
 
 class NewShowDialog(gtk.Dialog):
 

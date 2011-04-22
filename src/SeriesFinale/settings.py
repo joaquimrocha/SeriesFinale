@@ -33,6 +33,7 @@ class Settings(object):
     LANDSCAPE = 2
 
     EPISODES_ORDER_CONF_NAME = 'episodes_order'
+    SEASONS_ORDER_CONF_NAME = 'episodes_order'
     SHOWS_SORT = 'shows_sort'
     SCREEN_ROTATION = 'screen_rotation'
     ADD_SPECIAL_SEASONS = 'add_special_seasons'
@@ -42,11 +43,13 @@ class Settings(object):
     RIGHT = 1
 
     TYPES = {EPISODES_ORDER_CONF_NAME: int,
+             SEASONS_ORDER_CONF_NAME: int,
              SHOWS_SORT: int,
              SCREEN_ROTATION: int,
              ADD_SPECIAL_SEASONS: bool,
              EPISODES_CHECK_POSITION: int}
     DEFAULTS = {EPISODES_ORDER_CONF_NAME: DESCENDING_ORDER,
+                SEASONS_ORDER_CONF_NAME: ASCENDING_ORDER,
                 SHOWS_SORT: RECENT_EPISODE,
                 SCREEN_ROTATION: AUTOMATIC,
                 ADD_SPECIAL_SEASONS: True,
