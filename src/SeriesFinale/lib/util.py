@@ -22,6 +22,7 @@ import pygtk
 pygtk.require('2.0')
 import gtk
 import urllib
+import urllib2
 import os
 
 def get_color(color_name):
@@ -36,10 +37,12 @@ def get_color(color_name):
     return color_style.lookup_color(color_name).to_string()
 
 def image_downloader(url, save_name):
-    image = urllib.URLopener()
+    image = urllib2.urlopen(url).read()
     path, format = os.path.splitext(url)
     target = save_name + format
     temp_target = target + '.tmp'
-    image.retrieve(url, temp_target)
+    image_file = open(temp_target, 'wb+')
+    image_file.write(image)
+    image_file.close()
     os.rename(temp_target, target)
     return target

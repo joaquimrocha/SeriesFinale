@@ -19,6 +19,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 import urllib
+import urllib2
 import datetime
 import re
 
@@ -160,7 +161,7 @@ class TheTVDB(object):
     def get_available_languages(self):
         """Get a list of available languages."""
         url = "%s/languages.xml" % self.base_key_url
-        data = urllib.urlopen(url)
+        data = urllib2.urlopen(url)
         lang_list = []
 
         if data:
@@ -176,7 +177,7 @@ class TheTVDB(object):
         """Get a list of shows matching show_name."""
         get_args = urllib.urlencode({"seriesname": show_name, "language": language}, doseq=True)
         url = "%s/GetSeries.php?%s" % (self.base_url, get_args)
-        data = urllib.urlopen(url)
+        data = urllib2.urlopen(url)
         show_list = []
 
         if data:
@@ -191,7 +192,7 @@ class TheTVDB(object):
     def get_show(self, show_id):
         """Get the show object matching this show_id."""
         url = "%s/series/%s/" % (self.base_key_url, show_id)
-        data = urllib.urlopen(url)
+        data = urllib2.urlopen(url)
         
         show = None
         try:
@@ -207,7 +208,7 @@ class TheTVDB(object):
     def get_episode(self, episode_id):
         """Get the episode object matching this episode_id."""
         url = "%s/episodes/%s/" % (self.base_key_url, episode_id)
-        data = urllib.urlopen(url)
+        data = urllib2.urlopen(url)
         
         episode = None
         try:
@@ -225,7 +226,7 @@ class TheTVDB(object):
         url = "%s/series/%s/all/" % (self.base_key_url, show_id)
         if language:
             url += '%s.xml' % language
-        data = urllib.urlopen(url)
+        data = urllib2.urlopen(url)
         
         show_and_episodes = None
         try:
@@ -248,7 +249,7 @@ class TheTVDB(object):
     def get_updated_shows(self, period = "day"):
         """Get a list of show ids which have been updated within this period."""
         url = "%s/updates/updates_%s.xml" % (self.base_key_url, period)
-        data = urllib.urlopen(url)
+        data = urllib2.urlopen(url)
         tree = ET.parse(data)
 
         series_nodes = tree.getiterator("Series")
@@ -258,7 +259,7 @@ class TheTVDB(object):
     def get_updated_episodes(self, period = "day"):
         """Get a list of episode ids which have been updated within this period."""
         url = "%s/updates/updates_%s.xml" % (self.base_key_url, period)
-        data = urllib.urlopen(url)
+        data = urllib2.urlopen(url)
         tree = ET.parse(data)
 
         episode_nodes = tree.getiterator("Episode")
@@ -268,7 +269,7 @@ class TheTVDB(object):
     def get_show_image_choices(self, show_id):
         """Get a list of image urls and types relating to this show."""
         url = "%s/series/%s/banners.xml" % (self.base_key_url, show_id)
-        data = urllib.urlopen(url)
+        data = urllib2.urlopen(url)
         tree = ET.parse(data)
 
         images = []
