@@ -1,3 +1,7 @@
+seriesfinale (0.6.7-2) unstable; urgency=low
+  * Add missing python-conic dependency to Debian control
+ -- Joaquim Rocha <jrocha@igalia.com>  Wed, 14 Apr 2011 08:05:48 +0100
+
 seriesfinale (0.6.7-1) unstable; urgency=low
   * Fix getting the show when live search was used
   * Update search column when shows are updated
