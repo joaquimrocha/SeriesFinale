@@ -138,16 +138,16 @@ class Show(object):
         info['episodes_to_watch'] = episodes_to_watch
         if season:
             sorted_episodes_to_watch = [('%02d'%int(episode.season_number), episode.episode_number, episode) \
-                                         for episode in episodes_to_watch]
+                                         for episode in episodes_to_watch if episode.air_date]
         else:
             # Leave Extras for end
             sorted_episodes_to_watch = [('%02d'%int(episode.season_number), episode.episode_number, episode) \
                                          for episode in episodes_to_watch \
-                                         if episode.season_number != '0']
+                                         if episode.season_number != '0' and episode.air_date]
             if not sorted_episodes_to_watch:
                 sorted_episodes_to_watch = [('%02d'%int(episode.season_number), episode.episode_number, episode) \
                                              for episode in episodes_to_watch \
-                                             if episode.season_number == '0']
+                                             if episode.season_number == '0' and episode.air_date]
         sorted_episodes_to_watch.sort()
         if sorted_episodes_to_watch:
             info['next_episode'] = sorted_episodes_to_watch[0][2]
