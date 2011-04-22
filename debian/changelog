@@ -1,3 +1,7 @@
+seriesfinale (0.6.7-3) unstable; urgency=low
+  * New build because the previous one failed
+ -- Joaquim Rocha <jrocha@igalia.com>  Wed, 14 Apr 2011 10:05:48 +0100
+
 seriesfinale (0.6.7-2) unstable; urgency=low
   * Add missing python-conic dependency to Debian control
  -- Joaquim Rocha <jrocha@igalia.com>  Wed, 14 Apr 2011 08:05:48 +0100
