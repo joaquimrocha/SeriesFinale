@@ -27,6 +27,7 @@ from asyncworker import AsyncWorker, AsyncItem
 from lib.constants import TVDB_API_KEY, DATA_DIR, DEFAULT_LANGUAGES
 from settings import Settings
 from datetime import datetime
+from datetime import timedelta
 from xml.sax import saxutils
 import gettext
 import locale
@@ -307,6 +308,13 @@ class Episode(object):
     def get_air_date_text(self):
         if not self.air_date:
             return ''
+        today = datetime.today().date()
+        if today == self.air_date:
+            return _('Today')
+        if today + timedelta(days = 1) == self.air_date:
+            return _('Tomorrow')
+        if today - timedelta(days = 1) == self.air_date:
+            return _('Yesterday')
         next_air_date_str = self.air_date.strftime('%d %b')
         if self.air_date.year != datetime.today().year:
             next_air_date_str += self.air_date.strftime(' %Y')
