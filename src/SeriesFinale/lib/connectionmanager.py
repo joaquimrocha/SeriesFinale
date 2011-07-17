@@ -20,14 +20,13 @@
 #    along with ReSiStance.  If not, see <http://www.gnu.org/licenses/>.
 #########################################################################
 
-import conic
-import gobject, dbus
-from dbus.mainloop.glib import DBusGMainLoop
+#import gobject, dbus
+#from dbus.mainloop.glib import DBusGMainLoop
 
-class ConnectionManager(gobject.GObject):
-    __gsignals__ = {
-        "connection-changed": (gobject.SIGNAL_RUN_FIRST, gobject.TYPE_NONE, ()),
-        }
+class ConnectionManager():#gobject.GObject):
+    #__gsignals__ = {
+    #    "connection-changed": (gobject.SIGNAL_RUN_FIRST, gobject.TYPE_NONE, ()),
+    #    }
 
     _INITIAL_STATUS = -1
 

@@ -19,7 +19,6 @@
 ###########################################################################
 
 import os
-import gobject
 from lib import thetvdbapi, serializer, constants
 from lib.util import get_color, image_downloader
 from xml.etree import ElementTree as ET
@@ -382,7 +381,7 @@ class Episode(object):
             return other_episode
         return None
 
-class SeriesManager(gobject.GObject):
+class SeriesManager():#gobject.GObject):
 
     SEARCH_SERIES_COMPLETE_SIGNAL = 'search-shows-complete'
     GET_FULL_SHOW_COMPLETE_SIGNAL = 'get-full-show-complete'
@@ -391,29 +390,29 @@ class SeriesManager(gobject.GObject):
     SHOW_LIST_CHANGED_SIGNAL = 'show-list-changed'
     UPDATED_SHOW_ART = 'updated-show-art'
 
-    __gsignals__ = {SEARCH_SERIES_COMPLETE_SIGNAL: (gobject.SIGNAL_RUN_LAST,
-                                                    gobject.TYPE_NONE,
-                                                    (gobject.TYPE_PYOBJECT,
-                                                     gobject.TYPE_PYOBJECT)),
-                    GET_FULL_SHOW_COMPLETE_SIGNAL: (gobject.SIGNAL_RUN_LAST,
-                                                    gobject.TYPE_NONE,
-                                                    (gobject.TYPE_PYOBJECT,
-                                                     gobject.TYPE_PYOBJECT)),
-                    UPDATE_SHOW_EPISODES_COMPLETE_SIGNAL: (gobject.SIGNAL_RUN_LAST,
-                                                           gobject.TYPE_NONE,
-                                                           (gobject.TYPE_PYOBJECT,
-                                                            gobject.TYPE_PYOBJECT)),
-                    UPDATE_SHOWS_CALL_COMPLETE_SIGNAL: (gobject.SIGNAL_RUN_LAST,
-                                                       gobject.TYPE_NONE,
-                                                       (gobject.TYPE_PYOBJECT,
-                                                        gobject.TYPE_PYOBJECT)),
-                    SHOW_LIST_CHANGED_SIGNAL: (gobject.SIGNAL_RUN_LAST,
-                                               gobject.TYPE_NONE,
-                                               ()),
-                    UPDATED_SHOW_ART: (gobject.SIGNAL_RUN_LAST,
-                                       gobject.TYPE_NONE,
-                                       (gobject.TYPE_PYOBJECT,)),
-                   }
+   # __gsignals__ = {SEARCH_SERIES_COMPLETE_SIGNAL: (gobject.SIGNAL_RUN_LAST,
+   #                                                 gobject.TYPE_NONE,
+   #                                                 (gobject.TYPE_PYOBJECT,
+   #                                                  gobject.TYPE_PYOBJECT)),
+   #                 GET_FULL_SHOW_COMPLETE_SIGNAL: (gobject.SIGNAL_RUN_LAST,
+   #                                                 gobject.TYPE_NONE,
+   #                                                 (gobject.TYPE_PYOBJECT,
+   #                                                  gobject.TYPE_PYOBJECT)),
+   #                 UPDATE_SHOW_EPISODES_COMPLETE_SIGNAL: (gobject.SIGNAL_RUN_LAST,
+   #                                                        gobject.TYPE_NONE,
+   #                                                        (gobject.TYPE_PYOBJECT,
+   #                                                         gobject.TYPE_PYOBJECT)),
+   #                 UPDATE_SHOWS_CALL_COMPLETE_SIGNAL: (gobject.SIGNAL_RUN_LAST,
+   #                                                    gobject.TYPE_NONE,
+   #                                                    (gobject.TYPE_PYOBJECT,
+   #                                                     gobject.TYPE_PYOBJECT)),
+   #                 SHOW_LIST_CHANGED_SIGNAL: (gobject.SIGNAL_RUN_LAST,
+   #                                            gobject.TYPE_NONE,
+   #                                            ()),
+   #                 UPDATED_SHOW_ART: (gobject.SIGNAL_RUN_LAST,
+   #                                    gobject.TYPE_NONE,
+   #                                    (gobject.TYPE_PYOBJECT,)),
+   #                }
 
     _instance = None
     _instance_initialized = False
@@ -429,7 +428,7 @@ class SeriesManager(gobject.GObject):
     def __init__(self):
         if not SeriesManager._instance_initialized:
             SeriesManager._instance_initialized = True
-            gobject.GObject.__init__(self)
+            #gobject.GObject.__init__(self)
 
             self.series_list = []
 

@@ -19,7 +19,6 @@
 ###########################################################################
 
 from threading import Thread
-import gobject
 import logging
 logging.basicConfig(level=logging.DEBUG)
 

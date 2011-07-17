@@ -20,7 +20,6 @@
 
 import os
 import sys
-import gtk
 
 SF_NAME = 'SeriesFinale'
 SF_COMPACT_NAME = 'seriesfinale'
