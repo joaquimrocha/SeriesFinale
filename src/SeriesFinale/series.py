@@ -21,6 +21,7 @@
 import os
 from lib import thetvdbapi, serializer, constants
 from lib.util import get_color, image_downloader
+from lib.listmodel import ListModel
 from xml.etree import ElementTree as ET
 from asyncworker import AsyncWorker, AsyncItem
 from lib.constants import TVDB_API_KEY, DATA_DIR, DEFAULT_LANGUAGES
@@ -87,8 +88,8 @@ class Show(object):
         return seasons
 
     def get_episode_list_by_season(self, season):
-        return [episode for episode in self.episode_list \
-                if episode.season_number == season]
+        return ListModel([episode for episode in self.episode_list \
+                  if episode.season_number == season], self)
 
     def update_episode_list(self, episode_list):
         add_special_seasons = Settings().getConf(Settings.ADD_SPECIAL_SEASONS)
