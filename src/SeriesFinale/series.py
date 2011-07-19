@@ -720,6 +720,8 @@ class SeriesManager():#gobject.GObject):
         self.changed = True
 
     def auto_save(self, activate = True):
+        print "TODO: SeriesManager::auto_save()"
+        return
         if activate and not self.auto_save_id:
             self.auto_save_id = gobject.timeout_add(constants.SAVE_TIMEOUT_MS,
                                                     self.save,
