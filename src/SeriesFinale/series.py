@@ -421,7 +421,7 @@ class SeriesManager():#gobject.GObject):
             SeriesManager._instance_initialized = True
             #gobject.GObject.__init__(self)
 
-            self.series_list = []
+            self.series_list = ListModel()
 
             self.thetvdb = thetvdbapi.TheTVDB(TVDB_API_KEY)
             self.async_worker = None
@@ -705,9 +705,10 @@ class SeriesManager():#gobject.GObject):
 
     def load(self, file_path):
         if not os.path.exists(file_path):
-            self.series_list = []
+            self.series_list = ListModel()
             return
-        self.series_list = serializer.deserialize(file_path)
+        for serie in serializer.deserialize(file_path):
+            self.series_list.append(serie)
         self.changed = False
         self.emit(self.SHOW_LIST_CHANGED_SIGNAL)
 
