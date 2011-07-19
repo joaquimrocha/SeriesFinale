@@ -39,7 +39,7 @@ _ = gettext.gettext
 class Show(object):
 
     def __init__(self, name, genre = None, overview = None, network = None,
-                 rating = None, actors = [], episode_list = [], image = None,
+                 rating = None, actors = [], episode_list = ListModel(), image = None,
                  thetvdb_id = -1, season_images = {}, id = -1, language = None,
                  downloading_show_image = False, downloading_season_image = False):
         self.id = id
