@@ -264,7 +264,10 @@ class Episode(object):
         self.rating = rating
         self.writer = writer
         self.watched = watched
-        self.air_date = air_date
+        try:
+            self.air_date = datetime.strptime(air_date, '%Y-%m-%d')
+        except:
+            self.air_date = datetime.today() #TODO what?
 
     def get_episode_show_number(self):
         return '%sx%02d' % (self.season_number, int(self.episode_number))
