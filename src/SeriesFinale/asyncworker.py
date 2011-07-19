@@ -44,7 +44,8 @@ class AsyncItem(object):
             return
         self.finish_callback_args += (results,)
         self.finish_callback_args += (error,)
-        gobject.idle_add(self.finish_callback, *self.finish_callback_args)
+        self.finish_callback(*self.finish_callback_args) #TODO: Maybe some better way to do it like idle_add? QTimer::singleShot(0)?
+        #gobject.idle_add(self.finish_callback, *self.finish_callback_args)
 
     def cancel(self):
         self.canceled = True
