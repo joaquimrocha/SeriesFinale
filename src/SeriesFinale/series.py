@@ -33,15 +33,17 @@ import gettext
 import locale
 import logging
 logging.basicConfig(level=logging.DEBUG)
+from PySide import QtCore
 
 _ = gettext.gettext
 
-class Show(object):
+class Show(QtCore.QObject):
 
     def __init__(self, name, genre = None, overview = None, network = None,
                  rating = None, actors = [], episode_list = ListModel(), image = None,
                  thetvdb_id = -1, season_images = {}, id = -1, language = None,
                  downloading_show_image = False, downloading_season_image = False):
+        QtCore.QObject.__init__(self)
         self.id = id
         self.name = name
         self.genre = genre
@@ -247,12 +249,13 @@ class Show(object):
             return False
         return season_number == 0
 
-class Episode(object):
+class Episode(QtCore.QObject):
 
     def __init__(self, name, show, episode_number, season_number = '1',
                  overview = None, director = None, guest_stars = [],
                  rating = None, writer = None, watched = False,
                  air_date = '', id = -1):
+        QtCore.QObject.__init__(self)
         self.id = id
         self.name = name
         self.show = show
@@ -372,7 +375,7 @@ class Episode(object):
             return other_episode
         return None
 
-class SeriesManager():#gobject.GObject):
+class SeriesManager(QtCore.QObject):
 
     SEARCH_SERIES_COMPLETE_SIGNAL = 'search-shows-complete'
     GET_FULL_SHOW_COMPLETE_SIGNAL = 'get-full-show-complete'
@@ -419,7 +422,7 @@ class SeriesManager():#gobject.GObject):
     def __init__(self):
         if not SeriesManager._instance_initialized:
             SeriesManager._instance_initialized = True
-            #gobject.GObject.__init__(self)
+            QtCore.QObject.__init__(self)
 
             self.series_list = ListModel()
 
