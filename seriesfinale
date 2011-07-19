@@ -24,8 +24,7 @@ import os
 from PySide.QtCore import *
 from PySide.QtGui import *
 
-
-local_src = 'src' #os.path.dirname(__file__) + '/src' #TODO
+local_src = os.path.dirname(__file__) + '/src'
 if os.path.exists(local_src):
     sys.path = [local_src] + sys.path
 
