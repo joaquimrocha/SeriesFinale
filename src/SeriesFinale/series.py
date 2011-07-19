@@ -81,6 +81,10 @@ class Show(QtCore.QObject):
                 return episodes[(i + offset) % number_of_episodes][1]
         return episode
 
+    @QtCore.Slot(result=QtCore.QObject)
+    def get_seasons_model(self):
+        return ListModel(self.get_seasons(), self)
+
     def get_seasons(self):
         seasons = []
         for episode in self.episode_list:
