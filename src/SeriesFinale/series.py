@@ -20,7 +20,7 @@
 
 import os
 from lib import thetvdbapi, serializer, constants
-from lib.util import get_color, image_downloader
+from lib.util import image_downloader
 from lib.listmodel import ListModel
 from xml.etree import ElementTree as ET
 from asyncworker import AsyncWorker, AsyncItem
@@ -162,14 +162,10 @@ class Show(object):
     def get_info_markup(self, info = None):
         seasons = len(self.get_seasons())
         if seasons:
-            color = get_color(constants.SECONDARY_TEXT_COLOR)
             episodes_info = info or self.get_episodes_info()
             episodes_to_watch = episodes_info['episodes_to_watch']
             next_episode = episodes_info['next_episode']
-            if next_episode and next_episode.already_aired():
-                color = get_color(constants.ACTIVE_TEXT_COLOR)
-            show_info = '\n<small><span foreground="%s">' % color
-            show_info += gettext.ngettext('%s season', '%s seasons', seasons) \
+            show_info = gettext.ngettext('%s season', '%s seasons', seasons) \
                          % seasons
             if self.is_completely_watched():
                 show_info += ' | ' + _('Completely watched')
@@ -189,14 +185,11 @@ class Show(object):
                         else:
                             show_info += ' | ' + _('<i>Next episode:</i> %s') % \
                                          next_episode.get_episode_show_number()
-                        if next_episode.already_aired():
-                            color = get_color(constants.ACTIVE_TEXT_COLOR)
                 else:
                     show_info += ' | ' + _('No episodes to watch')
-            show_info += '</span></small>'
         else:
             show_info = ''
-        return '<b>%s</b>' % saxutils.escape(self.name) + show_info
+        return show_info
 
     def get_season_info_markup(self, season):
         if season == '0':
@@ -208,11 +201,8 @@ class Show(object):
         episodes_to_watch = info['episodes_to_watch']
         next_episode = info['next_episode']
         season_info = ''
-        color = get_color(constants.SECONDARY_TEXT_COLOR)
         if not episodes_to_watch:
             if episodes:
-                name = '<small><span foreground="%s">%s</span></small>' % \
-                        (get_color(constants.SECONDARY_TEXT_COLOR), name)
                 season_info = _('Completely watched')
         else:
             number_episodes_to_watch = len(episodes_to_watch)
@@ -229,10 +219,7 @@ class Show(object):
                 else:
 		    season_info += ' | ' + _('<i>Next episode:</i> %s') % \
                                    next_episode.episode_number
-                if next_episode.already_aired():
-                    color = get_color(constants.ACTIVE_TEXT_COLOR)
-        return '<b>%s</b>\n<small><span foreground="%s">%s</span></small>' % \
-               (name, color, season_info)
+        return season_info
 
     def get_poster_prefix(self):
         if self.thetvdb_id != -1:
