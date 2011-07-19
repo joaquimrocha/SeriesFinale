@@ -45,7 +45,7 @@ along with %(sf_name)s.  If not, see <http://www.gnu.org/licenses/>.
 """ % {'sf_name': SF_NAME}
 
 HOME_PATH = os.getenv('HOME')
-SF_CONF_FOLDER = HOME_PATH + '/.osso/%s' % SF_COMPACT_NAME
+SF_CONF_FOLDER = HOME_PATH + '/.config/%s' % SF_COMPACT_NAME
 SF_CONF_FILE = SF_CONF_FOLDER + '/%s.conf' % SF_COMPACT_NAME
 SF_DB_FILE = SF_CONF_FOLDER + '/%s' % 'series.db'
 SF_PID_FILE = '/tmp/seriesfinale.pid'
