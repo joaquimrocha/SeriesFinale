@@ -19,7 +19,7 @@
 ###########################################################################
 
 import jsonpickle
-import simplejson as json
+import json
 import SeriesFinale.series
 from xml.etree import ElementTree as ET
 
