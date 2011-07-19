@@ -433,9 +433,6 @@ class SeriesManager():#gobject.GObject):
             self.languages = None
             self.default_language = None
 
-    def emit(self, *args):
-        gobject.idle_add(gobject.GObject.emit, self, *args)
-
     def get_languages(self):
         if self.languages is None:
             self.languages = self.thetvdb.get_available_languages()
