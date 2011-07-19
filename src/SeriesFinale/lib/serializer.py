@@ -21,6 +21,7 @@
 import jsonpickle
 import json
 import SeriesFinale.series
+from listmodel import ListModel
 from xml.etree import ElementTree as ET
 
 def serialize(show_list):
@@ -74,8 +75,8 @@ def show_encoder(dictionary):
     episode_list = list(dictionary['episode_list'])
     del dictionary['episode_list']
     show = SeriesFinale.series.Show(name, **dictionary)
-    episode_list = [episode_encoder(show, episode) for episode in \
-                     episode_list]
+    episode_list = ListModel([episode_encoder(show, episode) for episode in \
+                     episode_list])
     show.episode_list = episode_list
     return show
 
