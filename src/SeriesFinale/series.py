@@ -216,6 +216,7 @@ class Show(QtCore.QObject):
         else:
             return _('Season %s') % season
 
+    @QtCore.Slot(unicode,result=unicode)
     def get_season_info_markup(self, season):
         info = self.get_episodes_info(season)
         episodes = info['episodes']
