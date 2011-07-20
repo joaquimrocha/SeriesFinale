@@ -41,6 +41,7 @@ class MainWindow(QDeclarativeView):
 
     def __init__(self):
         QDeclarativeView.__init__(self)
+        self.engine().quit.connect(self.close)
 
         # i18n
         languages = []
