@@ -303,6 +303,14 @@ class Episode(QtCore.QObject):
         return _('Ep. %s: %s') % (self.get_episode_show_number(), self.name)
     title = QtCore.Property(unicode,get_title,notify=titleChanged)
 
+    overviewChanged = QtCore.Signal()
+    def get_overview(self):
+        return self.overview
+    def set_overview(self, overview):
+        self.overview = overview
+        self.overviewChanged.emit()
+    overviewText = QtCore.Property(unicode,get_overview,set_overview,notify=overviewChanged)
+
     def __eq__(self, episode):
         if not episode:
             return False
