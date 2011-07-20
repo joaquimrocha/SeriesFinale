@@ -93,6 +93,15 @@ class Show(QtCore.QObject):
                 seasons.append(season_number)
         return seasons
 
+    @QtCore.Slot(unicode,result=unicode)
+    def get_season_image(self, season):
+        retval = constants.PLACEHOLDER_IMAGE
+        if (season not in self.season_images):
+            return retval
+        if os.path.exists(self.season_images[season]):
+            return self.season_images[season]
+        return retval
+
     def get_episode_list_by_season(self, season):
         return ListModel([episode for episode in self.episode_list \
                   if episode.season_number == season], self)
