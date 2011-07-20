@@ -546,6 +546,7 @@ class SeriesManager(QtCore.QObject):
                 shows.append(show)
         self.emit(self.SEARCH_SERIES_COMPLETE_SIGNAL, shows, error)
 
+    @QtCore.Slot(QtCore.QObject)
     def update_show_episodes(self, show):
         return self.update_all_shows_episodes([show])
 
