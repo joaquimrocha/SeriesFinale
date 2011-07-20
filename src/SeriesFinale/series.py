@@ -209,11 +209,14 @@ class Show(QtCore.QObject):
         return show_info
     infoMarkup = QtCore.Property(unicode,get_info_markup,notify=infoMarkupChanged)
 
-    def get_season_info_markup(self, season):
+    @QtCore.Slot(unicode,result=unicode)
+    def get_season_name(self, season):
         if season == '0':
-            name = _('Special')
+            return _('Special')
         else:
-            name = _('Season %s') % season
+            return _('Season %s') % season
+
+    def get_season_info_markup(self, season):
         info = self.get_episodes_info(season)
         episodes = info['episodes']
         episodes_to_watch = info['episodes_to_watch']
