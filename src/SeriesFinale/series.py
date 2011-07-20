@@ -69,6 +69,14 @@ class Show(QtCore.QObject):
         self.coverImageChanged.emit()
     coverImage = QtCore.Property(unicode,cover_image,set_cover_image,notify=coverImageChanged)
 
+    nameChanged = QtCore.Signal()
+    def get_name(self):
+        return self.name
+    def set_name(self, name):
+        self.name = name
+        self.nameChanged.emit()
+    showName = QtCore.Property(unicode,get_name,set_name,notify=nameChanged)
+
     def get_episodes_by_season(self, season_number):
         if season_number is None:
             return self.episode_list
