@@ -175,6 +175,7 @@ class Show(QtCore.QObject):
     def __str__(self):
         return self.name
 
+    infoMarkupChanged = QtCore.Signal()
     def get_info_markup(self, info = None):
         seasons = len(self.get_seasons())
         if seasons:
@@ -206,6 +207,7 @@ class Show(QtCore.QObject):
         else:
             show_info = ''
         return show_info
+    infoMarkup = QtCore.Property(unicode,get_info_markup,notify=infoMarkupChanged)
 
     def get_season_info_markup(self, season):
         if season == '0':
