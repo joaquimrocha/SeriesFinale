@@ -296,7 +296,12 @@ class Episode(QtCore.QObject):
         return '%sx%02d' % (self.season_number, int(self.episode_number))
 
     def __repr__(self):
+        return self.get_title()
+
+    titleChanged = QtCore.Signal()
+    def get_title(self):
         return _('Ep. %s: %s') % (self.get_episode_show_number(), self.name)
+    title = QtCore.Property(unicode,get_title,notify=titleChanged)
 
     def __eq__(self, episode):
         if not episode:
@@ -317,6 +322,7 @@ class Episode(QtCore.QObject):
         self.writer = episode.writer or self.writer
         self.watched = episode.watched or self.watched
         self.air_date = episode.air_date or self.air_date
+        self.titleChanged.emit()
 
     def get_air_date_text(self):
         if not self.air_date:
@@ -346,6 +352,7 @@ class Episode(QtCore.QObject):
             self._episode_number = int(number)
         except ValueError:
             self._episode_number = 1
+        self.titleChanged.emit()
 
     def _get_air_date(self):
         return self._air_date
