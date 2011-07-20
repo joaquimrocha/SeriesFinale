@@ -550,6 +550,7 @@ class SeriesManager(QtCore.QObject):
     def update_show_episodes(self, show):
         return self.update_all_shows_episodes([show])
 
+    @QtCore.Slot()
     def update_all_shows_episodes(self, show_list = []):
         show_list = show_list or self.series_list
         async_worker = self.get_async_worker()
