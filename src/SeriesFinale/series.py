@@ -102,6 +102,7 @@ class Show(QtCore.QObject):
             return self.season_images[season]
         return retval
 
+    @QtCore.Slot(unicode,result=QtCore.QObject)
     def get_episode_list_by_season(self, season):
         return ListModel([episode for episode in self.episode_list \
                   if episode.season_number == season], self)
