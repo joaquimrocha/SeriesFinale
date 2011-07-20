@@ -357,7 +357,9 @@ class Episode(QtCore.QObject):
         self.watched = episode.watched or self.watched
         self.air_date = episode.air_date or self.air_date
         self.titleChanged.emit()
+        self.airDateTextChanged.emit()
 
+    airDateTextChanged = QtCore.Signal()
     def get_air_date_text(self):
         if not self.air_date:
             return ''
@@ -372,6 +374,7 @@ class Episode(QtCore.QObject):
         if self.air_date.year != datetime.today().year:
             next_air_date_str += self.air_date.strftime(' %Y')
         return next_air_date_str
+    airDateText = QtCore.Property(unicode,get_air_date_text,notify=airDateTextChanged)
 
     def already_aired(self):
         if self.air_date and self.air_date <= datetime.today().date():
@@ -404,6 +407,7 @@ class Episode(QtCore.QObject):
             else:
                 return
         self._air_date = None
+        self.airDateTextChanged.emit()
 
     def get_info_markup(self):
         color = get_color(constants.SECONDARY_TEXT_COLOR)
