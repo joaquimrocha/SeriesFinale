@@ -59,6 +59,16 @@ class Show(QtCore.QObject):
         self.downloading_show_image = False
         self.downloading_season_image = downloading_season_image
 
+    coverImageChanged = QtCore.Signal()
+    def cover_image(self):
+        if os.path.exists(self.image):
+            return self.image
+        return constants.PLACEHOLDER_IMAGE
+    def set_cover_image(self, new_path):
+        self.image = new_path
+        self.coverImageChanged.emit()
+    coverImage = QtCore.Property(unicode,cover_image,set_cover_image,notify=coverImageChanged)
+
     def get_episodes_by_season(self, season_number):
         if season_number is None:
             return self.episode_list
@@ -691,7 +701,7 @@ class SeriesManager(QtCore.QObject):
                 #self.emit(self.UPDATED_SHOW_ART, show) #TODO
                 target_file = os.path.join(DATA_DIR, show.get_poster_prefix())
                 image_file = os.path.abspath(image_downloader(url, target_file))
-                show.image = image_file
+                show.set_cover_image(image_file)
                 show.downloading_show_image = False
                 self.changed = True
                 #self.emit(self.UPDATED_SHOW_ART, show) #TODO
@@ -722,7 +732,7 @@ class SeriesManager(QtCore.QObject):
                 show.assign_image_to_season(os.path.join(DATA_DIR, archive))
                 self.changed = True
             elif archive.startswith(show.get_poster_prefix()):
-                show.image = os.path.abspath(os.path.join(DATA_DIR, archive))
+                show.set_cover_image(os.path.abspath(os.path.join(DATA_DIR, archive)))
                 self.changed = True
 
     def save(self, save_file_path):
