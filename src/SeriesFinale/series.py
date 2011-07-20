@@ -648,7 +648,7 @@ class SeriesManager(QtCore.QObject):
         # Check if the download is needed
         if len(seasons) == len(show.season_images.keys()) and \
            show.image and os.path.isfile(show.image):
-            self.emit(self.UPDATED_SHOW_ART, show)
+            #self.emit(self.UPDATED_SHOW_ART, show) #TODO
             return
         image_choices = self.thetvdb.get_show_image_choices(thetvdb_id)
         for image in image_choices:
@@ -657,19 +657,19 @@ class SeriesManager(QtCore.QObject):
             if image_type  == 'poster' and \
                (not show.image or not os.path.isfile(show.image)):
                 show.downloading_show_image = True
-                self.emit(self.UPDATED_SHOW_ART, show)
+                #self.emit(self.UPDATED_SHOW_ART, show) #TODO
                 target_file = os.path.join(DATA_DIR, show.get_poster_prefix())
                 image_file = os.path.abspath(image_downloader(url, target_file))
                 show.image = image_file
                 show.downloading_show_image = False
                 self.changed = True
-                self.emit(self.UPDATED_SHOW_ART, show)
+                #self.emit(self.UPDATED_SHOW_ART, show) #TODO
             elif image_type == 'season':
                 season = image[3]
                 if season in seasons and \
                    season not in show.season_images.keys():
                     show.downloading_season_image = True
-                    self.emit(self.UPDATED_SHOW_ART, show)
+                    #self.emit(self.UPDATED_SHOW_ART, show) #TODO
                     target_file = os.path.join(DATA_DIR,
                                                show.get_season_poster_prefix(season))
                     try:
@@ -681,7 +681,7 @@ class SeriesManager(QtCore.QObject):
                         show.season_images[season] = image_file
                     show.downloading_season_image = False
                     self.changed = True
-                    self.emit(self.UPDATED_SHOW_ART, show)
+                    #self.emit(self.UPDATED_SHOW_ART, show) #TODO
             if show.image and len(show.season_images) == len(seasons):
                 break
 
