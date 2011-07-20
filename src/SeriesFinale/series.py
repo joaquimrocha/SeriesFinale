@@ -444,9 +444,12 @@ class SeriesManager(QtCore.QObject):
 
     SEARCH_SERIES_COMPLETE_SIGNAL = 'search-shows-complete'
     GET_FULL_SHOW_COMPLETE_SIGNAL = 'get-full-show-complete'
-    UPDATE_SHOW_EPISODES_COMPLETE_SIGNAL = 'update-show-episodes-complete'
-    UPDATE_SHOWS_CALL_COMPLETE_SIGNAL = 'update-shows-call-complete'
-    SHOW_LIST_CHANGED_SIGNAL = 'show-list-changed'
+    #UPDATE_SHOW_EPISODES_COMPLETE_SIGNAL = 'update-show-episodes-complete'
+    updateShowEpisodesComplete = QtCore.Signal(unicode)
+    #UPDATE_SHOWS_CALL_COMPLETE_SIGNAL = 'update-shows-call-complete'
+    updateShowsCallComplete = QtCore.Signal(object,object)
+    #SHOW_LIST_CHANGED_SIGNAL = 'show-list-changed'
+    showListChanged = QtCore.Signal()
     UPDATED_SHOW_ART = 'updated-show-art'
 
    # __gsignals__ = {SEARCH_SERIES_COMPLETE_SIGNAL: (gobject.SIGNAL_RUN_LAST,
@@ -575,9 +578,11 @@ class SeriesManager(QtCore.QObject):
             episode_list = [self._convert_thetvdbepisode_to_episode(tvdb_ep,show) \
                             for tvdb_ep in tvdbcompleteshow[1]]
             show.update_episode_list(episode_list)
-        self.emit(self.UPDATE_SHOW_EPISODES_COMPLETE_SIGNAL, show, error)
+        print "Emit UPDATE_SHOW_EPISODES_COMPLETE_SIGNAL"
+        self.updateShowEpisodesComplete.emit("%s" % show) #show, error)
         if last_call:
-            self.emit(self.UPDATE_SHOWS_CALL_COMPLETE_SIGNAL, show, error)
+            print "Emit UPDATE_SHOWS_CALL_COMPLETE_SIGNAL" #TODO
+            #self.emit(self.UPDATE_SHOWS_CALL_COMPLETE_SIGNAL, show, error)
 
     def _search_show_to_update_callback(self, tvdbshows):
         if not tvdbshows:
@@ -780,7 +785,7 @@ class SeriesManager(QtCore.QObject):
         for serie in serializer.deserialize(file_path):
             self.series_list.append(serie)
         self.changed = False
-        self.emit(self.SHOW_LIST_CHANGED_SIGNAL)
+        self.showListChanged.emit()
 
     def get_async_worker(self):
         if self.async_worker and self.async_worker.isAlive():
