@@ -345,7 +345,7 @@ class MainWindow(hildon.StackableWindow):
         show_information(self, _('Updated "%s"') % show.name)
 
     def _update_show_art(self, series_manager, show):
-        self.shows_view.update(show)
+        self.shows_view.update_art(show)
 
     def _about_menu_clicked_cb(self, menu):
         about_dialog = AboutDialog(self)
@@ -444,10 +444,10 @@ class ShowsSelectView(gtk.TreeView):
         self.tree_filter = self.tree_model.filter_new()
         self.set_model(self.tree_filter)
         self.append_column(column)
-        self.sort()
 
     def set_shows(self, shows):
         self.tree_model.add_shows(shows)
+        gobject.idle_add(self.sort)
 
     def get_show_from_path(self, path):
         return self.get_model()[path][ShowListStore.SHOW_COLUMN]
@@ -467,6 +467,10 @@ class ShowsSelectView(gtk.TreeView):
             self.tree_model.update(show)
             self.sort()
 
+    def update_art(self, show = None):
+        if self.tree_model:
+            self.tree_model.update_pixmaps(show)
+
     def sort(self):
         shows_sort_order = Settings().getConf(Settings.SHOWS_SORT)
         if shows_sort_order == Settings.RECENT_EPISODE:
@@ -485,19 +489,22 @@ class ShowListStore(gtk.ListStore):
     def __init__(self):
         super(ShowListStore, self).__init__(gtk.gdk.Pixbuf, str, gobject.TYPE_PYOBJECT, str, gobject.TYPE_PYOBJECT)
         self.cached_pixbufs = {}
+        self.downloading_pixbuf = get_downloading_pixbuf()
         self.set_sort_func(self.NEXT_EPISODE_COLUMN, self._sort_func)
 
     def add_shows(self, shows):
         self.clear()
         for show in shows:
-            row = {self.IMAGE_COLUMN: None,
-                   self.INFO_COLUMN: saxutils.escape(show.name),
+            escaped_name = saxutils.escape(show.name)
+            row = {self.IMAGE_COLUMN: self.downloading_pixbuf,
+                   self.INFO_COLUMN: escaped_name,
                    self.SHOW_COLUMN: show,
                    self.SEARCH_COLUMN: saxutils.escape(show.name).lower(),
                    self.NEXT_EPISODE_COLUMN: None
                   }
             self.append(row.values())
         self.update(None)
+        self.update_pixmaps()
 
     def update(self, show):
         iter = self.get_iter_first()
@@ -509,13 +516,14 @@ class ShowListStore(gtk.ListStore):
 
     def _update_iter(self, iter):
         show = self.get_value(iter, self.SHOW_COLUMN)
-        pixbuf = self.get_value(iter, self.IMAGE_COLUMN)
         info = show.get_episodes_info()
         info_markup = show.get_info_markup(info)
         self.set_value(iter, self.INFO_COLUMN, info_markup)
         self.set_value(iter, self.NEXT_EPISODE_COLUMN,
                        info['next_episode'])
         self.set_value(iter, self.SEARCH_COLUMN, show.name.lower())
+
+    def _load_pixmap_async(self, show, pixbuf):
         if pixbuf_is_cover(pixbuf):
             return
         if show.image and os.path.isfile(show.image):
@@ -528,13 +536,36 @@ class ShowListStore(gtk.ListStore):
                 except:
                     pixbuf = get_placeholder_pixbuf()
             self.cached_pixbufs[show.image] = pixbuf
-            self.set_value(iter, self.IMAGE_COLUMN, pixbuf)
         elif show.downloading_show_image:
-            pixbuf = get_downloading_pixbuf()
-            self.set_value(iter, self.IMAGE_COLUMN, pixbuf)
+            pixbuf = self.downloading_pixbuf
         else:
             pixbuf = get_placeholder_pixbuf()
+        return pixbuf
+
+    def _load_pixmap_async_finished(self, show, pixbuf, error):
+        if error or not pixbuf:
+            return
+        iter = self._get_iter_for_show(show)
+        if iter:
             self.set_value(iter, self.IMAGE_COLUMN, pixbuf)
+
+    def update_pixmaps(self, show = None):
+        iter = self.get_iter_first()
+        async_worker = AsyncWorker()
+        while iter:
+            current_show = self.get_value(iter, self.SHOW_COLUMN)
+            same_show = show == current_show
+            if show is None or same_show:
+                pixbuf = self.get_value(iter, self.IMAGE_COLUMN)
+                async_item = AsyncItem(self._load_pixmap_async,
+                                       (current_show, pixbuf),
+                                       self._load_pixmap_async_finished,
+                                       (current_show,))
+                async_worker.queue.put((0, async_item))
+                if same_show:
+                    break
+            iter = self.iter_next(iter)
+        async_worker.start()
 
     def _sort_func(self, model, iter1, iter2):
         episode1 = model.get_value(iter1, self.NEXT_EPISODE_COLUMN)
@@ -552,6 +583,17 @@ class ShowListStore(gtk.ListStore):
         if episode1 == most_recent:
             return -1
         return 1
+
+    def _get_iter_for_show(self, show):
+        if not show:
+            return None
+        iter = self.get_iter_first()
+        while iter:
+            current_show = self.get_value(iter, self.SHOW_COLUMN)
+            if show == current_show:
+                break
+            iter = self.iter_next(iter)
+        return iter
 
 class SeasonsView(hildon.StackableWindow):
 
