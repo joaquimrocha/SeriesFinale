@@ -77,6 +77,14 @@ class Show(QtCore.QObject):
         self.nameChanged.emit()
     showName = QtCore.Property(unicode,get_name,set_name,notify=nameChanged)
 
+    overviewChanged = QtCore.Signal()
+    def get_overview(self):
+        return self.overview
+    def set_overview(self, overview):
+        self.overview = overview
+        self.overviewChanged.emit()
+    showOverview = QtCore.Property(unicode,get_overview,set_overview,notify=overviewChanged)
+
     def get_episodes_by_season(self, season_number):
         if season_number is None:
             return self.episode_list
@@ -630,7 +638,7 @@ class SeriesManager(QtCore.QObject):
         show_obj = Show(thetvdb_show.name, season_images = {})
         show_obj.language = thetvdb_show.language
         show_obj.genre = thetvdb_show.genre
-        show_obj.overview = thetvdb_show.overview
+        show_obj.set_overview(thetvdb_show.overview)
         show_obj.network = thetvdb_show.network
         show_obj.rating = thetvdb_show.rating
         show_obj.actors = thetvdb_show.actors
