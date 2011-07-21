@@ -78,6 +78,9 @@ class AsyncWorker(Thread):
         if self.async_item:
             self.async_item.cancel()
 
+    def start(self):
+        self.stopped = False
+        Thread.start(self)
 
 class PriorityQueue(list):
 

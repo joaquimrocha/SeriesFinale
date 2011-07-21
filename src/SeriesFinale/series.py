@@ -569,7 +569,8 @@ class SeriesManager(gobject.GObject):
                                (show,),
                                None,)
         self.async_worker.queue.put((1, async_item))
-        self.async_worker.start()
+        if not self.async_worker.isAlive():
+            self.async_worker.start()
 
     def get_show_by_id(self, show_id):
         for show in self.series_list:
