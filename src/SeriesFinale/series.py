@@ -593,10 +593,10 @@ class SeriesManager(QtCore.QObject):
             episode_list = [self._convert_thetvdbepisode_to_episode(tvdb_ep,show) \
                             for tvdb_ep in tvdbcompleteshow[1]]
             show.update_episode_list(episode_list)
-        print "Emit UPDATE_SHOW_EPISODES_COMPLETE_SIGNAL"
+        logging.debug("Emit UPDATE_SHOW_EPISODES_COMPLETE_SIGNAL")
         self.updateShowEpisodesComplete.emit("%s" % show) #show, error)
         if last_call:
-            print "Emit UPDATE_SHOWS_CALL_COMPLETE_SIGNAL" #TODO
+            logging.debug("Emit UPDATE_SHOWS_CALL_COMPLETE_SIGNAL") #TODO
             #self.emit(self.UPDATE_SHOWS_CALL_COMPLETE_SIGNAL, show, error)
 
     def _search_show_to_update_callback(self, tvdbshows):
