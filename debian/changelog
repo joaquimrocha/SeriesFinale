@@ -1,3 +1,18 @@
+seriesfinale (0.6.8-1) unstable; urgency=low
+  * Fix image retrieval
+  * Fix deleting seasons (mb#11713)
+  * Add sorting options to the seasons view (mb#11771)
+  * Fix infinite loop when updating episodes (mb#11118)
+  * Consider next episode to watch only when it has an air date (mb#12055)
+  * Humanize dates close to today's
+  * Add French translation (thanks to David Landreau)
+  * Make the startup faster
+  * Fix data dir creation when there is no XDG_DATA_DIR
+  * Prevent starting a thread when it is already running
+  * Don't save information about the download of images
+  * Adapt the "next episode to watch" text to support also humanized dates
+ -- Joaquim Rocha <jrocha@igalia.com>  Thu, 21 Jul 2011 20:30:48 +0100
+
 seriesfinale (0.6.7-3) unstable; urgency=low
   * New build because the previous one failed
  -- Joaquim Rocha <jrocha@igalia.com>  Wed, 14 Apr 2011 10:05:48 +0100
