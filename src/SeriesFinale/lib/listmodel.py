@@ -40,6 +40,9 @@ class ListModel(QtCore.QAbstractListModel):
         if role == 0:
             return self._items[index.row()]
 
+    def list(self):
+        return self._items
+
     def __len__(self):
         return self.rowCount()
 
