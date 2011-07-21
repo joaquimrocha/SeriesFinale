@@ -183,7 +183,7 @@ class Show(object):
                     if next_episode:
                         next_air_date = next_episode.air_date
                         if next_air_date:
-                            show_info += ' | ' + _('<i>Next episode:</i> %s on %s') % \
+                            show_info += ' | ' + _('<i>Next episode:</i> %s, %s') % \
                                          (next_episode.get_episode_show_number(), \
                                          next_episode.get_air_date_text())
                         else:
@@ -223,7 +223,7 @@ class Show(object):
             if next_episode:
                 next_air_date = next_episode.air_date
                 if next_air_date:
-                    season_info += ' | ' + _('<i>Next episode:</i> %s on %s') % \
+                    season_info += ' | ' + _('<i>Next episode:</i> %s, %s') % \
                                    (next_episode.episode_number, \
                                     next_episode.get_air_date_text())
                 else:
