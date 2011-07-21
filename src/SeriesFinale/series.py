@@ -793,6 +793,10 @@ class SeriesManager(QtCore.QObject):
         self.changed = False
         return True
 
+    def timerEvent(self, event):
+        if (event.timerId() == self.auto_save_id):
+            self.save(constants.SF_DB_FILE)
+
     def load(self, file_path):
         if not os.path.exists(file_path):
             self.series_list = ListModel()
@@ -811,12 +815,8 @@ class SeriesManager(QtCore.QObject):
         self.changed = True
 
     def auto_save(self, activate = True):
-        print "TODO: SeriesManager::auto_save()"
-        return
         if activate and not self.auto_save_id:
-            self.auto_save_id = gobject.timeout_add(constants.SAVE_TIMEOUT_MS,
-                                                    self.save,
-                                                    constants.SF_DB_FILE)
+            self.auto_save_id = self.startTimer(constants.SAVE_TIMEOUT_MS)
         elif self.auto_save_id and not activate:
-            gobject.source_remove(self.auto_save_id)
+            self.killTimer(self.auto_save_id)
             self.auto_save_id = None
