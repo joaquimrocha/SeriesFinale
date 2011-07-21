@@ -46,6 +46,8 @@ class ShowDecoder(json.JSONEncoder):
     def default(self, show):
         show_json = dict(show.__dict__)
         show_json['json_type'] = 'show'
+        del show_json['downloading_season_image']
+        del show_json['downloading_show_image']
         episode_list = show_json['episode_list']
         remove_private_vars(show_json)
         show_json['episode_list'] = [self._decode_episode(episode) \
