@@ -47,7 +47,7 @@ Page {
         Header { text: "Bio" }
     }
     
-    /*Flickable {
+    Flickable {
         id: flickableText
         anchors.top: metaData.bottom
         anchors.left: parent.left
@@ -55,15 +55,10 @@ Page {
         anchors.bottom: parent.bottom
         anchors.margins: 16
         contentHeight: text.height
-        contentWidth: width
-        //clip: true*/
-        
+        clip: true
+
         Text {
-            anchors.top: metaData.bottom
-            anchors.left: parent.left
-            anchors.right: parent.right
-            anchors.bottom: parent.bottom
-            anchors.margins: 16
+            id: text
             width: parent.width
             text: episode.overviewText
             font.weight: Font.Light
@@ -71,8 +66,8 @@ Page {
             color: theme.inverted ? "#d2d2d2" : "#505050"
             wrapMode: Text.Wrap
         }
-    //}
-    //ScrollDecorator{ flickableItem: flickableText }
+    }
+    ScrollDecorator{ flickableItem: flickableText }
 
 	tools: ToolBarLayout {
 		ToolIcon { iconId: "toolbar-back"; onClicked: { pageStack.pop() } }
