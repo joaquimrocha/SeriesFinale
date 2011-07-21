@@ -75,10 +75,10 @@ Page {
         anchors.bottomMargin: 18
         anchors.left: parent.left
         anchors.leftMargin: 18
-        checked: episode.isWatched
         text: "Watched"
+        onClicked: episode.isWatched = !episode.isWatched
     }
-    Binding { target: episode; property: "isWatched"; value: watched.checked }
+    onEpisodeChanged: watched.checked = episode.isWatched
 
 	tools: ToolBarLayout {
 		ToolIcon { iconId: "toolbar-back"; onClicked: { pageStack.pop() } }
