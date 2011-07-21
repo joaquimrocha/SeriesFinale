@@ -4,6 +4,7 @@ import com.nokia.extras 1.0
 
 Page {
     id: page
+    property variant show: undefined
     property variant episode: undefined
     property string seasonImg: ''
     
@@ -75,7 +76,8 @@ Page {
 
 	tools: ToolBarLayout {
 		ToolIcon { iconId: "toolbar-back"; onClicked: { pageStack.pop() } }
-		//ToolIcon { iconId: "toolbar-view-menu"; onClicked: (myMenu.status == DialogStatus.Closed) ? myMenu.open() : myMenu.close() }
+        ToolIcon { iconId: "toolbar-up"; onClicked: episode = show.get_previous_episode(episode) }
+        ToolIcon { iconId: "toolbar-down"; onClicked: episode = show.get_next_episode(episode) }
 	}
 
 	/*Menu {

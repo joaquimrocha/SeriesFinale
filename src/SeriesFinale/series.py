@@ -90,9 +90,11 @@ class Show(QtCore.QObject):
             return self.episode_list
         return [episode for episode in self.episode_list if episode.season_number == season_number]
 
+    @QtCore.Slot(QtCore.QObject,result=QtCore.QObject)
     def get_next_episode(self, episode):
         return self._get_episode_by_offset(episode, 1)
 
+    @QtCore.Slot(QtCore.QObject,result=QtCore.QObject)
     def get_previous_episode(self, episode):
         return self._get_episode_by_offset(episode, -1)
 

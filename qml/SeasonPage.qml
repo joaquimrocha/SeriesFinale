@@ -27,7 +27,7 @@ Page {
             subtitle: model.data.airDateText
             Component {
                 id: episodePageComponent
-                EpisodePage { episode: model.data; seasonImg: show.get_season_image(season) }
+                EpisodePage { show: page.show; episode: model.data; seasonImg: show.get_season_image(season) }
             }
             onClicked: pageStack.push(episodePageComponent.createObject(pageStack))
             
