@@ -334,8 +334,12 @@ class Episode(QtCore.QObject):
     watchedChanged = QtCore.Signal()
     def get_watched(self): return self.watched
     def set_watched(self, watched):
+        if (self.watched == watched):
+            return
         self.watched = watched
         self.watchedChanged.emit()
+        series_manager = SeriesManager()
+        series_manager.changed = True
     isWatched = QtCore.Property(bool,get_watched,set_watched,notify=watchedChanged)
 
     overviewChanged = QtCore.Signal()
