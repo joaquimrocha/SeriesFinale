@@ -52,7 +52,7 @@ Page {
         anchors.top: metaData.bottom
         anchors.left: parent.left
         anchors.right: parent.right
-        anchors.bottom: parent.bottom
+        anchors.bottom: watched.top
         anchors.margins: 16
         contentHeight: text.height
         clip: true
@@ -68,6 +68,17 @@ Page {
         }
     }
     ScrollDecorator{ flickableItem: flickableText }
+
+    CheckBox {
+        id: watched
+        anchors.bottom: parent.bottom
+        anchors.bottomMargin: 18
+        anchors.left: parent.left
+        anchors.leftMargin: 18
+        checked: episode.isWatched
+        text: "Watched"
+    }
+    Binding { target: episode; property: "isWatched"; value: watched.checked }
 
 	tools: ToolBarLayout {
 		ToolIcon { iconId: "toolbar-back"; onClicked: { pageStack.pop() } }
