@@ -25,7 +25,7 @@ from listmodel import ListModel
 from xml.etree import ElementTree as ET
 
 def serialize(show_list):
-    return json.dumps(show_list, cls = ShowDecoder, indent = 4)
+    return json.dumps(show_list.list(), cls = ShowDecoder, indent = 4)
 
 def deserialize(shows_file_path):
     shows_file = open(shows_file_path, 'r')
@@ -47,7 +47,7 @@ class ShowDecoder(json.JSONEncoder):
     def default(self, show):
         show_json = dict(show.__dict__)
         show_json['json_type'] = 'show'
-        episode_list = show_json['episode_list']
+        episode_list = show_json['episode_list'].list()
         remove_private_vars(show_json)
         show_json['episode_list'] = [self._decode_episode(episode) \
                                      for episode in episode_list]
@@ -97,4 +97,6 @@ def episode_encoder(show, dictionary):
 def remove_private_vars(dictionary):
     for key in dictionary.keys():
         if key[0] == '_':
+            del dictionary[key]
+        elif hasattr(dictionary[key], 'emit'): #isinstance(s, QtCore.Signal) doesn't work for some unknown reason
             del dictionary[key]
