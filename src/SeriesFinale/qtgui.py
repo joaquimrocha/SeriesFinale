@@ -77,12 +77,16 @@ class MainWindow(QDeclarativeView):
         self.setSource(constants.QML_MAIN)
         self.showFullScreen()
 
+    def closeEvent(self, event):
+        self._exit_cb(event)
+
     def _load_finished(self, dummy_arg, error):
         self.rootContext().setContextProperty("series_list", self.series_manager.series_list);
         self.request = None
         self.series_manager.auto_save(True)
 
-    def _exit_cb(self, window, event):
+    @Slot()
+    def _exit_cb(self, event):
         if self.request:
             self.request.stop()
         # If the shows list is empty but the user hasn't deleted
@@ -103,8 +107,8 @@ class MainWindow(QDeclarativeView):
         async_worker.queue.put((0, save_shows_item))
         async_worker.queue.put((0, save_conf_item))
         async_worker.start()
+        event.ignore()
 
     def _save_finished_cb(self, dummy_arg, error):
-        hildon.hildon_gtk_window_set_progress_indicator(self, False)
-        gtk.main_quit()
+        QApplication.instance().quit()
 
