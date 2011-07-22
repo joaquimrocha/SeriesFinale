@@ -61,7 +61,10 @@ class ShowDecoder(json.JSONEncoder):
         episode_json = dict(episode.__dict__)
         episode_json['json_type'] = 'episode'
         del episode_json['show']
-        episode_json['air_date'] = str(episode.air_date)
+        try:
+            episode_json['air_date'] = episode.air_date.strftime('%Y-%m-%d')
+        except:
+            episode_json['air_date'] = ''
         episode_json['episode_number'] = str(episode.episode_number)
         remove_private_vars(episode_json)
         if isinstance(episode.guest_stars, list):
