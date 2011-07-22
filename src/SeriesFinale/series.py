@@ -224,7 +224,7 @@ class Show(QtCore.QObject):
                     if next_episode:
                         next_air_date = next_episode.air_date
                         if next_air_date:
-                            show_info += ' | ' + _('<i>Next episode:</i> %s on %s') % \
+                            show_info += ' | ' + _('<i>Next episode:</i> %s, %s') % \
                                          (next_episode.get_episode_show_number(), \
                                          next_episode.get_air_date_text())
                         else:
@@ -263,7 +263,7 @@ class Show(QtCore.QObject):
             if next_episode:
                 next_air_date = next_episode.air_date
                 if next_air_date:
-                    season_info += ' | ' + _('<i>Next episode:</i> %s on %s') % \
+                    season_info += ' | ' + _('<i>Next episode:</i> %s, %s') % \
                                    (next_episode.episode_number, \
                                     next_episode.get_air_date_text())
                 else:
@@ -646,7 +646,8 @@ class SeriesManager(QtCore.QObject):
                                (show,),
                                None,)
         self.async_worker.queue.put((1, async_item))
-        self.async_worker.start()
+        if not self.async_worker.isAlive():
+            self.async_worker.start()
 
     def get_show_by_id(self, show_id):
         for show in self.series_list:
