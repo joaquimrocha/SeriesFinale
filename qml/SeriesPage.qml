@@ -44,13 +44,19 @@ Page {
 	Menu {
 		id: myMenu
 		MenuLayout {
+            MenuItem {
+                text: "Add shows"
+                onClicked: pageStack.push(addShowComponent.createObject(pageStack))
+            }
 			MenuItem {
 				text: "Update all"
-				onClicked: {
-                    console.log("Update started")
-                    series_manager.update_all_shows_episodes()
-                }
+				onClicked: series_manager.update_all_shows_episodes()
 			}
 		}
 	}
+
+    Component {
+        id: addShowComponent
+        AddShow {}
+    }
 }
