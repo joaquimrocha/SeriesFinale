@@ -326,6 +326,14 @@ class Episode(QtCore.QObject):
     def __repr__(self):
         return self.get_title()
 
+    ratingChanged = QtCore.Signal()
+    def get_rating(self):
+        try:
+            return round(float(self.rating))
+        except:
+            return 0
+    episodeRating = QtCore.Property(int,get_rating,notify=ratingChanged)
+
     titleChanged = QtCore.Signal()
     def get_title(self):
         return _('Ep. %s: %s') % (self.get_episode_show_number(), self.name)
@@ -370,6 +378,7 @@ class Episode(QtCore.QObject):
         self.watched = episode.watched or self.watched
         self.air_date = episode.air_date or self.air_date
         #TODO: Maybe we should check which really changed and only emit those signals?
+        self.ratingChanged.emit()
         self.titleChanged.emit()
         self.airDateTextChanged.emit()
         self.watchedChanged.emit()

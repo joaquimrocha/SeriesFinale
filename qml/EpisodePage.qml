@@ -38,7 +38,7 @@ Page {
                 Text { text: "Rating: "; font.pixelSize: 22 }
                 RatingIndicator {
                     maximumValue: 10
-                    ratingValue: 4
+                    ratingValue: episode.episodeRating
                     //count: 97
                 }
             }
