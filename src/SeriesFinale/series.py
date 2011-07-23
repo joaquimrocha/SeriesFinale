@@ -462,7 +462,7 @@ class SeriesManager(QtCore.QObject):
     #UPDATE_SHOW_EPISODES_COMPLETE_SIGNAL = 'update-show-episodes-complete'
     updateShowEpisodesComplete = QtCore.Signal(unicode)
     #UPDATE_SHOWS_CALL_COMPLETE_SIGNAL = 'update-shows-call-complete'
-    updateShowsCallComplete = QtCore.Signal(object,object)
+    updateShowsCallComplete = QtCore.Signal(QtCore.QObject)
     #SHOW_LIST_CHANGED_SIGNAL = 'show-list-changed'
     showListChanged = QtCore.Signal()
     UPDATED_SHOW_ART = 'updated-show-art'
@@ -593,11 +593,9 @@ class SeriesManager(QtCore.QObject):
             episode_list = [self._convert_thetvdbepisode_to_episode(tvdb_ep,show) \
                             for tvdb_ep in tvdbcompleteshow[1]]
             show.update_episode_list(episode_list)
-        logging.debug("Emit UPDATE_SHOW_EPISODES_COMPLETE_SIGNAL")
         self.updateShowEpisodesComplete.emit("%s" % show) #show, error)
         if last_call:
-            logging.debug("Emit UPDATE_SHOWS_CALL_COMPLETE_SIGNAL") #TODO
-            #self.emit(self.UPDATE_SHOWS_CALL_COMPLETE_SIGNAL, show, error)
+            self.updateShowsCallComplete.emit(show)
 
     def _search_show_to_update_callback(self, tvdbshows):
         if not tvdbshows:
