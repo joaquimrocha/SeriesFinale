@@ -44,12 +44,4 @@ Page {
 			}
 		}
 	}
-    
-    Connections {
-        target: series_manager
-        onUpdateShowEpisodesComplete: {
-            console.log("updateShowEpisodesComplete")
-            console.log(arguments.length)
-        }
-    }
 }
