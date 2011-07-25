@@ -10,7 +10,7 @@ Page {
     Header {
         id: header
         text: "Add show"
-        
+        busy: series_manager.isSearching
     }
 
     TextField {
@@ -39,12 +39,31 @@ Page {
         }
     }
 
+	ListView {
+		id: listView
+		anchors.top: searchTextField.bottom
+        anchors.topMargin: 18
+        anchors.bottom: parent.bottom
+        anchors.left: parent.left
+        anchors.right: parent.right
+        clip: true
+		model: series_manager.search_result_model()
+		delegate: ListRowDelegate {
+            title: model.data
+            onClicked: {
+                series_manager.get_complete_show(model.data);
+                pageStack.pop()
+            }
+        }
+	}
+	ScrollDecorator{ flickableItem: listView }
+
 	tools: ToolBarLayout {
 		ToolIcon { iconId: "toolbar-back"; onClicked: { pageStack.pop() } }
 	}
 
     function search() {
         parent.focus = true //Make sure the keyboard closes and the text is updated
-        console.log("Searching for", searchTextField.text)
+        series_manager.search_shows(searchTextField.text)
     }
 }
