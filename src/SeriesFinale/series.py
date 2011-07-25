@@ -61,8 +61,11 @@ class Show(QtCore.QObject):
 
     coverImageChanged = QtCore.Signal()
     def cover_image(self):
-        if os.path.exists(self.image):
-            return self.image
+        try:
+            if os.path.exists(self.image):
+                return self.image
+        except:
+            pass
         return constants.PLACEHOLDER_IMAGE
     def set_cover_image(self, new_path):
         self.image = new_path
