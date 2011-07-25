@@ -469,7 +469,6 @@ class Episode(QtCore.QObject):
 
 class SeriesManager(QtCore.QObject):
 
-    SEARCH_SERIES_COMPLETE_SIGNAL = 'search-shows-complete'
     GET_FULL_SHOW_COMPLETE_SIGNAL = 'get-full-show-complete'
     #UPDATE_SHOW_EPISODES_COMPLETE_SIGNAL = 'update-show-episodes-complete'
     updateShowEpisodesComplete = QtCore.Signal(unicode)
@@ -479,11 +478,7 @@ class SeriesManager(QtCore.QObject):
     showListChanged = QtCore.Signal()
     UPDATED_SHOW_ART = 'updated-show-art'
 
-   # __gsignals__ = {SEARCH_SERIES_COMPLETE_SIGNAL: (gobject.SIGNAL_RUN_LAST,
-   #                                                 gobject.TYPE_NONE,
-   #                                                 (gobject.TYPE_PYOBJECT,
-   #                                                  gobject.TYPE_PYOBJECT)),
-   #                 GET_FULL_SHOW_COMPLETE_SIGNAL: (gobject.SIGNAL_RUN_LAST,
+   # __gsignals__ = {GET_FULL_SHOW_COMPLETE_SIGNAL: (gobject.SIGNAL_RUN_LAST,
    #                                                 gobject.TYPE_NONE,
    #                                                 (gobject.TYPE_PYOBJECT,
    #                                                  gobject.TYPE_PYOBJECT)),
@@ -529,6 +524,10 @@ class SeriesManager(QtCore.QObject):
             # Cached values
             self._cached_tvdb_shows = {}
 
+            # Searching
+            self.searching = False
+            self.search_results = ListModel([])
+
             # Languages
             # self.languages = self.thetvdb.get_available_languages()
             self.languages = None
@@ -558,9 +557,18 @@ class SeriesManager(QtCore.QObject):
 
         return self.default_language
 
+    searchingChanged = QtCore.Signal()
+    def get_searching(self): return self.searching
+    isSearching = QtCore.Property(bool,get_searching,notify=searchingChanged)
+
+    @QtCore.Slot(unicode)
+    @QtCore.Slot(unicode,unicode)
     def search_shows(self, terms, language = "en"):
         if not terms:
             return []
+        self.search_results.clear()
+        self.searching = True
+        self.searchingChanged.emit()
         self.async_worker = self.get_async_worker()
         async_item = AsyncItem(self.thetvdb.get_matching_shows,
                                (terms, language,),
@@ -568,13 +576,17 @@ class SeriesManager(QtCore.QObject):
         self.async_worker.queue.put((0, async_item))
         self.async_worker.start()
 
+    @QtCore.Slot(result=QtCore.QObject)
+    def search_result_model(self):
+        return self.search_results
+
     def _search_finished_callback(self, tvdbshows, error):
-        shows = []
         if not error:
             for show_id, show in tvdbshows:
                 self._cached_tvdb_shows[show_id] = show
-                shows.append(show)
-        self.emit(self.SEARCH_SERIES_COMPLETE_SIGNAL, shows, error)
+                self.search_results.append(show)
+        self.searching = False
+        self.searchingChanged.emit()
 
     @QtCore.Slot(QtCore.QObject)
     def update_show_episodes(self, show):
@@ -602,8 +614,8 @@ class SeriesManager(QtCore.QObject):
 
     def _set_show_episodes_complete_cb(self, show, last_call, tvdbcompleteshow, error):
         if not error and tvdbcompleteshow:
-            episode_list = [self._convert_thetvdbepisode_to_episode(tvdb_ep,show) \
-                            for tvdb_ep in tvdbcompleteshow[1]]
+            episode_list = ListModel([self._convert_thetvdbepisode_to_episode(tvdb_ep,show) \
+                            for tvdb_ep in tvdbcompleteshow[1]])
             show.update_episode_list(episode_list)
         self.updateShowEpisodesComplete.emit("%s" % show) #show, error)
         if last_call:
@@ -616,6 +628,7 @@ class SeriesManager(QtCore.QObject):
         for show_id, show in tvdbshows:
             pass
 
+    @QtCore.Slot(unicode)
     def get_complete_show(self, show_name, language = "en"):
         show_id = self._cached_tvdb_shows.get(show_name, None)
         for show_id, show_title in self._cached_tvdb_shows.items():
@@ -636,7 +649,7 @@ class SeriesManager(QtCore.QObject):
             return None
         show = self._convert_thetvdbshow_to_show(tvdb_show_episodes[0])
         show.id = self._get_id_for_show()
-        show.episode_list = []
+        show.episode_list = ListModel([])
         for tvdb_ep in tvdb_show_episodes[1]:
             episode = self._convert_thetvdbepisode_to_episode(tvdb_ep,
                                                               show)
@@ -650,7 +663,8 @@ class SeriesManager(QtCore.QObject):
         return show
 
     def _get_complete_show_finished_cb(self, show, error):
-        self.emit(self.GET_FULL_SHOW_COMPLETE_SIGNAL, show, error)
+        #self.emit(self.GET_FULL_SHOW_COMPLETE_SIGNAL, show, error)
+        logging.debug('GET_FULL_SHOW_COMPLETE_SIGNAL') #TODO
         self.async_worker = self.get_async_worker()
         async_item = AsyncItem(self._set_show_images,
                                (show,),
