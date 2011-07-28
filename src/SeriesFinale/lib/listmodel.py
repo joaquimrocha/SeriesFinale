@@ -46,5 +46,10 @@ class ListModel(QtCore.QAbstractListModel):
     def __len__(self):
         return self.rowCount()
 
+    def __delitem__(self, index):
+        self.beginRemoveRows(QtCore.QModelIndex(), index, index)
+        del self._items[index]
+        self.endRemoveRows()
+
     def __getitem__(self, key):
         return self._items[key]
