@@ -23,7 +23,7 @@ Page {
             
             Image {
                 id: image
-                width: 192
+                width: 128
                 //height: 192
                 source: '/home/user/.local/share/seriesfinale/95441_episode_1142761.jpg'
                 //source: 'http://www.thetvdb.com/banners/episodes/95441/3510451.jpg' //seasonImg
