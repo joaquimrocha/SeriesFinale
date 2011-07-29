@@ -9,6 +9,7 @@ Item {
     clip: true
     
     signal clicked
+    signal pressAndHold
     property alias title: title.text
     property alias subtitle: subtitle.text
     property alias iconSource: icon.source
@@ -66,8 +67,7 @@ Item {
     MouseArea {
         id: mouseArea
         anchors.fill: background
-        onClicked: {
-            listItem.clicked();
-        }
+        onClicked: listItem.clicked()
+        onPressAndHold: listItem.pressAndHold()
     }
 }
