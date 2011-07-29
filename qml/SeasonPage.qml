@@ -25,6 +25,7 @@ Page {
 		delegate: ListRowDelegate {
             title: model.data.title
             subtitle: model.data.airDateText
+            iconSource: model.data.isWatched ? 'image://theme/icon-m-common-done' : 'image://theme/icon-m-common-aqua'
             Component {
                 id: episodePageComponent
                 EpisodePage { show: page.show; episode: model.data; seasonImg: show.get_season_image(season) }
