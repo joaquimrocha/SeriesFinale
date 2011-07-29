@@ -21,8 +21,17 @@ Page {
                 id: showPageComponent
                 ShowPage { show: model.data }
             }
-            onClicked: pageStack.push(showPageComponent.createObject(pageStack))
+            ContextMenu {
+                id: contextMenu
+                MenuLayout {
+                    MenuItem {text: "Delete show"; onClicked: { series_manager.delete_show(model.data) } }
+                }
+            }
 
+            onClicked: pageStack.push(showPageComponent.createObject(pageStack))
+            onPressAndHold: {
+                contextMenu.open()
+            }
         }
 	}
 	ScrollDecorator{ flickableItem: listView }
