@@ -703,6 +703,7 @@ class SeriesManager(QtCore.QObject):
         self.changed = True
         self.emit(self.SHOW_LIST_CHANGED_SIGNAL)
 
+    @QtCore.Slot(QtCore.QObject)
     def delete_show(self, show):
         for i in xrange(len(self.series_list)):
             if self.series_list[i] == show:
@@ -712,7 +713,7 @@ class SeriesManager(QtCore.QObject):
                             os.remove(image)
                 del self.series_list[i]
                 self.changed = True
-                self.emit(self.SHOW_LIST_CHANGED_SIGNAL)
+                #self.emit(self.SHOW_LIST_CHANGED_SIGNAL)
                 break
 
     def _get_shows_from_id(self, id):
