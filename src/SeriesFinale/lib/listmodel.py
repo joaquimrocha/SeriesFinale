@@ -36,6 +36,9 @@ class ListModel(QtCore.QAbstractListModel):
         self._items = []
         self.endRemoveRows()
 
+    def columnCount(self, parent=QtCore.QModelIndex()):
+        return 1
+
     def rowCount(self, parent=QtCore.QModelIndex()):
         return len(self._items)
 
