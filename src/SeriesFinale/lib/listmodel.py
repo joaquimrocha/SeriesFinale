@@ -42,7 +42,7 @@ class ListModel(QtCore.QAbstractListModel):
     def rowCount(self, parent=QtCore.QModelIndex()):
         return len(self._items)
 
-    def data(self, index, role):
+    def data(self, index, role = QtCore.Qt.DisplayRole):
         if not index.isValid():
             return
         if role == 0:
