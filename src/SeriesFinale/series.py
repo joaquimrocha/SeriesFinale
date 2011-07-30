@@ -33,7 +33,7 @@ import gettext
 import locale
 import logging
 logging.basicConfig(level=logging.DEBUG)
-from PySide import QtCore
+from PySide import QtCore, QtGui
 
 _ = gettext.gettext
 
@@ -469,6 +469,33 @@ class Episode(QtCore.QObject):
             return other_episode
         return None
 
+class SortedSeriesList(QtGui.QSortFilterProxyModel):
+
+    def __init__(self, parent=None):
+        QtGui.QSortFilterProxyModel.__init__(self, parent)
+        self.setDynamicSortFilter(True)
+        self.sort(0)
+
+    def lessThan(self, left, right):
+        leftData = self.sourceModel().data(left)
+        rightData = self.sourceModel().data(right)
+
+        #Sort completed last
+        if rightData.is_completely_watched():
+            if leftData.is_completely_watched():
+                #Both complete, sort by title
+                return str(leftData) < str(rightData)
+            return True
+        elif leftData.is_completely_watched():
+            return False
+
+        leftEpisodes = leftData.get_episodes_info()
+        rightEpisodes = rightData.get_episodes_info()
+        if leftEpisodes['next_episode'].air_date == rightEpisodes['next_episode'].air_date:
+            #Same date, sort by title
+            return str(leftData) < str(rightData)
+        return leftEpisodes['next_episode'].air_date < rightEpisodes['next_episode'].air_date
+
 class SeriesManager(QtCore.QObject):
 
     GET_FULL_SHOW_COMPLETE_SIGNAL = 'get-full-show-complete'
@@ -517,6 +544,8 @@ class SeriesManager(QtCore.QObject):
             QtCore.QObject.__init__(self)
 
             self.series_list = ListModel()
+            self.sorted_series_list = SortedSeriesList(self)
+            self.sorted_series_list.setSourceModel(self.series_list)
 
             self.thetvdb = thetvdbapi.TheTVDB(TVDB_API_KEY)
             self.async_worker = None

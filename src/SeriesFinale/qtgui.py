@@ -73,7 +73,7 @@ class MainWindow(QDeclarativeView):
 
         self.setWindowTitle(constants.SF_NAME)
         self.rootContext().setContextProperty("series_manager", self.series_manager)
-        self.rootContext().setContextProperty("seriesList", self.series_manager.series_list)
+        self.rootContext().setContextProperty("seriesList", self.series_manager.sorted_series_list)
         self.setSource(constants.QML_MAIN)
         self.showFullScreen()
 
@@ -81,7 +81,6 @@ class MainWindow(QDeclarativeView):
         self._exit_cb(event)
 
     def _load_finished(self, dummy_arg, error):
-        self.rootContext().setContextProperty("series_list", self.series_manager.series_list);
         self.request = None
         self.series_manager.auto_save(True)
 
