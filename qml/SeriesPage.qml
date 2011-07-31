@@ -3,6 +3,7 @@ import com.nokia.meego 1.0
 import com.nokia.extras 1.0
 
 Page {
+    id: page
     Header { id: header; text: "SeriesFinale" }
 	ListView {
 		id: listView
@@ -52,6 +53,11 @@ Page {
 				text: "Update all"
 				onClicked: series_manager.update_all_shows_episodes()
 			}
+            MenuItem {
+                text: "Settings"
+                onClicked: settingsComponent.createObject(page).open()
+                Component { id: settingsComponent; SettingsPage {} }
+            }
 		}
 	}
 
