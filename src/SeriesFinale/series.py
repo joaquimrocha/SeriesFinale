@@ -133,10 +133,13 @@ class Show(QtCore.QObject):
             return self.season_images[season]
         return retval
 
-    @QtCore.Slot(unicode,result=QtCore.QObject)
     def get_episode_list_by_season(self, season):
-        return ListModel([episode for episode in self.episode_list \
-                  if episode.season_number == season], self)
+        return [episode for episode in self.episode_list \
+                  if episode.season_number == season]
+
+    @QtCore.Slot(unicode,result=QtCore.QObject)
+    def get_sorted_episode_list_by_season(self, season):
+        return SortedEpisodesList(ListModel(self.get_episode_list_by_season(season)), self)
 
     def update_episode_list(self, episode_list):
         add_special_seasons = Settings().getConf(Settings.ADD_SPECIAL_SEASONS)
@@ -506,6 +509,17 @@ class SortedSeasonsList(QtGui.QSortFilterProxyModel):
 
     def lessThan(self, left, right):
         return self.sourceModel().data(left) > self.sourceModel().data(right)
+
+class SortedEpisodesList(QtGui.QSortFilterProxyModel):
+
+    def __init__(self, list, parent=None):
+        QtGui.QSortFilterProxyModel.__init__(self, parent)
+        self.setDynamicSortFilter(True)
+        self.sort(0)
+        self.setSourceModel(list)
+
+    def lessThan(self, left, right):
+        return self.sourceModel().data(left).episode_number > self.sourceModel().data(right).episode_number
 
 class SeriesManager(QtCore.QObject):
 

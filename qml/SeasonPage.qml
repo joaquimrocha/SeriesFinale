@@ -21,7 +21,7 @@ Page {
         anchors.bottom: parent.bottom
 		//anchors.leftMargin: 16
         clip: true
-		model: show.get_episode_list_by_season(season)
+		model: show.get_sorted_episode_list_by_season(season)
 		delegate: ListRowDelegate {
             title: model.data.title
             subtitle: model.data.airDateText
