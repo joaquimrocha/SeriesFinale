@@ -114,7 +114,7 @@ class Show(QtCore.QObject):
 
     @QtCore.Slot(result=QtCore.QObject)
     def get_seasons_model(self):
-        return ListModel(self.get_seasons(), self)
+        return SortedSeasonsList(ListModel(self.get_seasons()), self)
 
     def get_seasons(self):
         seasons = []
@@ -495,6 +495,17 @@ class SortedSeriesList(QtGui.QSortFilterProxyModel):
             #Same date, sort by title
             return str(leftData) < str(rightData)
         return leftEpisodes['next_episode'].air_date < rightEpisodes['next_episode'].air_date
+
+class SortedSeasonsList(QtGui.QSortFilterProxyModel):
+
+    def __init__(self, list, parent=None):
+        QtGui.QSortFilterProxyModel.__init__(self, parent)
+        self.setDynamicSortFilter(True)
+        self.sort(0)
+        self.setSourceModel(list)
+
+    def lessThan(self, left, right):
+        return self.sourceModel().data(left) > self.sourceModel().data(right)
 
 class SeriesManager(QtCore.QObject):
 
