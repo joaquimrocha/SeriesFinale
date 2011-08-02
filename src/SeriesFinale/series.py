@@ -557,7 +557,7 @@ class SeriesManager(QtCore.QObject):
 
     GET_FULL_SHOW_COMPLETE_SIGNAL = 'get-full-show-complete'
     #UPDATE_SHOW_EPISODES_COMPLETE_SIGNAL = 'update-show-episodes-complete'
-    updateShowEpisodesComplete = QtCore.Signal(unicode)
+    updateShowEpisodesComplete = QtCore.Signal(QtCore.QObject)
     #UPDATE_SHOWS_CALL_COMPLETE_SIGNAL = 'update-shows-call-complete'
     updateShowsCallComplete = QtCore.Signal(QtCore.QObject)
     #SHOW_LIST_CHANGED_SIGNAL = 'show-list-changed'
@@ -708,7 +708,7 @@ class SeriesManager(QtCore.QObject):
             episode_list = ListModel([self._convert_thetvdbepisode_to_episode(tvdb_ep,show) \
                             for tvdb_ep in tvdbcompleteshow[1]])
             show.update_episode_list(episode_list)
-        self.updateShowEpisodesComplete.emit("%s" % show) #show, error)
+        self.updateShowEpisodesComplete.emit(show)
         if last_call:
             self.updateShowsCallComplete.emit(show)
 

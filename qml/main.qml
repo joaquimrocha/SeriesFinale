@@ -13,26 +13,22 @@ PageStackWindow {
 		SeriesPage {}
 	}
 
-	Component.onCompleted: {
-		//theme.inverted = true
-	}
+    Component.onCompleted: {
+        //theme.inverted = true
+        series_manager.updateShowEpisodesComplete.connect(function (show) {
+            infoBanner.text = 'Updated "' + show.showName + '"'
+            infoBanner.show()
+        })
+        series_manager.updateShowsCallComplete.connect(function() {
+            infoBanner.text = "Finished updating the shows"
+            infoBanner.show()
+        })
+    }
 
     InfoBanner{
         id: infoBanner
         timerEnabled: true
         timerShowTime: 3000
         topMargin: 44
-    }
-
-    Connections {
-        target: series_manager
-        onUpdateShowEpisodesComplete: {
-            infoBanner.text = 'Updated "xxx"'
-            infoBanner.show()
-        }
-        onUpdateShowsCallComplete: {
-            infoBanner.text = "Finished updating the shows"
-            infoBanner.show()
-        }
     }
 }
