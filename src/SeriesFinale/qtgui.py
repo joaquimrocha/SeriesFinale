@@ -100,7 +100,7 @@ class MainWindow(QDeclarativeView):
         # any, then we don't save in order to avoid overwriting
         # the current db (for the shows list might be empty due
         # to an error)
-        if not self.series_manager.series_list and not self._have_deleted:
+        if not self.series_manager.series_list and not self.series_manager.have_deleted:
             self.close()
             return
         self.series_manager.auto_save(False)

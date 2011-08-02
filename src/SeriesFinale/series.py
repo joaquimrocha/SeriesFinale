@@ -613,6 +613,9 @@ class SeriesManager(QtCore.QObject):
             self.languages = None
             self.default_language = None
 
+            self.have_deleted = False
+
+
     def get_languages(self):
         if self.languages is None:
             self.languages = self.thetvdb.get_available_languages()
@@ -810,6 +813,7 @@ class SeriesManager(QtCore.QObject):
                             os.remove(image)
                 del self.series_list[i]
                 self.changed = True
+                self.have_deleted = True
                 #self.emit(self.SHOW_LIST_CHANGED_SIGNAL)
                 break
 
