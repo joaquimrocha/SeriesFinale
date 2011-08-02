@@ -133,7 +133,6 @@ class SettingsWrapper(QObject):
 
     hideCompletedShowsChanged = Signal()
     def getHideCompletedShows(self):
-        logging.debug("Getting %i" % Settings().getConf(Settings.HIDE_COMPLETED_SHOWS))
         return Settings().getConf(Settings.HIDE_COMPLETED_SHOWS)
     def setHideCompletedShows(self, add):
         Settings().setConf(Settings.HIDE_COMPLETED_SHOWS, add)
