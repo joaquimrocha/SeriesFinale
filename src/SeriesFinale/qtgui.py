@@ -118,6 +118,14 @@ class SettingsWrapper(QObject):
     def __init__(self, parent=None):
         QObject.__init__(self, parent)
 
+    addSpecialSeasonsChanged = Signal()
+    def getAddSpecialSeasons(self):
+        return Settings().getConf(Settings.ADD_SPECIAL_SEASONS)
+    def setAddSpecialSeasons(self, add):
+        Settings().setConf(Settings.ADD_SPECIAL_SEASONS, add)
+        self.addSpecialSeasonsChanged.emit()
+    addSpecialSeasons = Property(bool,getAddSpecialSeasons,setAddSpecialSeasons,notify=addSpecialSeasonsChanged)
+
     episodesOrderChanged = Signal()
     def getEpisodesOrder(self):
         return Settings().getConf(Settings.EPISODES_ORDER_CONF_NAME)

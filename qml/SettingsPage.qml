@@ -4,9 +4,9 @@ import com.nokia.extras 1.0
 
 Sheet {
     acceptButtonText: "Close"
-    //MouseArea { anchors.fill: parent }
-    
+
     content: Flickable {
+        id: content
         anchors.fill: parent
         anchors.margins: 18
         contentWidth: grid.width
@@ -16,8 +16,7 @@ Sheet {
             id: grid
             width: parent.width
             spacing: 18
-            //columns: 2
-            
+
             Text {
                 text: "Show sorting:"
                 font.pixelSize: 26
@@ -35,15 +34,22 @@ Sheet {
                 Button { text: "1-9"; onClicked: settings.episodesOrder=0 }
                 Button { text: "9-1"; onClicked: settings.episodesOrder=1; checked: settings.episodesOrder == 1 }
             }
-            
-            Row {
+
+            Item {
+                height: addSpeciealSeasons.height
+                width: content.width
+
                 Text {
-                    text: "Add special seasons"
+                    anchors.verticalCenter: parent.verticalCenter
+                    text: "Add special seasons:"
                     font.pixelSize: 26
                 }
 
                 Switch {
-                    checked: true
+                    id: addSpeciealSeasons
+                    anchors.right: parent.right
+                    checked: settings.addSpecialSeasons
+                    onCheckedChanged: settings.addSpecialSeasons = checked
                 }
             }
         }
