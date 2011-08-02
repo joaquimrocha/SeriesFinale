@@ -32,8 +32,8 @@ Sheet {
                 font.pixelSize: 26
             }
             ButtonRow {
-                Button { text: "A-Z" }
-                Button { text: "Z-A" }
+                Button { text: "1-9" }
+                Button { text: "9-1"; checked: true }
             }
             
             Row {
