@@ -24,16 +24,7 @@ Sheet {
             }
             ButtonRow {
                 Button { text: "By title" }
-                Button { text: "By episode date" }
-            }
-
-            Text {
-                text: "Season sorting:"
-                font.pixelSize: 26
-            }
-            ButtonRow {
-                Button { text: "A-Z" }
-                Button { text: "Z-A" }
+                Button { text: "By episode date"; checked: true }
             }
 
             Text {
