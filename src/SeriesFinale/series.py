@@ -477,12 +477,22 @@ class SortedSeriesList(QtGui.QSortFilterProxyModel):
     def __init__(self, parent=None):
         QtGui.QSortFilterProxyModel.__init__(self, parent)
         self.sortOrder = Settings().getConf(Settings.SHOWS_SORT)
+        self.hideCompleted = Settings().getConf(Settings.HIDE_COMPLETED_SHOWS)
         self.setDynamicSortFilter(True)
         self.sort(0)
 
     def resort(self):
         self.sortOrder = Settings().getConf(Settings.SHOWS_SORT)
+        self.hideCompleted = Settings().getConf(Settings.HIDE_COMPLETED_SHOWS)
         self.invalidate()
+
+    def filterAcceptsRow(self, sourceRow, sourceParent):
+        if not self.hideCompleted:
+            return True
+
+        index = self.sourceModel().index(sourceRow, 0, sourceParent)
+        show = self.sourceModel().data(index)
+        return not show.is_completely_watched()
 
     def lessThan(self, left, right):
         leftData = self.sourceModel().data(left)

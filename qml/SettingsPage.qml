@@ -52,6 +52,24 @@ Sheet {
                     onCheckedChanged: settings.addSpecialSeasons = checked
                 }
             }
+
+            Item {
+                height: hideCompletedShows.height
+                width: content.width
+
+                Text {
+                    anchors.verticalCenter: parent.verticalCenter
+                    text: "Hide completely watched:"
+                    font.pixelSize: 26
+                }
+
+                Switch {
+                    id: hideCompletedShows
+                    anchors.right: parent.right
+                    checked: settings.hideCompletedShows
+                    onCheckedChanged: settings.hideCompletedShows = checked
+                }
+            }
         }
     }
 }

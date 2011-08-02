@@ -61,7 +61,8 @@ class MainWindow(QDeclarativeView):
         self.series_manager = SeriesManager()
         self.settings = Settings()
         load_conf_item = AsyncItem(self.settings.load,
-                                   (constants.SF_CONF_FILE,))
+                                   (constants.SF_CONF_FILE,),
+                                   self._settings_load_finished)
         load_shows_item = AsyncItem(self.series_manager.load,
                                     (constants.SF_DB_FILE,),
                                     self._load_finished)
@@ -77,11 +78,15 @@ class MainWindow(QDeclarativeView):
         self.rootContext().setContextProperty("seriesList", self.series_manager.sorted_series_list)
         self.rootContext().setContextProperty("settings", settingsWrapper)
         settingsWrapper.showsSortChanged.connect(self.series_manager.sorted_series_list.resort)
+        settingsWrapper.hideCompletedShowsChanged.connect(self.series_manager.sorted_series_list.resort)
         self.setSource(constants.QML_MAIN)
         self.showFullScreen()
 
     def closeEvent(self, event):
         self._exit_cb(event)
+
+    def _settings_load_finished(self, dummy_arg, error):
+        self.series_manager.sorted_series_list.resort()
 
     def _load_finished(self, dummy_arg, error):
         self.request = None
@@ -125,6 +130,15 @@ class SettingsWrapper(QObject):
         Settings().setConf(Settings.ADD_SPECIAL_SEASONS, add)
         self.addSpecialSeasonsChanged.emit()
     addSpecialSeasons = Property(bool,getAddSpecialSeasons,setAddSpecialSeasons,notify=addSpecialSeasonsChanged)
+
+    hideCompletedShowsChanged = Signal()
+    def getHideCompletedShows(self):
+        logging.debug("Getting %i" % Settings().getConf(Settings.HIDE_COMPLETED_SHOWS))
+        return Settings().getConf(Settings.HIDE_COMPLETED_SHOWS)
+    def setHideCompletedShows(self, add):
+        Settings().setConf(Settings.HIDE_COMPLETED_SHOWS, add)
+        self.hideCompletedShowsChanged.emit()
+    hideCompletedShows = Property(bool,getHideCompletedShows,setHideCompletedShows,notify=hideCompletedShowsChanged)
 
     episodesOrderChanged = Signal()
     def getEpisodesOrder(self):
