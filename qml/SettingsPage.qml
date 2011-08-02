@@ -23,8 +23,8 @@ Sheet {
                 font.pixelSize: 26
             }
             ButtonRow {
-                Button { text: "By title" }
-                Button { text: "By episode date"; checked: true }
+                Button { text: "By title"; onClicked: settings.showsSort=0 }
+                Button { text: "By episode date"; onClicked: settings.showsSort=1; checked: settings.showsSort == 1 }
             }
 
             Text {
@@ -32,8 +32,8 @@ Sheet {
                 font.pixelSize: 26
             }
             ButtonRow {
-                Button { text: "1-9" }
-                Button { text: "9-1"; checked: true }
+                Button { text: "1-9"; onClicked: settings.episodesOrder=0 }
+                Button { text: "9-1"; onClicked: settings.episodesOrder=1; checked: settings.episodesOrder == 1 }
             }
             
             Row {

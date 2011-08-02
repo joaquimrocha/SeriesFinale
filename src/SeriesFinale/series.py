@@ -480,6 +480,10 @@ class SortedSeriesList(QtGui.QSortFilterProxyModel):
         self.setDynamicSortFilter(True)
         self.sort(0)
 
+    def resort(self):
+        self.sortOrder = Settings().getConf(Settings.SHOWS_SORT)
+        self.invalidate()
+
     def lessThan(self, left, right):
         leftData = self.sourceModel().data(left)
         rightData = self.sourceModel().data(right)

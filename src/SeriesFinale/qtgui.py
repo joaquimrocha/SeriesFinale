@@ -72,8 +72,11 @@ class MainWindow(QDeclarativeView):
         self.request.start()
 
         self.setWindowTitle(constants.SF_NAME)
+        settingsWrapper = SettingsWrapper(self)
         self.rootContext().setContextProperty("series_manager", self.series_manager)
         self.rootContext().setContextProperty("seriesList", self.series_manager.sorted_series_list)
+        self.rootContext().setContextProperty("settings", settingsWrapper)
+        settingsWrapper.showsSortChanged.connect(self.series_manager.sorted_series_list.resort)
         self.setSource(constants.QML_MAIN)
         self.showFullScreen()
 
@@ -111,3 +114,22 @@ class MainWindow(QDeclarativeView):
     def _save_finished_cb(self, dummy_arg, error):
         QApplication.instance().quit()
 
+class SettingsWrapper(QObject):
+    def __init__(self, parent=None):
+        QObject.__init__(self, parent)
+
+    episodesOrderChanged = Signal()
+    def getEpisodesOrder(self):
+        return Settings().getConf(Settings.EPISODES_ORDER_CONF_NAME)
+    def setEpisodesOrder(self, newOrder):
+        Settings().setConf(Settings.EPISODES_ORDER_CONF_NAME, newOrder)
+        self.episodesOrderChanged.emit()
+    episodesOrder = Property(int,getEpisodesOrder,setEpisodesOrder,notify=episodesOrderChanged)
+
+    showsSortChanged = Signal()
+    def getShowsSort(self):
+        return Settings().getConf(Settings.SHOWS_SORT)
+    def setShowsSort(self, newOrder):
+        Settings().setConf(Settings.SHOWS_SORT, newOrder)
+        self.showsSortChanged.emit()
+    showsSort = Property(int,getShowsSort,setShowsSort,notify=showsSortChanged)
