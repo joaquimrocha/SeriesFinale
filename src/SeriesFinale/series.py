@@ -476,12 +476,16 @@ class SortedSeriesList(QtGui.QSortFilterProxyModel):
 
     def __init__(self, parent=None):
         QtGui.QSortFilterProxyModel.__init__(self, parent)
+        self.sortOrder = Settings().getConf(Settings.SHOWS_SORT)
         self.setDynamicSortFilter(True)
         self.sort(0)
 
     def lessThan(self, left, right):
         leftData = self.sourceModel().data(left)
         rightData = self.sourceModel().data(right)
+
+        if (self.sortOrder != Settings.RECENT_EPISODE):
+            return str(leftData) < str(rightData)
 
         #Sort completed last
         if rightData.is_completely_watched():
@@ -504,22 +508,28 @@ class SortedSeasonsList(QtGui.QSortFilterProxyModel):
     def __init__(self, list, parent=None):
         QtGui.QSortFilterProxyModel.__init__(self, parent)
         self.setDynamicSortFilter(True)
+        self.sortOrder = Settings().getConf(Settings.SEASONS_ORDER_CONF_NAME)
         self.sort(0)
         self.setSourceModel(list)
 
     def lessThan(self, left, right):
-        return self.sourceModel().data(left) > self.sourceModel().data(right)
+        if (self.sortOrder == Settings.DESCENDING_ORDER):
+            return self.sourceModel().data(left) > self.sourceModel().data(right)
+        return self.sourceModel().data(left) < self.sourceModel().data(right)
 
 class SortedEpisodesList(QtGui.QSortFilterProxyModel):
 
     def __init__(self, list, parent=None):
         QtGui.QSortFilterProxyModel.__init__(self, parent)
         self.setDynamicSortFilter(True)
+        self.sortOrder = Settings().getConf(Settings.EPISODES_ORDER_CONF_NAME)
         self.sort(0)
         self.setSourceModel(list)
 
     def lessThan(self, left, right):
-        return self.sourceModel().data(left).episode_number > self.sourceModel().data(right).episode_number
+        if (self.sortOrder == Settings.DESCENDING_ORDER):
+            return self.sourceModel().data(left).episode_number > self.sourceModel().data(right).episode_number
+        return self.sourceModel().data(left).episode_number < self.sourceModel().data(right).episode_number
 
 class SeriesManager(QtCore.QObject):
 
