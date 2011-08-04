@@ -265,7 +265,9 @@ class Show(QtCore.QObject):
         next_episode = info['next_episode']
         season_info = ''
         if not episodes_to_watch:
-            if episodes:
+            if next_episode:
+                season_info = _('No episodes to watch')
+            elif episodes:
                 season_info = _('Completely watched')
         else:
             number_episodes_to_watch = len(episodes_to_watch)
