@@ -171,6 +171,7 @@ class Show(QtCore.QObject):
                 series_manager.changed = True
                 break
 
+    @QtCore.Slot(unicode)
     def delete_season(self, season):
         episodes = self.get_episode_list_by_season(season)
         for episode in episodes:

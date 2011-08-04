@@ -89,6 +89,13 @@ Page {
                 id: contextMenu
                 MenuLayout {
                     MenuItem {
+                        text: "Delete season";
+                        onClicked: {
+                            show.delete_season(model.data)
+                            listView.model = show.get_seasons_model()
+                        }
+                    }
+                    MenuItem {
                         text: "Mark all";
                         onClicked: {
                             page.show.mark_all_as_watched(model.data);
