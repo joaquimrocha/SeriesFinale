@@ -101,6 +101,11 @@ class Show(QtCore.QObject):
     def get_previous_episode(self, episode):
         return self._get_episode_by_offset(episode, -1)
 
+    @QtCore.Slot(unicode)
+    def mark_all_as_watched(self,season):
+        for episode in self.get_episode_list_by_season(season):
+            episode.set_watched(True)
+
     def _get_episode_by_offset(self, episode, offset):
         episodes = [(ep.episode_number, ep) for ep in \
                     self.get_episodes_by_season(episode.season_number)]
