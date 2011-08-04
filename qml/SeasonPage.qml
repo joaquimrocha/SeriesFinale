@@ -35,18 +35,19 @@ Page {
         }
 	}
 	ScrollDecorator{ flickableItem: listView }
-    
-	tools: ToolBarLayout {
-		ToolIcon { iconId: "toolbar-back"; onClicked: { pageStack.pop() } }
-		//ToolIcon { iconId: "toolbar-view-menu"; onClicked: (myMenu.status == DialogStatus.Closed) ? myMenu.open() : myMenu.close() }
-	}
 
-	/*Menu {
-		id: myMenu
-		MenuLayout {
-			MenuItem { 
-                text: "Update show"
+    tools: ToolBarLayout {
+        ToolIcon { iconId: "toolbar-back"; onClicked: { pageStack.pop() } }
+        ToolIcon { iconId: "toolbar-view-menu"; onClicked: (myMenu.status == DialogStatus.Closed) ? myMenu.open() : myMenu.close() }
+    }
+
+    Menu {
+        id: myMenu
+        MenuLayout {
+            MenuItem {
+                text: "Mark all"
+                onClicked: show.mark_all_as_watched(season)
             }
 		}
-	}*/
+	}
 }

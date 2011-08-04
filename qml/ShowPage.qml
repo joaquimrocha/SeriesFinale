@@ -77,6 +77,7 @@ Page {
         clip: true
 		model: show.get_seasons_model()
 		delegate: ListRowDelegate {
+            id: delegate
             title: show.get_season_name(model.data)
             subtitle: show.get_season_info_markup(model.data)
             iconSource: show.get_season_image(model.data)
@@ -84,8 +85,20 @@ Page {
                 id: seasonPageComponent
                 SeasonPage { show: page.show; season: model.data }
             }
+            ContextMenu {
+                id: contextMenu
+                MenuLayout {
+                    MenuItem {
+                        text: "Mark all";
+                        onClicked: {
+                            page.show.mark_all_as_watched(model.data);
+                            delegate.subtitle = show.get_season_info_markup(model.data);
+                        }
+                    }
+                }
+            }
             onClicked: pageStack.push(seasonPageComponent.createObject(pageStack))
-            
+            onPressAndHold: contextMenu.open()
         }
 	}
 	ScrollDecorator{ flickableItem: listView }
