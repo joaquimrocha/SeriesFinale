@@ -3,6 +3,7 @@ import com.nokia.meego 1.0
 import com.nokia.extras 1.0
 
 PageStackWindow {
+    id: rootWindow
 	showStatusBar: true
 	showToolBar: true
 	initialPage: seriesPage

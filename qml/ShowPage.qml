@@ -17,6 +17,7 @@ Page {
         }
         
         Item {
+            id: showInfo
             width: parent.width
             height: 192
             clip: true
@@ -63,6 +64,7 @@ Page {
             anchors.rightMargin: 16
         }*/
         Header {
+            id: seasonsHeader
             text: 'Seasons'
         }
     }
@@ -124,4 +126,13 @@ Page {
             }
 		}
 	}
+
+    states: [
+        State {
+            name: "inLandscape"
+            when: !rootWindow.inPortrait
+            PropertyChanges { target: seasonsHeader; visible: false }
+            PropertyChanges { target: showInfo; visible: false }
+        }
+    ]
 }

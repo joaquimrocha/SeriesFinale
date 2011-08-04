@@ -7,14 +7,18 @@ Page {
     property variant show: undefined
     property variant episode: undefined
     property string seasonImg: ''
-    
+
+    Header {
+        id: header
+        text: episode.title
+        anchors.top: parent.top
+    }
+
     Column {
         id: metaData
-        anchors.top: parent.top
+        anchors.top: header.bottom
         width: parent.width
         spacing: 18
-        
-        Header { text: episode.title }
         
         Row {
             width: parent.width
@@ -43,7 +47,7 @@ Page {
             }
         }
         
-        Header { text: "Bio" }
+        Header { id: bioHeader; text: "Bio" }
     }
     
     Flickable {
@@ -85,12 +89,18 @@ Page {
         ToolIcon { iconId: "toolbar-down"; onClicked: episode = show.get_next_episode(episode) }
 	}
 
-	/*Menu {
-		id: myMenu
-		MenuLayout {
-			MenuItem { 
-                text: "Update show"
+    states: [
+        State {
+            name: "inLandscape"
+            when: !rootWindow.inPortrait
+            PropertyChanges { target: metaData; width: parent.width / 2 }
+            AnchorChanges {
+                target: flickableText
+                anchors.top: header.bottom
+                anchors.left: metaData.right
+                anchors.bottom: page.bottom
             }
-		}
-	}*/
+            PropertyChanges { target: bioHeader; visible: false }
+        }
+    ]
 }
