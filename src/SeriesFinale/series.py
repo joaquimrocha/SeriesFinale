@@ -332,7 +332,7 @@ class Episode(QtCore.QObject):
         self.writer = writer
         self.watched = watched
         try:
-            self.air_date = datetime.strptime(air_date, '%Y-%m-%d')
+            self.air_date = datetime.strptime(air_date, '%Y-%m-%d').date()
         except:
             self.air_date = ''
 
