@@ -3,7 +3,7 @@ import com.nokia.meego 1.0
 
 Item {
     id: listItem
-    height: 88
+    height: 125
     anchors.left: parent.left
     anchors.right: parent.right
     clip: true
@@ -23,14 +23,12 @@ Item {
 
     Row {
         anchors.fill: parent
-        anchors.leftMargin: 16
         spacing: 18
 
         Image {
             id: icon
             anchors.verticalCenter: parent.verticalCenter
-            width: 64
-            height: 64
+            height: listItem.height - 5
             fillMode: "PreserveAspectFit"
             smooth: true
             source: ''
@@ -45,12 +43,14 @@ Item {
                 font.weight: Font.Bold
                 font.pixelSize: 26
                 color: theme.inverted ? "#ffffff" : "#282828"
+                x: 10
             }
 
             Label {
                 id: subtitle
                 font.weight: Font.Light
                 font.pixelSize: 22
+                x: 20
                 color: theme.inverted ? "#d2d2d2" : "#505050"
 
                 visible: text != ""

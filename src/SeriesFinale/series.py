@@ -227,24 +227,24 @@ class Show(QtCore.QObject):
             show_info = gettext.ngettext('%s season', '%s seasons', seasons) \
                          % seasons
             if self.is_completely_watched():
-                show_info += ' | ' + _('Completely watched')
+                show_info += '<br/>' + _('Completely watched')
             else:
                 if episodes_to_watch:
                     n_episodes_to_watch = len(episodes_to_watch)
-                    show_info += ' | ' + gettext.ngettext('%s episode not watched',
+                    show_info += '<br/>' + gettext.ngettext('%s episode not watched',
                                                           '%s episodes not watched',
                                                           n_episodes_to_watch) \
                                                           % n_episodes_to_watch
                 else:
-                    show_info += ' | ' + _('No episodes to watch')
+                    show_info += '<br/>' + _('No episodes to watch')
                 if next_episode:
                     next_air_date = next_episode.air_date
                     if next_air_date:
-                        show_info += ' | ' + _('<i>Next episode:</i> %s, %s') % \
+                        show_info += '<br/>' + _('<i>Next episode:</i> %s, %s') % \
                                      (next_episode.get_episode_show_number(), \
                                      next_episode.get_air_date_text())
                     else:
-                        show_info += ' | ' + _('<i>Next episode:</i> %s') % \
+                        show_info += '<br/>' + _('<i>Next episode:</i> %s') % \
                                      next_episode.get_episode_show_number()
         else:
             show_info = ''
@@ -279,11 +279,11 @@ class Show(QtCore.QObject):
             if next_episode:
                 next_air_date = next_episode.air_date
                 if next_air_date:
-                    season_info += ' | ' + _('<i>Next episode:</i> %s, %s') % \
+                    season_info += '<br/>' + _('<i>Next episode:</i> %s, %s') % \
                                    (next_episode.episode_number, \
                                     next_episode.get_air_date_text())
                 else:
-		    season_info += ' | ' + _('<i>Next episode:</i> %s') % \
+		    season_info += '<br/>' + _('<i>Next episode:</i> %s') % \
                                    next_episode.episode_number
         return season_info
 
