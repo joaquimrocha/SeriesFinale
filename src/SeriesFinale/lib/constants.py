@@ -63,14 +63,14 @@ DEFAULT_SYSTEM_APP_DIR = os.path.join(sys.prefix,
                                       'share',
                                       SF_COMPACT_NAME)
 APP_DIR = DEFAULT_SYSTEM_APP_DIR
+QML_DIR = os.path.join(APP_DIR, 'qml')
 
 if not os.path.exists(APP_DIR):
     APP_DIR = os.path.dirname(os.path.dirname(__file__))
-    APP_DIR = os.path.join(APP_DIR, 'data')
 
 PLACEHOLDER_IMAGE = os.path.join(APP_DIR, 'placeholderimage.png')
 DOWNLOADING_IMAGE = os.path.join(APP_DIR, 'downloadingimage.png')
-QML_MAIN          = os.path.join(APP_DIR, 'main.qml')
+QML_MAIN          = os.path.join(QML_DIR, 'main.qml')
 
 LOCALE_DIR = os.path.join(APP_DIR, 'locale')
 
