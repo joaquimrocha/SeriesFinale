@@ -32,6 +32,8 @@ class ListModel(QtCore.QAbstractListModel):
         self.endInsertRows()
 
     def clear(self):
+        if not self._items:
+            return
         self.beginRemoveRows(QtCore.QModelIndex(), 0, len(self._items)-1)
         self._items = []
         self.endRemoveRows()
