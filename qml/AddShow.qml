@@ -39,22 +39,23 @@ Page {
         }
     }
 
-	ListView {
-		id: listView
-		anchors.top: searchTextField.bottom
+    ListView {
+        id: listView
+        anchors.top: searchTextField.bottom
         anchors.topMargin: 18
         anchors.bottom: parent.bottom
         anchors.left: parent.left
         anchors.right: parent.right
         clip: true
-		model: series_manager.search_result_model()
-		delegate: ListRowDelegate {
-            title: model.data
-            onClicked: {
-                series_manager.get_complete_show(model.data);
-                pageStack.pop()
+            model: series_manager.search_result_model()
+            delegate: ListRowDelegate {
+                title: model.data
+                height: 64
+                onClicked: {
+                    series_manager.get_complete_show(model.data);
+                    pageStack.pop()
+                }
             }
-        }
 	}
 	ScrollDecorator{ flickableItem: listView }
 
