@@ -1,4 +1,4 @@
-PYTHON=/usr/bin/python2.5
+PYTHON=/usr/bin/python2.6
 DESTDIR=/
 BUILDIR=$(CURDIR)/debian/seriesfinale
 PROJECT=seriesfinale

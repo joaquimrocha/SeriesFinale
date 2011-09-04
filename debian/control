@@ -2,13 +2,13 @@ Source: seriesfinale
 Section: user/utilities
 Priority: extra
 Maintainer: Joaquim Rocha <jrocha@igalia.com>
-Build-Depends: debhelper (>=5), python-support (>= 0.9), intltool, python-runtime | python2.5-runtime
+Build-Depends: debhelper (>= 5.0.37.2), intltool
 Standards-Version: 3.7.2
 
 Package: seriesfinale
 Architecture: all
-Depends: ${python:Depends}, ${misc:Depends}, python-hildon | 
- python2.5-hildon, python-gtk2, python-gobject, python-simplejson (>= 2.0.9), python-conic
+Depends: ${python:Depends}, ${misc:Depends}, python (>= 2.5), python-pyside.qtcore, python-pyside.qtgui,
+         python-pyside.qtdeclarative, python-conic
 XB-Maemo-Display-Name: SeriesFinale
 Description: SeriesFinale is a TV series browser and tracker application
  Its goal is to help you manage the TV shows you watch regularly and

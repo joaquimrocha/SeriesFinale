@@ -10,7 +10,7 @@
 #export DH_VERBOSE=1
 
 APP_NAME 	= seriesfinale
-PYTHON		= /usr/bin/python2.5
+PYTHON		= /usr/bin/python2.6
 SETUP		= ${PYTHON} setup.py
 
 ROOTDIR 	= debian/${APP_NAME}
@@ -48,7 +48,7 @@ install: build
 	dh_installdirs
 
 	# Add here commands to install the package into debian/seriesfinale.
-	${SETUP} install --no-compile --root='$(ROOTDIR)' --prefix='$(PREFIX)'
+	${SETUP} install --no-compile --install-layout=deb --root='$(ROOTDIR)' --prefix='$(PREFIX)'
 
 binary-indep:
 # We have nothing to do by default.
