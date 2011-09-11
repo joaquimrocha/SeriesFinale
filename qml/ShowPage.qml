@@ -75,6 +75,11 @@ Page {
             title: show.get_season_name(model.data)
             subtitle: show.get_season_info_markup(model.data)
             iconSource: show.get_season_image(model.data)
+            Connections {
+                target: show
+                onInfoMarkupChanged: subtitle = show.get_season_info_markup(model.data)
+            }
+
             Component {
                 id: seasonPageComponent
                 SeasonPage { show: page.show; season: model.data }
