@@ -55,31 +55,22 @@ Page {
             }
             ScrollDecorator{ flickableItem: flickableText }
         }
-        
-        /*Rectangle {
-            color: theme.inverted ? "#d2d2d2" : "#505050"
-            height: 1
-            anchors.left: parent.left
-            anchors.right: parent.right
-            anchors.leftMargin: 16
-            anchors.rightMargin: 16
-        }*/
+
         Header {
             id: seasonsHeader
             text: 'Seasons'
         }
     }
 
-	ListView {
-		id: listView
-		anchors.top: metaData.bottom
+    ListView {
+        id: listView
+        anchors.top: metaData.bottom
         anchors.left: parent.left
         anchors.right: parent.right
         anchors.bottom: parent.bottom
-		//anchors.leftMargin: 16
         clip: true
-		model: show.get_seasons_model()
-		delegate: ListRowDelegate {
+        model: show.get_seasons_model()
+        delegate: ListRowDelegate {
             id: delegate
             title: show.get_season_name(model.data)
             subtitle: show.get_season_info_markup(model.data)
@@ -110,23 +101,23 @@ Page {
             onClicked: pageStack.push(seasonPageComponent.createObject(pageStack))
             onPressAndHold: contextMenu.open()
         }
-	}
-	ScrollDecorator{ flickableItem: listView }
-    
-	tools: ToolBarLayout {
-		ToolIcon { iconId: "toolbar-back"; onClicked: { pageStack.pop() } }
-		ToolIcon { iconId: "toolbar-view-menu"; onClicked: (myMenu.status == DialogStatus.Closed) ? myMenu.open() : myMenu.close() }
-	}
+    }
+    ScrollDecorator{ flickableItem: listView }
 
-	Menu {
-		id: myMenu
-		MenuLayout {
-			MenuItem { 
+    tools: ToolBarLayout {
+        ToolIcon { iconId: "toolbar-back"; onClicked: { pageStack.pop() } }
+        ToolIcon { iconId: "toolbar-view-menu"; onClicked: (myMenu.status == DialogStatus.Closed) ? myMenu.open() : myMenu.close() }
+    }
+
+    Menu {
+        id: myMenu
+        MenuLayout {
+            MenuItem {
                 text: "Update show"
                 onClicked: series_manager.update_show_episodes(show)
             }
-		}
-	}
+        }
+    }
 
     states: [
         State {
