@@ -14,6 +14,7 @@ Page {
         
         Header {
             text: show.showName
+            busy: show.busy
         }
         
         Item {

@@ -707,6 +707,7 @@ class SeriesManager(QtCore.QObject):
         n_shows = len(show_list)
         for i in range(n_shows):
             show = show_list[i]
+            show.set_busy(True)
             async_item = AsyncItem(self.thetvdb.get_show_and_episodes,
                                    (show.thetvdb_id, show.language,),
                                    self._set_show_episodes_complete_cb,
@@ -725,6 +726,7 @@ class SeriesManager(QtCore.QObject):
                             for tvdb_ep in tvdbcompleteshow[1]])
             show.update_episode_list(episode_list)
         self.updateShowEpisodesComplete.emit(show)
+        show.set_busy(False)
         if last_call:
             self.updateShowsCallComplete.emit(show)
             self.set_busy(False)
