@@ -4,14 +4,14 @@ import com.nokia.extras 1.0
 
 PageStackWindow {
     id: rootWindow
-	showStatusBar: true
-	showToolBar: true
-	initialPage: seriesPage
+    showStatusBar: true
+    showToolBar: true
+    initialPage: seriesPage
 
-	Component {
-		id: seriesPage
-		SeriesPage {}
-	}
+    Component {
+        id: seriesPage
+        SeriesPage {}
+    }
 
     Component.onCompleted: {
         //theme.inverted = true
