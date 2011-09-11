@@ -692,6 +692,7 @@ class SeriesManager(QtCore.QObject):
 
     @QtCore.Slot()
     def update_all_shows_episodes(self, show_list = []):
+        self.set_busy(True)
         show_list = show_list or self.series_list
         async_worker = self.get_async_worker()
         i = 0
@@ -718,6 +719,7 @@ class SeriesManager(QtCore.QObject):
         self.updateShowEpisodesComplete.emit(show)
         if last_call:
             self.updateShowsCallComplete.emit(show)
+            self.set_busy(False)
 
     def _search_show_to_update_callback(self, tvdbshows):
         if not tvdbshows:

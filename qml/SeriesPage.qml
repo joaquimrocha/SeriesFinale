@@ -4,7 +4,11 @@ import com.nokia.extras 1.0
 
 Page {
     id: page
-    Header { id: header; text: "SeriesFinale" }
+    Header {
+        id: header;
+        text: "SeriesFinale"
+        busy: series_manager.busy
+    }
     ListView {
         id: listView
         anchors.top: header.bottom
