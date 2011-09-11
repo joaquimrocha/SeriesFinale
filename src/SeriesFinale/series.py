@@ -58,6 +58,14 @@ class Show(QtCore.QObject):
         self.language = language
         self.downloading_show_image = False
         self.downloading_season_image = downloading_season_image
+        self._busy = False
+
+    busyChanged = QtCore.Signal()
+    def get_busy(self): return self._busy
+    def set_busy(self, busy):
+        self._busy = busy
+        self.busyChanged.emit()
+    busy = QtCore.Property(bool,get_busy,notify=busyChanged)
 
     coverImageChanged = QtCore.Signal()
     def cover_image(self):
