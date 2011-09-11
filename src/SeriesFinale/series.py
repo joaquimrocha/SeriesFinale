@@ -630,13 +630,12 @@ class SeriesManager(QtCore.QObject):
             self.default_language = None
 
             self.have_deleted = False
-            self.isBusy = False
+            self.isUpdating = False
+            self.isLoading = False
 
     busyChanged = QtCore.Signal()
-    def get_busy(self): return self.isBusy
-    def set_busy(self, busy):
-        self.isBusy = busy
-        self.busyChanged.emit()
+    def get_busy(self):
+        return self.isUpdating or self.isLoading
     busy = QtCore.Property(bool,get_busy,notify=busyChanged)
 
     def get_languages(self):
@@ -700,7 +699,8 @@ class SeriesManager(QtCore.QObject):
 
     @QtCore.Slot()
     def update_all_shows_episodes(self, show_list = []):
-        self.set_busy(True)
+        self.isUpdating = True
+        self.busyChanged.emit()
         show_list = show_list or self.series_list
         async_worker = self.get_async_worker()
         i = 0
@@ -729,7 +729,8 @@ class SeriesManager(QtCore.QObject):
         show.set_busy(False)
         if last_call:
             self.updateShowsCallComplete.emit(show)
-            self.set_busy(False)
+            self.isUpdating = False
+            self.busyChanged.emit()
 
     def _search_show_to_update_callback(self, tvdbshows):
         if not tvdbshows:
@@ -935,6 +936,8 @@ class SeriesManager(QtCore.QObject):
             self.save(constants.SF_DB_FILE)
 
     def load(self, file_path):
+        self.isLoading = True
+        self.busyChanged.emit()
         if not os.path.exists(file_path):
             self.series_list = ListModel()
             return
@@ -942,6 +945,8 @@ class SeriesManager(QtCore.QObject):
             self.series_list.append(serie)
         self.changed = False
         self.showListChanged.emit()
+        self.isLoading = False
+        self.busyChanged.emit()
 
     def get_async_worker(self):
         if self.async_worker and self.async_worker.isAlive():
