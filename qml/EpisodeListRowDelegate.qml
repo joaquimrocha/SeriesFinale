@@ -74,7 +74,7 @@ Item {
                 id: title
                 font.weight: Font.Bold
                 font.pixelSize: 26
-                color: theme.inverted ? "#ffffff" : "#282828"
+                color: episode.already_aired() ? "#282828" : "#707070"
                 text: episode.title
             }
 

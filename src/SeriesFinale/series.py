@@ -424,6 +424,7 @@ class Episode(QtCore.QObject):
         return next_air_date_str
     airDateText = QtCore.Property(unicode,get_air_date_text,notify=airDateTextChanged)
 
+    @QtCore.Slot(result=bool)
     def already_aired(self):
         if self.air_date and self.air_date <= datetime.today().date():
             return True
