@@ -622,7 +622,14 @@ class SeriesManager(QtCore.QObject):
             self.default_language = None
 
             self.have_deleted = False
+            self.isBusy = False
 
+    busyChanged = QtCore.Signal()
+    def get_busy(self): return self.isBusy
+    def set_busy(self, busy):
+        self.isBusy = busy
+        self.busyChanged.emit()
+    busy = QtCore.Property(bool,get_busy,notify=busyChanged)
 
     def get_languages(self):
         if self.languages is None:
