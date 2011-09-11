@@ -17,6 +17,9 @@ Page {
     Column {
         id: metaData
         anchors.top: header.bottom
+        anchors.topMargin: 18
+        anchors.left: parent.left
+        anchors.leftMargin: 18
         width: parent.width
         spacing: 18
         
@@ -46,13 +49,18 @@ Page {
                 }
             }
         }
-        
-        Header { id: bioHeader; text: "Bio" }
     }
-    
+
+    Header {
+        id: bioHeader
+        anchors.top: metaData.bottom
+        anchors.topMargin: 18
+        text: "Bio"
+    }
+
     Flickable {
         id: flickableText
-        anchors.top: metaData.bottom
+        anchors.top: bioHeader.bottom
         anchors.left: parent.left
         anchors.right: parent.right
         anchors.bottom: watched.top
