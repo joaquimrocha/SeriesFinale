@@ -21,7 +21,7 @@
 import os
 from lib import thetvdbapi, serializer, constants
 from lib.util import image_downloader
-from lib.listmodel import ListModel
+from lib.listmodel import *
 from xml.etree import ElementTree as ET
 from asyncworker import AsyncWorker, AsyncItem
 from lib.constants import TVDB_API_KEY, DATA_DIR, DEFAULT_LANGUAGES
@@ -33,7 +33,6 @@ import gettext
 import locale
 import logging
 logging.basicConfig(level=logging.DEBUG)
-from PySide import QtCore, QtGui
 
 _ = gettext.gettext
 
@@ -127,7 +126,7 @@ class Show(QtCore.QObject):
 
     @QtCore.Slot(result=QtCore.QObject)
     def get_seasons_model(self):
-        return SortedSeasonsList(ListModel(self.get_seasons()), self)
+        return SortedSeasonsList(ListModel(self.get_seasons()), Settings(), self)
 
     def get_seasons(self):
         seasons = []
@@ -152,7 +151,7 @@ class Show(QtCore.QObject):
 
     @QtCore.Slot(unicode,result=QtCore.QObject)
     def get_sorted_episode_list_by_season(self, season):
-        return SortedEpisodesList(ListModel(self.get_episode_list_by_season(season)), self)
+        return SortedEpisodesList(ListModel(self.get_episode_list_by_season(season)), Settings(), self)
 
     def update_episode_list(self, episode_list):
         add_special_seasons = Settings().getConf(Settings.ADD_SPECIAL_SEASONS)
@@ -490,79 +489,6 @@ class Episode(QtCore.QObject):
             return other_episode
         return None
 
-class SortedSeriesList(QtGui.QSortFilterProxyModel):
-
-    def __init__(self, parent=None):
-        QtGui.QSortFilterProxyModel.__init__(self, parent)
-        self.sortOrder = Settings().getConf(Settings.SHOWS_SORT)
-        self.hideCompleted = Settings().getConf(Settings.HIDE_COMPLETED_SHOWS)
-        self.setDynamicSortFilter(True)
-        self.sort(0)
-
-    def resort(self):
-        self.sortOrder = Settings().getConf(Settings.SHOWS_SORT)
-        self.hideCompleted = Settings().getConf(Settings.HIDE_COMPLETED_SHOWS)
-        self.invalidate()
-
-    def filterAcceptsRow(self, sourceRow, sourceParent):
-        if not self.hideCompleted:
-            return True
-
-        index = self.sourceModel().index(sourceRow, 0, sourceParent)
-        show = self.sourceModel().data(index)
-        return not show.is_completely_watched()
-
-    def lessThan(self, left, right):
-        leftData = self.sourceModel().data(left)
-        rightData = self.sourceModel().data(right)
-
-        if (self.sortOrder != Settings.RECENT_EPISODE):
-            return str(leftData) < str(rightData)
-
-        #Sort completed last
-        if rightData.is_completely_watched():
-            if leftData.is_completely_watched():
-                #Both complete, sort by title
-                return str(leftData) < str(rightData)
-            return True
-        elif leftData.is_completely_watched():
-            return False
-
-        leftEpisodes = leftData.get_episodes_info()
-        rightEpisodes = rightData.get_episodes_info()
-        if leftEpisodes['next_episode'].air_date == rightEpisodes['next_episode'].air_date:
-            #Same date, sort by title
-            return str(leftData) < str(rightData)
-        return leftEpisodes['next_episode'].air_date < rightEpisodes['next_episode'].air_date
-
-class SortedSeasonsList(QtGui.QSortFilterProxyModel):
-
-    def __init__(self, list, parent=None):
-        QtGui.QSortFilterProxyModel.__init__(self, parent)
-        self.setDynamicSortFilter(True)
-        self.sortOrder = Settings().getConf(Settings.SEASONS_ORDER_CONF_NAME)
-        self.sort(0)
-        self.setSourceModel(list)
-
-    def lessThan(self, left, right):
-        if (self.sortOrder == Settings.DESCENDING_ORDER):
-            return self.sourceModel().data(left) > self.sourceModel().data(right)
-        return self.sourceModel().data(left) < self.sourceModel().data(right)
-
-class SortedEpisodesList(QtGui.QSortFilterProxyModel):
-
-    def __init__(self, list, parent=None):
-        QtGui.QSortFilterProxyModel.__init__(self, parent)
-        self.setDynamicSortFilter(True)
-        self.sortOrder = Settings().getConf(Settings.EPISODES_ORDER_CONF_NAME)
-        self.sort(0)
-        self.setSourceModel(list)
-
-    def lessThan(self, left, right):
-        if (self.sortOrder == Settings.DESCENDING_ORDER):
-            return self.sourceModel().data(left).episode_number > self.sourceModel().data(right).episode_number
-        return self.sourceModel().data(left).episode_number < self.sourceModel().data(right).episode_number
-
 class SeriesManager(QtCore.QObject):
 
     GET_FULL_SHOW_COMPLETE_SIGNAL = 'get-full-show-complete'
@@ -611,7 +537,7 @@ class SeriesManager(QtCore.QObject):
             QtCore.QObject.__init__(self)
 
             self.series_list = ListModel()
-            self.sorted_series_list = SortedSeriesList(self)
+            self.sorted_series_list = SortedSeriesList(Settings(), self)
             self.sorted_series_list.setSourceModel(self.series_list)
 
             self.thetvdb = thetvdbapi.TheTVDB(TVDB_API_KEY)
