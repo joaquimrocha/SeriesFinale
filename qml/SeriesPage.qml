@@ -42,8 +42,11 @@ Page {
     ScrollDecorator{ flickableItem: listView }
 
     tools: ToolBarLayout {
-        ToolIcon { iconId: "toolbar-back"; onClicked: { Qt.quit() } }
-        ToolIcon { iconId: "toolbar-view-menu"; onClicked: (myMenu.status == DialogStatus.Closed) ? myMenu.open() : myMenu.close() }
+        ToolIcon {
+            anchors.right: parent.right
+            iconId: "toolbar-view-menu"
+            onClicked: (myMenu.status == DialogStatus.Closed) ? myMenu.open() : myMenu.close()
+        }
     }
 
     Menu {
