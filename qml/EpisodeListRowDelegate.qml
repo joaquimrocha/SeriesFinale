@@ -42,18 +42,21 @@ Item {
 
     Row {
         anchors.fill: parent
-        anchors.leftMargin: 16
-        spacing: 18
 
-        Image {
-            id: icon
-            anchors.verticalCenter: parent.verticalCenter
-            width: 64
-            height: 64
-            fillMode: "PreserveAspectFit"
-            smooth: true
-            source: episode.isWatched ? 'image://theme/icon-m-common-done' : 'image://theme/icon-m-common-aqua'
-            visible: source != ''
+        Item {
+            width: 70
+            height: parent.height
+
+            Image {
+                id: icon
+                anchors.verticalCenter: parent.verticalCenter
+                anchors.horizontalCenter: parent.horizontalCenter
+                width: 32
+                height: 32
+                fillMode: "PreserveAspectFit"
+                smooth: true
+                visible: source != ''
+            }
 
             MouseArea {
                 id: iconMouseArea
