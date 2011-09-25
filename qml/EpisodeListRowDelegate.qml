@@ -21,14 +21,14 @@ Item {
             name: 'watched'; when: episode.isWatched
             PropertyChanges {
                 target: epListItem;
-                iconSource: 'image://theme/icon-m-common-done'
+                iconSource: 'image://theme/meegotouch-button-checkbox-background-pressed'
             }
         },
         State {
             when: !episode.isWatched
             PropertyChanges {
                 target: epListItem;
-                iconSource: 'image://theme/icon-m-common-aqua'
+                iconSource: 'image://theme/meegotouch-button-checkbox-background'
             }
         }
     ]
