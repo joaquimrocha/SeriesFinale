@@ -90,25 +90,19 @@ class SortedSeriesList(QtGui.QSortFilterProxyModel):
     def lessThan(self, left, right):
         leftData = self.sourceModel().data(left)
         rightData = self.sourceModel().data(right)
-
-        if (self.sortOrder != self._settings.RECENT_EPISODE):
-            return str(leftData) < str(rightData)
-
-        #Sort completed last
-        if rightData.is_completely_watched():
-            if leftData.is_completely_watched():
-                #Both complete, sort by title
-                return str(leftData) < str(rightData)
-            return True
-        elif leftData.is_completely_watched():
-            return False
-
         leftEpisodes = leftData.get_episodes_info()
         rightEpisodes = rightData.get_episodes_info()
-        if leftEpisodes['next_episode'].air_date == rightEpisodes['next_episode'].air_date:
-            #Same date, sort by title
+        episode1 = leftEpisodes['next_episode']
+        episode2 = rightEpisodes['next_episode']
+        if not episode1:
+            return episode2 or str(leftData) < str(rightData)
+        if not episode2:
+            if episode1:
+                return True
+        most_recent = (episode1 or episode2).get_most_recent(episode2)
+        if not most_recent:
             return str(leftData) < str(rightData)
-        return leftEpisodes['next_episode'].air_date < rightEpisodes['next_episode'].air_date
+        return episode1 == most_recent
 
 class SortedSeasonsList(QtGui.QSortFilterProxyModel):
 
