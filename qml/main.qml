@@ -14,7 +14,7 @@ PageStackWindow {
     }
 
     Component.onCompleted: {
-        //theme.inverted = true
+        theme.inverted = true
         series_manager.updateShowEpisodesComplete.connect(function (show) {
             infoBanner.text = 'Updated "' + show.showName + '"'
             infoBanner.show()
@@ -30,5 +30,10 @@ PageStackWindow {
         timerEnabled: true
         timerShowTime: 3000
         topMargin: 44
+    }
+
+    platformStyle: PageStackWindowStyle {
+        background: 'image://theme/meegotouch-video-background'
+        backgroundFillMode: Image.Stretch
     }
 }
