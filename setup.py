@@ -36,7 +36,7 @@ setup(name = constants.SF_NAME.lower(),
      scripts = ['seriesfinale'],
      data_files = [(constants.ICON_FOLDER, ['data/seriesfinale.png']
                    ),
-                   ('share/applications/hildon', ['data/seriesfinale.desktop']
+                   ('share/applications', ['data/seriesfinale.desktop']
                    ),
                    (constants.DEFAULT_SYSTEM_APP_DIR, ['data/placeholderimage.png',
                                                        'data/downloadingimage.png']),
