@@ -5,24 +5,24 @@ import com.nokia.extras 1.0
 Page {
     id: page
     property variant show: undefined
-    
+
     Column {
         id: metaData
         anchors.top: parent.top
         width: parent.width
         spacing: 18
-        
+
         Header {
             text: show.showName
             busy: show.busy
         }
-        
+
         Item {
             id: showInfo
             width: parent.width
             height: 192
             clip: true
-            
+
             Image {
                 anchors.left: parent.left
                 anchors.leftMargin: 18
@@ -32,7 +32,7 @@ Page {
                 fillMode: "PreserveAspectFit"
                 smooth: true
             }
-            
+
             Flickable {
                 id: flickableText
                 anchors.left: image.right
