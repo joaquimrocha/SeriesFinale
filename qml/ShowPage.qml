@@ -78,6 +78,7 @@ Page {
             Connections {
                 target: show
                 onInfoMarkupChanged: subtitle = show.get_season_info_markup(model.data)
+                onShowArtChanged: iconSource = show.get_season_image(model.data)
             }
 
             Component {

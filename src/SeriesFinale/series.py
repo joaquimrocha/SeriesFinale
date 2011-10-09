@@ -38,6 +38,7 @@ _ = gettext.gettext
 
 class Show(QtCore.QObject):
 
+    showArtChanged = QtCore.Signal()
     def __init__(self, name, genre = None, overview = None, network = None,
                  rating = None, actors = [], episode_list = ListModel(), image = None,
                  thetvdb_id = -1, season_images = {}, id = -1, language = None,
@@ -498,7 +499,6 @@ class SeriesManager(QtCore.QObject):
     updateShowsCallComplete = QtCore.Signal(QtCore.QObject)
     #SHOW_LIST_CHANGED_SIGNAL = 'show-list-changed'
     showListChanged = QtCore.Signal()
-    UPDATED_SHOW_ART = 'updated-show-art'
 
    # __gsignals__ = {GET_FULL_SHOW_COMPLETE_SIGNAL: (gobject.SIGNAL_RUN_LAST,
    #                                                 gobject.TYPE_NONE,
@@ -798,6 +798,7 @@ class SeriesManager(QtCore.QObject):
         if len(seasons) == len(show.season_images.keys()) and \
            show.image and os.path.isfile(show.image):
             #self.emit(self.UPDATED_SHOW_ART, show) #TODO
+            show.showArtChanged.emit()
             return
         image_choices = self.thetvdb.get_show_image_choices(thetvdb_id)
         for image in image_choices:
@@ -807,18 +808,21 @@ class SeriesManager(QtCore.QObject):
                (not show.image or not os.path.isfile(show.image)):
                 show.downloading_show_image = True
                 #self.emit(self.UPDATED_SHOW_ART, show) #TODO
+                show.showArtChanged.emit()
                 target_file = os.path.join(DATA_DIR, show.get_poster_prefix())
                 image_file = os.path.abspath(image_downloader(url, target_file))
                 show.set_cover_image(image_file)
                 show.downloading_show_image = False
                 self.changed = True
                 #self.emit(self.UPDATED_SHOW_ART, show) #TODO
+                show.showArtChanged.emit()
             elif image_type == 'season':
                 season = image[3]
                 if season in seasons and \
                    season not in show.season_images.keys():
                     show.downloading_season_image = True
                     #self.emit(self.UPDATED_SHOW_ART, show) #TODO
+                    show.showArtChanged.emit()
                     target_file = os.path.join(DATA_DIR,
                                                show.get_season_poster_prefix(season))
                     try:
@@ -831,6 +835,7 @@ class SeriesManager(QtCore.QObject):
                     show.downloading_season_image = False
                     self.changed = True
                     #self.emit(self.UPDATED_SHOW_ART, show) #TODO
+                    show.showArtChanged.emit()
             if show.image and len(show.season_images) == len(seasons):
                 break
 
