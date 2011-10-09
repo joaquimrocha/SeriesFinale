@@ -77,7 +77,7 @@ Item {
                 id: title
                 font.weight: Font.Bold
                 font.pixelSize: 26
-                color: episode.already_aired() ? "#282828" : "#707070"
+                color: episode.already_aired() ? "#fff" : "#707070"
                 text: episode.title
             }
 
@@ -85,7 +85,7 @@ Item {
                 id: subtitle
                 font.weight: Font.Light
                 font.pixelSize: 22
-                color: theme.inverted ? "#d2d2d2" : "#505050"
+                color: '#d2d2d2'
                 text: episode.airDateText
                 visible: text != ""
             }
