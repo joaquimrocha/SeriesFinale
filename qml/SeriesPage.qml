@@ -4,20 +4,18 @@ import com.nokia.extras 1.0
 
 Page {
     id: page
-    Header {
-        id: header;
-        text: "SeriesFinale"
-        busy: series_manager.busy
-    }
     ListView {
         id: listView
-        anchors.top: header.bottom
-        anchors.bottom: parent.bottom
-        anchors.left: parent.left
-        anchors.right: parent.right
-        //anchors.margins: 16
+        anchors.fill: parent
         clip: true
         model: seriesList
+
+        header: Header {
+            id: header;
+            text: "SeriesFinale"
+            busy: series_manager.busy
+        }
+
         delegate: ListRowDelegate {
             title: model.data.showName
             subtitle: model.data.infoMarkup
