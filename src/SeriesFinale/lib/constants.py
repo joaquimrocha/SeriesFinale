@@ -78,7 +78,7 @@ LOCALE_DIR = os.path.join(APP_DIR, 'locale')
 DEFAULT_LANGUAGES = os.environ.get('LANGUAGE', '').split(':')
 DEFAULT_LANGUAGES += ['en_US', 'pt_PT']
 
-ICON_FOLDER = 'share/icons/hicolor/scalable/apps'
+ICON_FOLDER = 'share/pixmaps'
 SF_ICON = os.path.join(sys.prefix, ICON_FOLDER, SF_COMPACT_NAME + '.png')
 
 TVDB_API_KEY = 'FAD75AF31E1B1577'

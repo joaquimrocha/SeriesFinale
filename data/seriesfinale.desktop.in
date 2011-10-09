@@ -5,6 +5,6 @@ _Name=SeriesFinale
 _Comment=A TV series browser and tracker application.
 TryExec=seriesfinale
 Exec=seriesfinale
-Icon=seriesfinale
+Icon=/usr/share/pixmaps/seriesfinale.png
 MimeType=image/bmp;image/gif;image/jpeg;image/jpg;image/pjpeg;image/png;image/tiff;
 Categories=Application;News;
