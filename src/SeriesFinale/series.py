@@ -121,6 +121,17 @@ class Show(object):
         for episode in episodes:
             self.delete_episode(episode)
 
+    def mark_all_episodes_as_not_watched(self, season = None):
+        self._mark_all_episodes(False, season)
+
+    def mark_all_episodes_as_watched(self, season = None):
+        self._mark_all_episodes(True, season)
+
+    def _mark_all_episodes(self, watched, season = None):
+        episodes = self.get_episodes_by_season(season)
+        for episode in episodes:
+            episode.watched = watched
+
     def is_completely_watched(self):
         for episode in self.episode_list:
             if not episode.watched:
