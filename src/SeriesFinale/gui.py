@@ -657,6 +657,7 @@ class SeasonsView(hildon.StackableWindow):
         seasons = self.show.get_seasons()
         self.seasons_select_view.set_seasons(seasons)
         self.seasons_select_view.connect('row-activated', self._row_activated_cb)
+        self.seasons_select_view.connect('long-press', self._long_press_cb)
         self.connect('delete-event', self._delete_event_cb)
 
         seasons_area = hildon.PannableArea()
@@ -684,6 +685,31 @@ class SeasonsView(hildon.StackableWindow):
         episodes_view.connect('delete-event', self._update_series_list_cb)
         episodes_view.connect('episode-list-changed', self._update_series_list_cb)
         episodes_view.show_all()
+
+    def _long_press_cb(self, widget, path, column):
+        season = self.seasons_select_view.get_season_from_path(path)
+        context_dialog = SeasonContextDialog(self.show, season, self)
+        response = context_dialog.run()
+        context_dialog.destroy()
+        if response == SeasonContextDialog.MARK_EPISODES_RESPONSE:
+            self.show.mark_all_episodes_as_watched(season)
+        elif response == SeasonContextDialog.UNMARK_EPISODES_RESPONSE:
+            self.show.mark_all_episodes_as_not_watched(season)
+        elif response == SeasonContextDialog.DELETE_RESPONSE:
+            dialog = gtk.Dialog(title = _('Delete Season'),
+                                parent = self,
+                                buttons = (gtk.STOCK_NO, gtk.RESPONSE_NO,
+                                           gtk.STOCK_YES, gtk.RESPONSE_YES))
+            label = gtk.Label(_('Are you sure you want to delete '
+                                'this season?'))
+            label.show()
+            dialog.vbox.add(label)
+            response = dialog.run()
+            if response == gtk.RESPONSE_YES:
+                self.show.delete_season(season)
+            dialog.destroy()
+        seasons = self.show.get_seasons();
+        self.seasons_select_view.set_seasons(seasons)
 
     def _update_series_list_cb(self, widget, event = None):
         seasons = self.show.get_seasons();
@@ -951,7 +977,7 @@ class SeasonListStore(gtk.ListStore):
             pixbuf = get_placeholder_pixbuf()
             self.set_value(iter, self.IMAGE_COLUMN, pixbuf)
 
-class SeasonSelectView(gtk.TreeView):
+class SeasonSelectView(EnhancedTreeView):
 
     def __init__(self, show):
         super(SeasonSelectView, self).__init__()
@@ -999,6 +1025,40 @@ class SeasonSelectView(gtk.TreeView):
         model = self.get_model()
         model.set_sort_column_id(SeasonListStore.SEASON_COLUMN,
                                  gtk.SORT_ASCENDING)
+
+class SeasonContextDialog(gtk.Dialog):
+
+    MARK_EPISODES_RESPONSE = 1 << 0
+    UNMARK_EPISODES_RESPONSE = 1 << 1
+    DELETE_RESPONSE = 1 << 2
+
+    def __init__(self, show, season, parent):
+        super(SeasonContextDialog, self).__init__(parent = parent)
+        self.show = show
+        self.season = season
+        season_name = self.season
+        if self.season == '0':
+            season_name = _('Special')
+        self.set_title(_('Season: %(season)s') % {'season': season_name})
+
+        box = gtk.HBox(True)
+        mark_episodes_button = hildon.GtkButton(gtk.HILDON_SIZE_FINGER_HEIGHT)
+        if self.show.is_completely_watched(self.season):
+            mark_episodes_button.set_label(_('Unmark All Episodes'))
+            mark_episodes_button.connect('clicked',
+                            lambda b: self.response(self.UNMARK_EPISODES_RESPONSE))
+        else:
+            mark_episodes_button.set_label(_('Mark All Episodes'))
+            mark_episodes_button.connect('clicked',
+                            lambda b: self.response(self.MARK_EPISODES_RESPONSE))
+        box.add(mark_episodes_button)
+        delete_button = hildon.GtkButton(gtk.HILDON_SIZE_FINGER_HEIGHT)
+        delete_button.set_label(_('Delete'))
+        delete_button.connect('clicked',
+                            lambda b: self.response(self.DELETE_RESPONSE))
+        box.add(delete_button)
+        self.vbox.add(box)
+        self.vbox.show_all()
 
 class ShowContextDialog(gtk.Dialog):
 

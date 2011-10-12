@@ -132,8 +132,9 @@ class Show(object):
         for episode in episodes:
             episode.watched = watched
 
-    def is_completely_watched(self):
-        for episode in self.episode_list:
+    def is_completely_watched(self, season = None):
+        episodes = self.get_episodes_by_season(season)
+        for episode in episodes:
             if not episode.watched:
                 return False
         return True
