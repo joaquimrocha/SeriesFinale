@@ -37,6 +37,7 @@ from lib.portrait import FremantleRotation
 from lib.util import get_color
 from settings import Settings
 from asyncworker import AsyncWorker, AsyncItem
+from enhancedtreeview import EnhancedTreeView
 
 _ = gettext.gettext
 
@@ -107,6 +108,7 @@ class MainWindow(hildon.StackableWindow):
 
         self.shows_view = ShowsSelectView()
         self.shows_view.connect('row-activated', self._row_activated_cb)
+        self.shows_view.connect_after('long-press', self._long_press_cb)
         self.set_title(constants.SF_NAME)
         self.set_app_menu(self._create_menu())
         self.live_search = LiveSearchEntry(self.shows_view.tree_model,
@@ -267,6 +269,41 @@ class MainWindow(hildon.StackableWindow):
                         self.shows_view.update(show))
         seasons_view.show_all()
         self.live_search.hide()
+
+    def _long_press_cb(self, widget, path, column):
+        show = self.shows_view.get_show_from_path(path)
+        dialog = ShowContextDialog(show, self)
+        response = dialog.run()
+        dialog.destroy()
+        if response == ShowContextDialog.INFO_RESPONSE:
+            dialog = ShowInfoDialog(show,
+                                    title = show.name,
+                                    parent = self)
+            dialog.run()
+            dialog.destroy()
+        elif response == ShowContextDialog.DELETE_RESPONSE:
+            dialog = gtk.Dialog(title = _('Delete Show'),
+                                parent = self,
+                                buttons = (gtk.STOCK_NO, gtk.RESPONSE_NO,
+                                           gtk.STOCK_YES, gtk.RESPONSE_YES))
+            label = gtk.Label(_('Are you sure you want to delete '
+                                'the show:\n %(show_name)s' % \
+                                {'show_name': show.name}))
+            label.show()
+            dialog.vbox.add(label)
+            response = dialog.run()
+            if response == gtk.RESPONSE_YES:
+                self.series_manager.delete_show(show)
+            dialog.destroy()
+        elif response == ShowContextDialog.MARK_NEXT_EPISODE_RESPONSE:
+            episodes_info = show.get_episodes_info()
+            next_episode = episodes_info['next_episode']
+            if next_episode:
+                next_episode.watched = True
+                self.shows_view.update(show)
+        elif response == ShowContextDialog.UPDATE_RESPONSE:
+            hildon.hildon_gtk_window_set_progress_indicator(self, True)
+            self.series_manager.update_show_episodes(show)
 
     def _new_show_dialog(self):
         new_show_dialog = NewShowDialog(self)
@@ -429,7 +466,7 @@ class ShowsDeleteView(DeleteView):
             self.series_manager.delete_show(model[path][ShowListStore.SHOW_COLUMN])
         self.destroy()
 
-class ShowsSelectView(gtk.TreeView):
+class ShowsSelectView(EnhancedTreeView):
 
     def __init__(self):
         super(ShowsSelectView, self).__init__()
@@ -720,21 +757,7 @@ class SeasonsView(hildon.StackableWindow):
         self._update_menu_visibility()
 
     def _show_info_cb(self, button):
-        dialog = gtk.Dialog(parent = self)
-        dialog.set_title(_('Show details'))
-        infotextview = InfoTextView()
-        infotextview.set_title(self.show.name)
-        infotextview.add_field (self.show.overview)
-        infotextview.add_field ('\n')
-        infotextview.add_field (self.show.genre, _('Genre'))
-        infotextview.add_field (self.show.network, _('Network'))
-        infotextview.add_field (self.show.actors, _('Actors'))
-        infotextview.add_field (self.show.rating, _('Rating'))
-        info_area = hildon.PannableArea()
-        info_area.add_with_viewport(infotextview)
-        info_area.set_size_request_policy(hildon.SIZE_REQUEST_CHILDREN)
-        dialog.vbox.add(info_area)
-        dialog.vbox.show_all()
+        dialog = ShowInfoDialog(parent = self)
         dialog.run()
         dialog.destroy()
 
@@ -818,6 +841,27 @@ class SeasonsView(hildon.StackableWindow):
         self.seasons_select_view.sort_descending()
         self.settings.setConf(self.settings.SEASONS_ORDER_CONF_NAME,
                               self.settings.DESCENDING_ORDER)
+
+class ShowInfoDialog(gtk.Dialog):
+
+    def __init__(self, show, title = '', parent = None):
+        gtk.Dialog.__init__(self, title = title, parent = parent)
+        self.show = show
+        self.set_title(_('Show details'))
+        infotextview = InfoTextView()
+        infotextview.set_title(self.show.name)
+        infotextview.add_field (self.show.overview)
+        infotextview.add_field ('\n')
+        infotextview.add_field (self.show.genre, _('Genre'))
+        infotextview.add_field (self.show.network, _('Network'))
+        infotextview.add_field (self.show.actors, _('Actors'))
+        infotextview.add_field (self.show.rating, _('Rating'))
+        info_area = hildon.PannableArea()
+        info_area.add_with_viewport(infotextview)
+        info_area.set_size_request_policy(hildon.SIZE_REQUEST_CHILDREN)
+        info_area.set_size_request(-1, 800)
+        self.vbox.add(info_area)
+        self.vbox.show_all()
 
 class SeasonsDeleteView(DeleteView):
 
@@ -955,6 +999,50 @@ class SeasonSelectView(gtk.TreeView):
         model = self.get_model()
         model.set_sort_column_id(SeasonListStore.SEASON_COLUMN,
                                  gtk.SORT_ASCENDING)
+
+class ShowContextDialog(gtk.Dialog):
+
+    INFO_RESPONSE = 1 << 0
+    MARK_NEXT_EPISODE_RESPONSE = 1 << 1
+    UPDATE_RESPONSE = 1 << 2
+    DELETE_RESPONSE = 1 << 3
+
+    def __init__(self, show, parent):
+        super(ShowContextDialog, self).__init__(parent = parent)
+        self.show = show
+        self.set_title(self.show.name)
+
+        box = gtk.HBox(True)
+        info_button = hildon.GtkButton(gtk.HILDON_SIZE_FINGER_HEIGHT)
+        info_button.set_label('Info')
+        info_button.connect('clicked',
+                            lambda b: self.response(self.INFO_RESPONSE))
+        box.add(info_button)
+        if not show.is_completely_watched():
+            mark_next_ep_as_watched_button = \
+                hildon.GtkButton(gtk.HILDON_SIZE_FINGER_HEIGHT)
+            mark_next_ep_as_watched_button.set_label('Mark Next Episode')
+            mark_next_ep_as_watched_button.connect('clicked',
+                       lambda b: self.response(self.MARK_NEXT_EPISODE_RESPONSE))
+            box.add(mark_next_ep_as_watched_button)
+
+        online = ConnectionManager().is_online()
+        if online or len(box.get_children()) > 1:
+            self.vbox.add(box)
+            box = gtk.HBox(True)
+        if online:
+            update_button = hildon.GtkButton(gtk.HILDON_SIZE_FINGER_HEIGHT)
+            update_button.set_label(_('Update'))
+            update_button.connect('clicked',
+                                  lambda b: self.response(self.UPDATE_RESPONSE))
+            box.add(update_button)
+        delete_button = hildon.GtkButton(gtk.HILDON_SIZE_FINGER_HEIGHT)
+        delete_button.set_label(_('Delete'))
+        delete_button.connect('clicked',
+                       lambda b: self.response(self.DELETE_RESPONSE))
+        box.add(delete_button)
+        self.vbox.add(box)
+        self.vbox.show_all()
 
 class NewShowDialog(gtk.Dialog):
 
