@@ -300,6 +300,7 @@ class MainWindow(hildon.StackableWindow):
             next_episode = episodes_info['next_episode']
             if next_episode:
                 next_episode.watched = True
+                next_episode.updated()
                 self.shows_view.update(show)
         elif response == ShowContextDialog.UPDATE_RESPONSE:
             hildon.hildon_gtk_window_set_progress_indicator(self, True)
@@ -1588,6 +1589,7 @@ class EpisodeView(hildon.StackableWindow):
 
     def _watched_button_toggled_cb(self, button):
         self.episode.watched = button.get_active()
+        self.episode.updated()
         self._set_episode_title()
 
 class EpisodesDeleteView(DeleteView):

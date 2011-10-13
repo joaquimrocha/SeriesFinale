@@ -131,6 +131,7 @@ class Show(object):
         episodes = self.get_episodes_by_season(season)
         for episode in episodes:
             episode.watched = watched
+        SeriesManager().updated()
 
     def is_completely_watched(self, season = None):
         episodes = self.get_episodes_by_season(season)
