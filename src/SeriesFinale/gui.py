@@ -1702,11 +1702,11 @@ class LiveSearchEntry(gtk.HBox):
         self.entry.show()
         self.entry.connect('changed',
                            self._entry_changed_cb)
-        self.cancel_button = hildon.GtkButton(gtk.HILDON_SIZE_FINGER_HEIGHT)
+        self.cancel_button = gtk.ToolButton()
         image = gtk.image_new_from_icon_name('general_close',
                                              gtk.ICON_SIZE_LARGE_TOOLBAR)
         if image:
-            self.cancel_button.set_image(image)
+            self.cancel_button.set_icon_widget(image)
         else:
             self.cancel_button.set_label(_('Cancel'))
         self.cancel_button.set_size_request(self.cancel_button.get_size_request()[1], -1)
