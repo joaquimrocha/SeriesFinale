@@ -1,3 +1,8 @@
+seriesfinale (0.6.9-1) unstable; urgency=low
+  * Add context menus to the shows and seasons views
+  * Change the looks of the live search's cancel button
+ -- Joaquim Rocha <jrocha@igalia.com>  Thu, 13 Oct 2011 20:30:48 +0100
+
 seriesfinale (0.6.8-1) unstable; urgency=low
   * Fix image retrieval
   * Fix deleting seasons (mb#11713)
