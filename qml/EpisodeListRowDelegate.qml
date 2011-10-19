@@ -76,8 +76,8 @@ Item {
             Label {
                 id: title
                 font.weight: Font.Bold
-                font.pixelSize: 26
-                color: episode.already_aired() ? "#fff" : "#707070"
+                font.pixelSize: 24
+                color: episode.already_aired() ? activeTextColor : inactiveTextColor
                 text: episode.title
             }
 
@@ -85,7 +85,7 @@ Item {
                 id: subtitle
                 font.weight: Font.Light
                 font.pixelSize: 22
-                color: '#d2d2d2'
+                color: secondaryTextColor
                 text: episode.airDateText
                 visible: text != ""
             }

@@ -51,7 +51,7 @@ Item {
                 font.weight: Font.Light
                 font.pixelSize: 22
                 x: 20
-                color: theme.inverted ? "#d2d2d2" : "#505050"
+                color: theme.inverted ? secondaryTextColor : "#505050"
 
                 visible: text != ""
             }

@@ -49,7 +49,7 @@ Page {
                     text: show.showOverview
                     font.weight: Font.Light
                     font.pixelSize: 22
-                    color: theme.inverted ? "#d2d2d2" : "#505050"
+                    color: theme.inverted ? secondaryTextColor : "#505050"
                     wrapMode: Text.Wrap
                 }
             }

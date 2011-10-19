@@ -8,6 +8,10 @@ PageStackWindow {
     showToolBar: true
     initialPage: seriesPage
 
+    property string activeTextColor: "#fff"
+    property string inactiveTextColor: "#707070"
+    property string secondaryTextColor: "#d2d2d2"
+
     Component {
         id: seriesPage
         SeriesPage {}
