@@ -184,6 +184,7 @@ class Show(QtCore.QObject):
         episodes = self.get_episode_list_by_season(season)
         for episode in episodes:
             self.delete_episode(episode)
+        self.infoMarkupChanged.emit()
 
     def is_completely_watched(self):
         for episode in self.episode_list:
