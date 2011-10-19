@@ -23,12 +23,20 @@ Item {
                 target: epListItem;
                 iconSource: 'image://theme/meegotouch-button-checkbox-background-pressed'
             }
+            PropertyChanges {
+                target: title
+                color: secondaryTextColor
+            }
         },
         State {
             when: !episode.isWatched
             PropertyChanges {
                 target: epListItem;
                 iconSource: 'image://theme/meegotouch-button-checkbox-background'
+            }
+            PropertyChanges {
+                target: title
+                color: episode.already_aired() ? activeTextColor : inactiveTextColor
             }
         }
     ]
