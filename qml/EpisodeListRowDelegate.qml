@@ -80,13 +80,16 @@ Item {
         Column {
             id: column
             anchors.verticalCenter: parent.verticalCenter
+            width: parent.width
 
-            Label {
+            Text {
                 id: title
+                width: parent.width
                 font.weight: Font.Bold
                 font.pixelSize: 24
                 color: episode.already_aired() ? activeTextColor : inactiveTextColor
                 text: episode.title
+                elide: Text.ElideRight
             }
 
             Label {
