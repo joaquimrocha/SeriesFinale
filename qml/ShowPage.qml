@@ -6,46 +6,66 @@ Page {
     id: page
     property variant show: undefined
 
-    Column {
-        id: metaData
-        anchors.top: parent.top
-        width: parent.width
-        spacing: 18
+    Dialog {
+        id: showInfoDialog
+        anchors.fill: parent
+        anchors.verticalCenter: parent.verticalCenter
 
-        Header {
-            text: show.showName
-            busy: show.busy
-        }
-
-        Item {
-            id: showInfo
-            width: parent.width
-            height: 192
-            clip: true
-
-            Image {
-                anchors.left: parent.left
-                anchors.leftMargin: 18
-                id: image
-                height: parent.height
-                source: show.coverImage
-                fillMode: "PreserveAspectFit"
-                smooth: true
-            }
+        content: Item {
+            id: contents
+            width: parent.width * .8
+            height: page.height
+            anchors.verticalCenter: parent.verticalCenter
+            anchors.horizontalCenter: parent.horizontalCenter
 
             Flickable {
-                id: flickableText
-                anchors.left: image.right
-                anchors.right: parent.right
-                anchors.rightMargin: 18
-                anchors.leftMargin: 18
+                id: flickableContent
+                width: parent.width
                 height: parent.height
-                contentHeight: text.height
+                contentHeight: showInfoDescription.height
                 contentWidth: width
 
-                Text {
-                    id: text
+                Item {
+                    id: titleItem
                     width: parent.width
+                    height: showNameText.height + 5
+
+                    Text {
+                        id: showNameText
+                        text: show.showName
+                        font.family: "Nokia Pure Text Light"
+                        font.pixelSize: 26
+                        font.weight: Font.Bold
+                        color: 'white'
+                    }
+                    Rectangle {
+                        anchors.top: parent.bottom
+                        width: parent.width
+                        height: 1
+                        color: 'white'
+                    }
+                }
+
+                Image {
+                    id: showCover
+                    source: show.coverImage
+                    height: 300
+                    fillMode: "PreserveAspectFit"
+                    smooth: true
+                    anchors.top: titleItem.bottom
+                    anchors.topMargin: 10
+                    anchors.horizontalCenter: rootWindow.inPortrait ? parent.horizontalCenter : undefined
+                    anchors.left: !rootWindow.inPortrait ? parent.left : undefined
+
+                }
+
+                Text {
+                    id: showInfoDescription
+                    width: parent.width
+                    anchors.top: rootWindow.inPortrait ? showCover.bottom : showCover.top
+                    anchors.right: parent.right
+                    anchors.left: rootWindow.inPortrait ? parent.left : showCover.right
+                    anchors.leftMargin: 10
                     text: show.showOverview
                     font.weight: Font.Light
                     font.pixelSize: 22
@@ -53,8 +73,17 @@ Page {
                     wrapMode: Text.Wrap
                 }
             }
-            ScrollDecorator{ flickableItem: flickableText }
-        }
+            ScrollDecorator{ flickableItem: flickableContent }
+            }
+
+    }
+
+
+    Column {
+        id: metaData
+        anchors.top: parent.top
+        width: parent.width
+        spacing: 18
 
         Header {
             id: seasonsHeader
@@ -129,8 +158,37 @@ Page {
         State {
             name: "inLandscape"
             when: !rootWindow.inPortrait
-            PropertyChanges { target: seasonsHeader; visible: false }
-            PropertyChanges { target: showInfo; visible: false }
+            AnchorChanges {
+                target: showCover
+                anchors.horizontalCenter: undefined
+                anchors.left: showCover.parent.left
+            }
+            AnchorChanges {
+                target: showInfoDescription
+                anchors.left: showCover.right
+            }
+            PropertyChanges {
+                target: flickableContent
+                height: showCover.height < showInfoDescription.height ? showInfoDescription.height + titleItem.height : showCover.height + titleItem.height
+            }
+        },
+        State {
+            name: "inPortrait"
+            when: rootWindow.inPortrait
+            AnchorChanges {
+                target: showCover
+                anchors.left: undefined
+                anchors.horizontalCenter: showCover.parent.horizontalCenter
+            }
+            AnchorChanges {
+                target: showInfoDescription
+                anchors.left: showInfoDescription.parent.left
+                anchors.top: showCover.bottom
+            }
+            PropertyChanges {
+                target: flickableContent
+                height: showCover.height + showInfoDescription.height + titleItem.height
+            }
         }
     ]
 }
