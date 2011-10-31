@@ -14,6 +14,8 @@ Page {
             id: header;
             text: "SeriesFinale"
             busy: series_manager.busy
+            hasRefreshAction: true
+            onRefreshActionActivated: series_manager.update_all_shows_episodes()
         }
 
         delegate: ListRowDelegate {
