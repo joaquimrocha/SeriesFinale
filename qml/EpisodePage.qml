@@ -14,71 +14,79 @@ Page {
         anchors.top: parent.top
     }
 
-    Column {
-        id: metaData
+    Item {
+        id: dataItem
         anchors.top: header.bottom
-        anchors.topMargin: 18
         anchors.left: parent.left
-        anchors.leftMargin: 18
-        width: parent.width
-        spacing: 18
-        
-        Row {
-            width: parent.width
-            clip: true
-            spacing: 18
-            
-            Image {
-                id: image
-                width: 128
-                //height: 192
-                source: seasonImg
-                fillMode: "PreserveAspectFit"
-                smooth: true
-            }
-            
-            Grid {
-                columns: 2
-                Text { text: "Air date: "; font.pixelSize: 22 }
-                Text { text: episode.airDateText; font.pixelSize: 22 }
-                Text { text: "Rating: "; font.pixelSize: 22 }
-                RatingIndicator {
-                    maximumValue: 10
-                    ratingValue: episode.episodeRating
-                    //count: 97
-                }
-            }
-        }
+        anchors.topMargin: 10
+        width: rootWindow.inPortrait ? parent.width : parent.width / 2
+        anchors.margins: 15
+
+        Grid {
+              columns: 2
+              spacing: 10
+
+              Text {
+                  text: "Air date:"
+                  font.pixelSize: 22
+                  color: 'white'
+                  font.weight: Font.Bold
+              }
+              Text {
+                  text: episode.airDateText
+                  font.pixelSize: 22
+                  color: 'white'
+              }
+              Text {
+                  text: "Rating:"
+                  font.pixelSize: 22
+                  color: 'white'
+                  font.weight: Font.Bold
+              }
+              RatingIndicator {
+                  maximumValue: 10
+                  ratingValue: episode.episodeRating
+              }
+          }
     }
 
-    Header {
-        id: bioHeader
-        anchors.top: metaData.bottom
-        anchors.topMargin: 18
-        text: "Bio"
-    }
-
-    Flickable {
-        id: flickableText
-        anchors.top: bioHeader.bottom
-        anchors.left: parent.left
+    Item {
+        id: overviewItem
+        anchors.top: rootWindow.inPortrait ? dataItem.bottom : dataItem.top
+        anchors.left: rootWindow.inPortrait ? parent.left : dataItem.right
         anchors.right: parent.right
         anchors.bottom: watched.top
         anchors.margins: 16
-        contentHeight: text.height
-        clip: true
 
-        Text {
-            id: text
+        Flickable {
+            id: flickableText
+            height: parent.height
             width: parent.width
-            text: episode.overviewText
-            font.weight: Font.Light
-            font.pixelSize: 22
-            color: theme.inverted ? "#d2d2d2" : "#505050"
-            wrapMode: Text.Wrap
+            contentHeight: text.height
+            clip: true
+
+            Text {
+                id: overviewTitle
+                font.weight: Font.Bold
+                font.pixelSize: 22
+                text: 'Overview:'
+                color: 'white'
+            }
+
+            Text {
+                id: text
+                anchors.top: overviewTitle.bottom
+                anchors.topMargin: 10
+                width: parent.width
+                text: episode.overviewText
+                font.weight: Font.Light
+                font.pixelSize: 22
+                color: 'white'
+                wrapMode: Text.Wrap
+            }
         }
+        ScrollDecorator{ flickableItem: flickableText }
     }
-    ScrollDecorator{ flickableItem: flickableText }
 
     CheckBox {
         id: watched
@@ -101,14 +109,31 @@ Page {
         State {
             name: "inLandscape"
             when: !rootWindow.inPortrait
-            PropertyChanges { target: metaData; width: parent.width / 2 }
+            PropertyChanges {
+                target: dataItem
+                width: parent.width / 2
+            }
             AnchorChanges {
-                target: flickableText
+                target: overviewItem
                 anchors.top: header.bottom
-                anchors.left: metaData.right
+                anchors.left: dataItem.right
                 anchors.bottom: page.bottom
             }
-            PropertyChanges { target: bioHeader; visible: false }
+        },
+        State {
+            name: "inPortrait"
+            when: rootWindow.inPortrait
+            PropertyChanges {
+                target: dataItem
+                width: parent.width
+            }
+            AnchorChanges {
+                target: overviewItem
+                anchors.top: dataItem.bottom
+                anchors.left: dataItem.left
+                anchors.bottom: page.bottom
+            }
         }
+
     ]
 }
