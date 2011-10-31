@@ -52,6 +52,7 @@ Item {
         anchors.fill: parent
 
         Item {
+            id: markItem
             width: 70
             height: parent.height
 
@@ -80,7 +81,7 @@ Item {
         Column {
             id: column
             anchors.verticalCenter: parent.verticalCenter
-            width: parent.width
+            width: parent.width - markItem.width - drilldownImage.width
 
             Text {
                 id: title
@@ -104,6 +105,7 @@ Item {
     }
 
     Image {
+        id: drilldownImage
         source: "image://theme/icon-m-common-drilldown-arrow" + (theme.inverted ? "-inverse" : "")
         anchors.right: parent.right;
         anchors.verticalCenter: parent.verticalCenter
