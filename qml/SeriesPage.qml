@@ -43,6 +43,11 @@ Page {
 
     tools: ToolBarLayout {
         ToolIcon {
+            iconId: "toolbar-add"
+            anchors.horizontalCenter: parent.horizontalCenter
+            onClicked: { pageStack.push(addShowComponent.createObject(pageStack)) }
+        }
+        ToolIcon {
             anchors.right: parent.right
             iconId: "toolbar-view-menu"
             onClicked: (myMenu.status == DialogStatus.Closed) ? myMenu.open() : myMenu.close()
@@ -52,10 +57,6 @@ Page {
     Menu {
         id: myMenu
         MenuLayout {
-            MenuItem {
-                text: "Add shows"
-                onClicked: pageStack.push(addShowComponent.createObject(pageStack))
-            }
             MenuItem {
                 text: "Settings"
                 onClicked: settingsComponent.createObject(page).open()
