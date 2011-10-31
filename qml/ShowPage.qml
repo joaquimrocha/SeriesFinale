@@ -86,8 +86,35 @@ Page {
         spacing: 18
 
         Header {
-            id: seasonsHeader
-            text: 'Seasons'
+            id: header
+            text: show.showName
+            busy: show.busy
+            hasRefreshAction: true
+            onRefreshActionActivated: series_manager.update_show_episodes(show)
+
+            Item {
+                height: parent.height
+                width: infoIcon.width
+                anchors.right: header.anchorPoint
+                anchors.rightMargin: 20
+
+                Image {
+                    id: infoIcon
+                    source: 'icons/info-icon.png'
+                    fillMode: "PreserveAspectFit"
+                    anchors.verticalCenter: parent.verticalCenter
+                    anchors.horizontalCenter: parent.horizontalCenter
+                }
+            }
+            MouseArea {
+                anchors.left: parent.left
+                anchors.right: infoIcon.right
+                anchors.top: parent.top
+                anchors.bottom: parent.bottom
+                width: parent.width - infoIcon.width - 20
+                height: parent.height
+                onClicked: showInfoDialog.open()
+            }
         }
     }
 
