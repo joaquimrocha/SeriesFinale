@@ -23,6 +23,14 @@ def get_qml_files():
         file_list.append((os.path.dirname(destination_file_name), [file]))
     return file_list
 
+def get_qml_icon_files():
+    files = glob.glob('qml/icons/*')
+    file_list = []
+    for file in files:
+        destination_file_name = os.path.join(constants.DEFAULT_SYSTEM_APP_DIR, file)
+        file_list.append((os.path.dirname(destination_file_name), [file]))
+    return file_list
+
 setup(name = constants.SF_NAME.lower(),
      version = constants.SF_VERSION,
      description = constants.SF_DESCRIPTION,
@@ -40,5 +48,5 @@ setup(name = constants.SF_NAME.lower(),
                    ),
                    (constants.DEFAULT_SYSTEM_APP_DIR, ['data/placeholderimage.png',
                                                        'data/downloadingimage.png']),
-                   ] + get_locale_files() + get_qml_files()
+                   ] + get_locale_files() + get_qml_files() + get_qml_icon_files()
      )
