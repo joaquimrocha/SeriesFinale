@@ -249,11 +249,11 @@ class Show(QtCore.QObject):
                 if next_episode:
                     next_air_date = next_episode.air_date
                     if next_air_date:
-                        show_info += '<br/>' + _('<i>Next episode:</i> %s, %s') % \
+                        show_info += '<br/>' + _('<i>Next:</i> %s, %s') % \
                                      (next_episode.get_episode_show_number(), \
                                      next_episode.get_air_date_text())
                     else:
-                        show_info += '<br/>' + _('<i>Next episode:</i> %s') % \
+                        show_info += '<br/>' + _('<i>Next:</i> %s') % \
                                      next_episode.get_episode_show_number()
         else:
             show_info = ''
