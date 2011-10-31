@@ -7,7 +7,10 @@ Item {
     height: 64
 
     property alias text: label.text
+    property bool hasRefreshAction: false
     property bool busy: false
+    property alias anchorPoint: refreshAction.left
+    signal refreshActionActivated()
 
     Text{
         id: label
@@ -20,24 +23,36 @@ Item {
         font.family: "Nokia Pure Text Light"
     }
 
-    BusyIndicator {
+    Item {
+        id: refreshAction
         anchors.verticalCenter: parent.verticalCenter
         anchors.right: parent.right
-        anchors.rightMargin: 18
-        visible: busy
-        running: busy
-        platformStyle: BusyIndicatorStyle {
-                           spinnerFrames: "image://theme/spinnerinverted"
-                       }
-    }
+        anchors.rightMargin: 10
+        width: refreshIcon.width
+        height: refreshIcon.height
+        visible: hasRefreshAction
 
-    Rectangle {
-        height: 1
-        color: '#fff'
-        anchors {
-            top: header.bottom
-            left: parent.left
-            right: parent.right
+        Image {
+            id: refreshIcon
+            source: 'icons/refresh-icon.png'
+            visible: !busy && hasRefreshAction
+        }
+
+        BusyIndicator {
+            id: busyIndicator
+            anchors.verticalCenter: parent.verticalCenter
+            anchors.horizontalCenter: parent.horizontalCenter
+            visible: busy
+            running: busy
+            platformStyle: BusyIndicatorStyle {
+                                spinnerFrames: "image://theme/spinnerinverted"
+                           }
+        }
+
+        MouseArea {
+            enabled: !busy && hasRefreshAction
+            anchors.fill: parent
+            onClicked: { header.refreshActionActivated() }
         }
     }
 }
