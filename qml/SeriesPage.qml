@@ -57,10 +57,6 @@ Page {
                 onClicked: pageStack.push(addShowComponent.createObject(pageStack))
             }
             MenuItem {
-                text: "Update all"
-                onClicked: series_manager.update_all_shows_episodes()
-            }
-            MenuItem {
                 text: "Settings"
                 onClicked: settingsComponent.createObject(page).open()
                 Component { id: settingsComponent; SettingsPage {} }

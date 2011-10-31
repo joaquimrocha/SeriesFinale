@@ -168,17 +168,6 @@ Page {
 
     tools: ToolBarLayout {
         ToolIcon { iconId: "toolbar-back"; onClicked: { pageStack.pop() } }
-        ToolIcon { iconId: "toolbar-view-menu"; onClicked: (myMenu.status == DialogStatus.Closed) ? myMenu.open() : myMenu.close() }
-    }
-
-    Menu {
-        id: myMenu
-        MenuLayout {
-            MenuItem {
-                text: "Update show"
-                onClicked: series_manager.update_show_episodes(show)
-            }
-        }
     }
 
     states: [
