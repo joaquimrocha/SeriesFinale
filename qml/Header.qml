@@ -4,12 +4,15 @@ import com.nokia.meego 1.0
 Item {
     id: header
     width: parent.width
-    height: 64
+    anchors.right: parent.right
+    anchors.left: parent.left
+    height: label.height + 30
 
     property alias text: label.text
     property bool hasRefreshAction: false
     property bool busy: false
     property alias anchorPoint: refreshAction.left
+    property alias textWidth: label.width
     signal refreshActionActivated()
 
     Text{
@@ -21,6 +24,8 @@ Item {
         anchors.left: parent.left
         anchors.leftMargin: 16
         font.family: "Nokia Pure Text Light"
+        wrapMode: Text.WordWrap
+        width: parent.width - refreshIcon.width - 10
     }
 
     Item {

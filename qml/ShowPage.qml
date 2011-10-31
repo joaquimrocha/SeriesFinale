@@ -91,6 +91,7 @@ Page {
             busy: show.busy
             hasRefreshAction: true
             onRefreshActionActivated: series_manager.update_show_episodes(show)
+            textWidth: header.width - infoIcon.width * 2.5
 
             Item {
                 height: parent.height
