@@ -21,8 +21,10 @@ Page {
         anchors.topMargin: 10
         width: rootWindow.inPortrait ? parent.width : parent.width / 2
         anchors.margins: 15
+        height: grid.height
 
         Grid {
+              id: grid
               columns: 2
               spacing: 10
 
@@ -62,7 +64,7 @@ Page {
             id: flickableText
             height: parent.height
             width: parent.width
-            contentHeight: text.height
+            contentHeight: text.height + overviewTitle.height + 10
             clip: true
 
             Text {
@@ -115,7 +117,7 @@ Page {
             }
             AnchorChanges {
                 target: overviewItem
-                anchors.top: header.bottom
+                anchors.top: dataItem.bottom
                 anchors.left: dataItem.right
                 anchors.bottom: page.bottom
             }
