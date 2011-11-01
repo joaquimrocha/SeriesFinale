@@ -22,7 +22,7 @@ Page {
                 id: flickableContent
                 width: parent.width
                 height: parent.height
-                contentHeight: showInfoDescription.height
+                contentHeight: showInfoDescription.height + titleItem.height
                 contentWidth: width
 
                 Item {
@@ -186,7 +186,7 @@ Page {
             }
             PropertyChanges {
                 target: flickableContent
-                height: showCover.height < showInfoDescription.height ? showInfoDescription.height + titleItem.height : showCover.height + titleItem.height
+                contentHeight: showCover.height < showInfoDescription.height ? showInfoDescription.height + titleItem.height : showCover.height + titleItem.height
             }
         },
         State {
@@ -204,7 +204,7 @@ Page {
             }
             PropertyChanges {
                 target: flickableContent
-                height: showCover.height + showInfoDescription.height + titleItem.height
+                contentHeight: showCover.height + showInfoDescription.height + titleItem.height
             }
         }
     ]
