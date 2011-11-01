@@ -95,7 +95,7 @@ class SortedSeriesList(QtGui.QSortFilterProxyModel):
         episode1 = leftEpisodes['next_episode']
         episode2 = rightEpisodes['next_episode']
         if not episode1:
-            return episode2 or str(leftData) < str(rightData)
+            return str(leftData) < str(rightData)
         if not episode2:
             if episode1:
                 return True
