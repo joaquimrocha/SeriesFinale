@@ -19,7 +19,7 @@ Item {
         id: label
         color: "white"
         font.weight: Font.Bold
-        font.pixelSize: 26
+        font.pixelSize: 28
         anchors.verticalCenter: parent.verticalCenter
         anchors.left: parent.left
         anchors.leftMargin: 16
