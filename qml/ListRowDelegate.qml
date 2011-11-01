@@ -29,6 +29,7 @@ Item {
             id: icon
             anchors.verticalCenter: parent.verticalCenter
             height: listItem.height - 5
+            width: 100
             fillMode: "PreserveAspectFit"
             smooth: true
             source: ''
