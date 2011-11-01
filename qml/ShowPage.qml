@@ -134,7 +134,10 @@ Page {
             iconSource: show.get_season_image(model.data)
             Connections {
                 target: show
-                onInfoMarkupChanged: subtitle = show.get_season_info_markup(model.data)
+                onInfoMarkupChanged: {
+                    subtitle = show.get_season_info_markup(model.data)
+                    markAllItem.text = show.is_completely_watched(model.data) ? 'Mark None' : 'Mark All'
+                }
                 onShowArtChanged: iconSource = show.get_season_image(model.data)
             }
 
@@ -146,9 +149,10 @@ Page {
                 id: contextMenu
                 MenuLayout {
                     MenuItem {
-                        text: "Mark all";
+                        id: markAllItem
+                        text: show.is_completely_watched(model.data) ? 'Mark None' : 'Mark All'
                         onClicked: {
-                            page.show.mark_all_as_watched(model.data);
+                            show.is_completely_watched(model.data) ? page.show.mark_all_episodes_as_not_watched(model.data) : page.show.mark_all_episodes_as_watched(model.data)
                             delegate.subtitle = show.get_season_info_markup(model.data);
                         }
                     }

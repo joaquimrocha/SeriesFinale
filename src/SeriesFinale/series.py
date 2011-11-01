@@ -38,6 +38,7 @@ _ = gettext.gettext
 
 class Show(QtCore.QObject):
 
+    infoMarkupChanged = QtCore.Signal()
     showArtChanged = QtCore.Signal()
     def __init__(self, name, genre = None, overview = None, network = None,
                  rating = None, actors = [], episode_list = ListModel(), image = None,
@@ -108,11 +109,6 @@ class Show(QtCore.QObject):
     @QtCore.Slot(QtCore.QObject,result=QtCore.QObject)
     def get_previous_episode(self, episode):
         return self._get_episode_by_offset(episode, -1)
-
-    @QtCore.Slot(unicode)
-    def mark_all_as_watched(self,season):
-        for episode in self.get_episode_list_by_season(season):
-            episode.set_watched(True)
 
     def _get_episode_by_offset(self, episode, offset):
         episodes = [(ep.episode_number, ep) for ep in \
@@ -186,8 +182,25 @@ class Show(QtCore.QObject):
             self.delete_episode(episode)
         self.infoMarkupChanged.emit()
 
-    def is_completely_watched(self):
-        for episode in self.episode_list:
+    @QtCore.Slot(unicode)
+    def mark_all_episodes_as_not_watched(self, season = None):
+        self._mark_all_episodes(False, season)
+
+    @QtCore.Slot(unicode)
+    def mark_all_episodes_as_watched(self, season = None):
+        self._mark_all_episodes(True, season)
+
+    def _mark_all_episodes(self, watched, season = None):
+        episodes = self.get_episodes_by_season(season)
+        for episode in episodes:
+            episode.watched = watched
+        SeriesManager().updated()
+        self.infoMarkupChanged.emit()
+
+    @QtCore.Slot(unicode, result=bool)
+    def is_completely_watched(self, season = None):
+        episodes = self.get_episodes_by_season(season)
+        for episode in episodes:
             if not episode.watched:
                 return False
         return True
@@ -226,7 +239,6 @@ class Show(QtCore.QObject):
     def __str__(self):
         return self.name
 
-    infoMarkupChanged = QtCore.Signal()
     def get_info_markup(self, info = None):
         seasons = len(self.get_seasons())
         if seasons:
