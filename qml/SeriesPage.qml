@@ -9,13 +9,24 @@ Page {
         anchors.fill: parent
         clip: true
         model: seriesList
+        interactive: !emptyText.visible
 
         header: Header {
             id: header;
             text: "SeriesFinale"
             busy: series_manager.busy
-            hasRefreshAction: true
+            hasRefreshAction: !emptyText.visible
             onRefreshActionActivated: series_manager.update_all_shows_episodes()
+        }
+
+        Text {
+            id: emptyText
+            text: 'No shows were added so far'
+            font.pixelSize: 32
+            visible: listView.count == 0
+            color: 'white'
+            anchors.verticalCenter: parent.verticalCenter
+            anchors.horizontalCenter: parent.horizontalCenter
         }
 
         delegate: ListRowDelegate {
