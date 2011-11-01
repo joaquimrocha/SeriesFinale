@@ -882,11 +882,10 @@ class SeriesManager(QtCore.QObject):
             self.save(constants.SF_DB_FILE)
 
     def load(self, file_path):
+        if not os.path.exists(file_path):
+            return
         self.isLoading = True
         self.busyChanged.emit()
-        if not os.path.exists(file_path):
-            self.series_list = ListModel()
-            return
         for serie in serializer.deserialize(file_path):
             self.series_list.append(serie)
         self.changed = False
