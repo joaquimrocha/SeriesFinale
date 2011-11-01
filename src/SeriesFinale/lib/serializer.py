@@ -74,7 +74,7 @@ class ShowDecoder(json.JSONEncoder):
 def show_encoder(dictionary):
     if dictionary.get('json_type') != 'show':
         return dictionary
-    name = dictionary['name']
+    name = dictionary['name'].encode('utf-8')
     del dictionary['name']
     del dictionary['json_type']
     episode_list = list(dictionary['episode_list'])
@@ -88,7 +88,7 @@ def show_encoder(dictionary):
 def episode_encoder(show, dictionary):
     if dictionary.get('json_type') != 'episode':
         return dictionary
-    name = dictionary['name']
+    name = dictionary['name'].encode('utf-8')
     del dictionary['name']
     del dictionary['json_type']
     episode_number = dictionary['episode_number']
