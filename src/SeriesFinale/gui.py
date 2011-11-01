@@ -1440,6 +1440,7 @@ class EpisodeView(hildon.StackableWindow):
 
     def _watched_button_toggled_cb(self, button):
         self.episode.watched = button.get_active()
+        self.episode.updated()
         self._set_episode_title()
 
 class EpisodesDeleteView(DeleteView):
