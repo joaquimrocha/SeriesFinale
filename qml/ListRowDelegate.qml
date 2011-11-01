@@ -18,7 +18,7 @@ Item {
         id: background
         anchors.fill: parent
         visible: mouseArea.pressed
-        source: "image://theme/meegotouch-list-background-pressed-center"
+        source: "image://theme/meegotouch-list-inverted-background-pressed-center"
     }
 
     Row {
