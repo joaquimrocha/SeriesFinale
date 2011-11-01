@@ -73,6 +73,11 @@ Page {
                 onClicked: pageStack.push(settingsComponent.createObject(pageStack))
                 Component { id: settingsComponent; SettingsPage {} }
             }
+            MenuItem {
+                text: "About"
+                onClicked: pageStack.push(aboutComponent.createObject(pageStack))
+                Component { id: aboutComponent; AboutPage {} }
+            }
         }
     }
 
