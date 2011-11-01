@@ -47,6 +47,8 @@ setup(name = constants.SF_NAME.lower(),
                    ('share/applications', ['data/seriesfinale.desktop']
                    ),
                    (constants.DEFAULT_SYSTEM_APP_DIR, ['data/placeholderimage.png',
-                                                       'data/downloadingimage.png']),
+                                                       'data/downloadingimage.png',
+                                                       'data/sf-splash-landscape.jpg',
+                                                       'data/sf-splash-portrait.jpg']),
                    ] + get_locale_files() + get_qml_files() + get_qml_icon_files()
      )

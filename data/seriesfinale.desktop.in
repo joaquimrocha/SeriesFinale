@@ -1,10 +1,9 @@
 [Desktop Entry]
-Version=0.5
+Version=0.6.8
 Type=Application
 _Name=SeriesFinale
 _Comment=A TV series browser and tracker application.
-TryExec=seriesfinale
-Exec=seriesfinale
+Exec=/usr/bin/invoker --single-instance --splash /usr/share/seriesfinale/sf-splash-portrait.jpg --splash-landscape /usr/share/seriesfinale/sf-splash-landscape.jpg --type=e /usr/bin/seriesfinale
 Icon=/usr/share/pixmaps/seriesfinale.png
 MimeType=image/bmp;image/gif;image/jpeg;image/jpg;image/pjpeg;image/png;image/tiff;
 Categories=Application;News;
