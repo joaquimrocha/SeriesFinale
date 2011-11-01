@@ -2,10 +2,9 @@ import QtQuick 1.1
 import com.nokia.meego 1.0
 import com.nokia.extras 1.0
 
-Sheet {
-    acceptButtonText: "Close"
+Page {
 
-    content: Flickable {
+    Flickable {
         id: content
         anchors.fill: parent
         anchors.margins: 18
@@ -20,6 +19,7 @@ Sheet {
             Text {
                 text: "Show sorting:"
                 font.pixelSize: 26
+                color: 'white'
             }
             ButtonRow {
                 Button { text: "By title"; onClicked: settings.showsSort=0 }
@@ -29,6 +29,7 @@ Sheet {
             Text {
                 text: "Episode sorting:"
                 font.pixelSize: 26
+                color: 'white'
             }
             ButtonRow {
                 Button { text: "1-9"; onClicked: settings.episodesOrder=0 }
@@ -43,6 +44,7 @@ Sheet {
                     anchors.verticalCenter: parent.verticalCenter
                     text: "Add special seasons:"
                     font.pixelSize: 26
+                    color: 'white'
                 }
 
                 Switch {
@@ -72,4 +74,9 @@ Sheet {
             }
         }
     }
+
+    tools: ToolBarLayout {
+        ToolIcon { iconId: "toolbar-back"; onClicked: { pageStack.pop() } }
+    }
+
 }

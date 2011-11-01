@@ -59,7 +59,7 @@ Page {
         MenuLayout {
             MenuItem {
                 text: "Settings"
-                onClicked: settingsComponent.createObject(page).open()
+                onClicked: pageStack.push(settingsComponent.createObject(pageStack))
                 Component { id: settingsComponent; SettingsPage {} }
             }
         }
