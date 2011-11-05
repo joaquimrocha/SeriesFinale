@@ -567,7 +567,7 @@ class SeriesManager(QtCore.QObject):
 
             # Languages
             # self.languages = self.thetvdb.get_available_languages()
-            self.languages = None
+            self.languages = self._load_languages(SF_LANG_FILE)
             self.default_language = None
 
             self.have_deleted = False
@@ -579,9 +579,14 @@ class SeriesManager(QtCore.QObject):
         return self.isUpdating or self.isLoading
     busy = QtCore.Property(bool,get_busy,notify=busyChanged)
 
+    def update_languages(self):
+        self.languages = self.thetvdb.get_available_languages()
+        self._save_languages(SF_LANG_FILE)
+        return self.languages
+
     def get_languages(self):
         if self.languages is None:
-            self.languages = self.thetvdb.get_available_languages()
+            return self.update_languages()
         return self.languages
 
     def get_default_language(self):
@@ -602,6 +607,20 @@ class SeriesManager(QtCore.QObject):
                     break
 
         return self.default_language
+
+    def _load_languages(self, file_path):
+        if not os.path.exists(file_path):
+            return None
+        return serializer.deserialize(file_path)
+
+    def _save_languages(self, file_path):
+        dirname = os.path.dirname(file_path)
+        if not (os.path.exists(dirname) and os.path.isdir(dirname)):
+            os.mkdir(dirname)
+        serialized = serializer.serialize(self.languages)
+        save_file = open(file_path, 'w')
+        save_file.write(serialized)
+        save_file.close()
 
     searchingChanged = QtCore.Signal()
     def get_searching(self): return self.searching
