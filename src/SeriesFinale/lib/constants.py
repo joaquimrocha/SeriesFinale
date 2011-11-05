@@ -50,6 +50,7 @@ SF_CONF_FOLDER = HOME_PATH + '/.osso/%s' % SF_COMPACT_NAME
 SF_CONF_FILE = SF_CONF_FOLDER + '/%s.conf' % SF_COMPACT_NAME
 SF_DB_FILE = SF_CONF_FOLDER + '/%s' % 'series.db'
 SF_PID_FILE = '/tmp/seriesfinale.pid'
+SF_LANG_FILE = SF_CONF_FOLDER + '/%s' % 'languages.db'
 _XDG_DATA_HOME = os.getenv('XDG_DATA_HOME') or ''
 _XDG_DATA_HOME = _XDG_DATA_HOME.split(':')[0]
 _DATA_DIR_PREFIX = _XDG_DATA_HOME or os.path.join(HOME_PATH, '.local', 'share')
