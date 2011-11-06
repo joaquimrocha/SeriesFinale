@@ -992,6 +992,7 @@ class SeasonSelectView(EnhancedTreeView):
         column = gtk.TreeViewColumn('Name', season_renderer, markup = model.INFO_COLUMN)
         self.set_model(model)
         self.append_column(column)
+        self.get_model().set_sort_func(SeasonListStore.SEASON_COLUMN, self._sort_func)
 
     def set_seasons(self, season_list):
         model = self.get_model()
@@ -1009,8 +1010,8 @@ class SeasonSelectView(EnhancedTreeView):
             model.update()
 
     def _sort_func(self, model, iter1, iter2):
-        season1 = model.get_value(iter1, SeasonListStore.SEASON_COLUMN)
-        season2 = model.get_value(iter2, SeasonListStore.SEASON_COLUMN)
+        season1 = int(model.get_value(iter1, SeasonListStore.SEASON_COLUMN))
+        season2 = int(model.get_value(iter2, SeasonListStore.SEASON_COLUMN))
         if season1 == None or season2 == None:
             return 0
         if season1 < season2:
