@@ -51,6 +51,10 @@ Page {
                 text: "Mark all"
                 onClicked: show.mark_all_episodes_as_watched(season)
             }
+            MenuItem {
+                text: "Mark none"
+                onClicked: show.mark_all_episodes_as_not_watched(season)
+            }
         }
     }
 }
