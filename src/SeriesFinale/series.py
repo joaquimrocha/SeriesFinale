@@ -682,6 +682,8 @@ class SeriesManager(QtCore.QObject):
 
     @QtCore.Slot(unicode)
     def get_complete_show(self, show_name, language = "en"):
+        self.isUpdating = True
+        self.busyChanged.emit()
         show_id = self._cached_tvdb_shows.get(show_name, None)
         for show_id, show_title in self._cached_tvdb_shows.items():
             if show_title == show_name:
@@ -712,6 +714,8 @@ class SeriesManager(QtCore.QObject):
             show.episode_list.append(episode)
         self.series_list.append(show)
         self.changed = True
+        self.isUpdating = False
+        self.busyChanged.emit()
         return show
 
     def _get_complete_show_finished_cb(self, show, error):
