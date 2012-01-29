@@ -49,7 +49,7 @@ Page {
         MenuLayout {
             MenuItem {
                 text: "Mark all"
-                onClicked: show.mark_all_as_watched(season)
+                onClicked: show.mark_all_episodes_as_watched(season)
             }
         }
     }

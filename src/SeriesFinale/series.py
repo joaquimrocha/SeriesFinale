@@ -193,7 +193,7 @@ class Show(QtCore.QObject):
     def _mark_all_episodes(self, watched, season = None):
         episodes = self.get_episodes_by_season(season)
         for episode in episodes:
-            episode.watched = watched
+            episode.isWatched = watched
         SeriesManager().updated()
         self.infoMarkupChanged.emit()
 
@@ -201,7 +201,7 @@ class Show(QtCore.QObject):
     def is_completely_watched(self, season = None):
         episodes = self.get_episodes_by_season(season)
         for episode in episodes:
-            if not episode.watched:
+            if not episode.isWatched:
                 return False
         return True
 
@@ -212,7 +212,7 @@ class Show(QtCore.QObject):
         else:
             episodes = self.episode_list
         episodes_to_watch = [episode for episode in episodes \
-                            if not episode.watched]
+                            if not episode.isWatched]
         info['episodes'] = episodes
         #Filter out only the aired episodes
         info['episodes_to_watch'] = [episode for episode in episodes_to_watch \
