@@ -35,7 +35,7 @@ Item {
         anchors.rightMargin: 10
         width: refreshIcon.width
         height: refreshIcon.height
-        visible: hasRefreshAction
+        visible: hasRefreshAction || busy
 
         Image {
             id: refreshIcon
