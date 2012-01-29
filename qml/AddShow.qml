@@ -52,7 +52,9 @@ Page {
                 title: model.data
                 height: 64
                 onClicked: {
-                    series_manager.get_complete_show(model.data);
+                    infoBanner.text = 'Getting show "' + model.data + '"'
+                    infoBanner.show()
+                    series_manager.get_complete_show(model.data)
                     pageStack.pop()
                 }
             }
