@@ -68,8 +68,8 @@ class MainWindow(QDeclarativeView):
                                     self._load_finished)
 
         self.request = AsyncWorker()
-        self.request.queue.put((0, load_conf_item))
-        self.request.queue.put((0, load_shows_item))
+        self.request.queue.put(load_conf_item)
+        self.request.queue.put(load_shows_item)
         self.request.start()
 
         self.setWindowTitle(constants.SF_NAME)
@@ -111,8 +111,8 @@ class MainWindow(QDeclarativeView):
                                (constants.SF_CONF_FILE,),
                                self._save_finished_cb)
         async_worker = AsyncWorker()
-        async_worker.queue.put((0, save_shows_item))
-        async_worker.queue.put((0, save_conf_item))
+        async_worker.queue.put(save_shows_item)
+        async_worker.queue.put(save_conf_item)
         async_worker.start()
         event.ignore()
 
