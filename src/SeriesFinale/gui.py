@@ -92,9 +92,9 @@ class MainWindow(hildon.StackableWindow):
                                     self._update_show_art)
 
         self.request = AsyncWorker()
-        self.request.queue.put((0, save_pid))
-        self.request.queue.put((0, load_conf_item))
-        self.request.queue.put((0, load_shows_item))
+        self.request.queue.put(save_pid)
+        self.request.queue.put(load_conf_item)
+        self.request.queue.put(load_shows_item)
 
         old_pid = self.get_previous_pid()
 
@@ -339,8 +339,8 @@ class MainWindow(hildon.StackableWindow):
                                (constants.SF_CONF_FILE,),
                                self._save_finished_cb)
         async_worker = AsyncWorker()
-        async_worker.queue.put((0, save_shows_item))
-        async_worker.queue.put((0, save_conf_item))
+        async_worker.queue.put(save_shows_item)
+        async_worker.queue.put(save_conf_item)
         async_worker.start()
 
     def _save_finished_cb(self, dummy_arg, error):
@@ -599,7 +599,7 @@ class ShowListStore(gtk.ListStore):
                                        (current_show, pixbuf),
                                        self._load_pixmap_async_finished,
                                        (current_show,))
-                async_worker.queue.put((0, async_item))
+                async_worker.queue.put(async_item)
                 if same_show:
                     break
             iter = self.iter_next(iter)

@@ -512,7 +512,7 @@ class SeriesManager(gobject.GObject):
         async_item = AsyncItem(self.thetvdb.get_matching_shows,
                                (terms, language,),
                                self._search_finished_callback)
-        self.async_worker.queue.put((0, async_item))
+        self.async_worker.queue.put(async_item)
         self.async_worker.start()
 
     def _search_finished_callback(self, tvdbshows, error):
@@ -537,11 +537,11 @@ class SeriesManager(gobject.GObject):
                                    (show.thetvdb_id, show.language,),
                                    self._set_show_episodes_complete_cb,
                                    (show, i == n_shows - 1))
-            async_worker.queue.put((0, async_item))
+            async_worker.queue.put(async_item)
             async_item = AsyncItem(self._set_show_images,
                                    (show,),
                                    None,)
-            async_worker.queue.put((1, async_item))
+            async_worker.queue.put(async_item)
         async_worker.start()
         return async_worker
 
@@ -572,7 +572,7 @@ class SeriesManager(gobject.GObject):
         async_item = AsyncItem(self._get_complete_show_from_id,
                                (show_id, language,),
                                self._get_complete_show_finished_cb)
-        self.async_worker.queue.put((0, async_item))
+        self.async_worker.queue.put(async_item)
         self.async_worker.start()
 
     def _get_complete_show_from_id(self, show_id, language):
@@ -600,7 +600,7 @@ class SeriesManager(gobject.GObject):
         async_item = AsyncItem(self._set_show_images,
                                (show,),
                                None,)
-        self.async_worker.queue.put((1, async_item))
+        self.async_worker.queue.put(async_item)
         if not self.async_worker.isAlive():
             self.async_worker.start()
 
