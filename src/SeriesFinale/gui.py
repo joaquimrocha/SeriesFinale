@@ -1010,11 +1010,11 @@ class SeasonSelectView(EnhancedTreeView):
             model.update()
 
     def _sort_func(self, model, iter1, iter2):
-        season1 = int(model.get_value(iter1, SeasonListStore.SEASON_COLUMN))
-        season2 = int(model.get_value(iter2, SeasonListStore.SEASON_COLUMN))
+        season1 = model.get_value(iter1, SeasonListStore.SEASON_COLUMN)
+        season2 = model.get_value(iter2, SeasonListStore.SEASON_COLUMN)
         if season1 == None or season2 == None:
             return 0
-        if season1 < season2:
+        if int(season1) < int(season2):
             return -1
         return 1
 
