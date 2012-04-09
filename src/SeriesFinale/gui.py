@@ -91,7 +91,7 @@ class MainWindow(hildon.StackableWindow):
         self.series_manager.connect('updated-show-art',
                                     self._update_show_art)
 
-        self.request = AsyncWorker()
+        self.request = AsyncWorker(True)
         self.request.queue.put(save_pid)
         self.request.queue.put(load_conf_item)
         self.request.queue.put(load_shows_item)
@@ -338,7 +338,7 @@ class MainWindow(hildon.StackableWindow):
         save_conf_item = AsyncItem(self.settings.save,
                                (constants.SF_CONF_FILE,),
                                self._save_finished_cb)
-        async_worker = AsyncWorker()
+        async_worker = AsyncWorker(False)
         async_worker.queue.put(save_shows_item)
         async_worker.queue.put(save_conf_item)
         async_worker.start()
@@ -589,7 +589,7 @@ class ShowListStore(gtk.ListStore):
 
     def update_pixmaps(self, show = None):
         iter = self.get_iter_first()
-        async_worker = AsyncWorker()
+        async_worker = AsyncWorker(True)
         while iter:
             current_show = self.get_value(iter, self.SHOW_COLUMN)
             same_show = show == current_show
