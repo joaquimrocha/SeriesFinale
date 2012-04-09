@@ -53,12 +53,13 @@ class AsyncItem(object):
 
 class AsyncWorker(Thread):
 
-    def __init__(self):
+    def __init__(self, interrumpible):
         Thread.__init__(self)
         self.queue = Queue.Queue(0)
         self.stopped = False
         self.async_item = None
         self.item_number = -1
+        self.setDaemon(interrumpible)
 
     def run(self):
         while not self.stopped:

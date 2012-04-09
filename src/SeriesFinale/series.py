@@ -555,7 +555,6 @@ class SeriesManager(QtCore.QObject):
             self.sorted_series_list.setSourceModel(self.series_list)
 
             self.thetvdb = thetvdbapi.TheTVDB(TVDB_API_KEY)
-            self.async_worker = None
             self.changed = False
             self.auto_save_id = None
 
@@ -635,12 +634,12 @@ class SeriesManager(QtCore.QObject):
         self.search_results.clear()
         self.searching = True
         self.searchingChanged.emit()
-        self.async_worker = self.get_async_worker()
+        async_worker = AsyncWorker(True)
         async_item = AsyncItem(self.thetvdb.get_matching_shows,
                                (terms, language,),
                                self._search_finished_callback)
-        self.async_worker.queue.put(async_item)
-        self.async_worker.start()
+        async_worker.queue.put(async_item)
+        async_worker.start()
 
     @QtCore.Slot(result=QtCore.QObject)
     def search_result_model(self):
@@ -663,7 +662,8 @@ class SeriesManager(QtCore.QObject):
         self.isUpdating = True
         self.busyChanged.emit()
         show_list = show_list or self.series_list
-        async_worker = self.get_async_worker()
+        async_worker = AsyncWorker(False)
+        update_images_worker = AsyncWorker(True)
         i = 0
         n_shows = len(show_list)
         for i in range(n_shows):
@@ -672,16 +672,16 @@ class SeriesManager(QtCore.QObject):
             async_item = AsyncItem(self.thetvdb.get_show_and_episodes,
                                    (show.thetvdb_id, show.language,),
                                    self._set_show_episodes_complete_cb,
-                                   (show, i == n_shows - 1))
+                                   (show, update_images_worker, i == n_shows - 1))
             async_worker.queue.put(async_item)
             async_item = AsyncItem(self._set_show_images,
                                    (show,),
                                    None,)
-            async_worker.queue.put(async_item)
+            update_images_worker.queue.put(async_item)
         async_worker.start()
         return async_worker
 
-    def _set_show_episodes_complete_cb(self, show, last_call, tvdbcompleteshow, error):
+    def _set_show_episodes_complete_cb(self, show, images_worker, last_call, tvdbcompleteshow, error):
         if not error and tvdbcompleteshow:
             episode_list = ListModel([self._convert_thetvdbepisode_to_episode(tvdb_ep,show) \
                             for tvdb_ep in tvdbcompleteshow[1]])
@@ -693,6 +693,7 @@ class SeriesManager(QtCore.QObject):
             self.updateShowsCallComplete.emit(show)
             self.isUpdating = False
             self.busyChanged.emit()
+            images_worker.start()
 
     def _search_show_to_update_callback(self, tvdbshows):
         if not tvdbshows:
@@ -711,12 +712,12 @@ class SeriesManager(QtCore.QObject):
                 break
         if not show_id:
             return
-        self.async_worker = self.get_async_worker()
+        async_worker = AsyncWorker(False)
         async_item = AsyncItem(self._get_complete_show_from_id,
                                (show_id, language,),
                                self._get_complete_show_finished_cb)
-        self.async_worker.queue.put(async_item)
-        self.async_worker.start()
+        async_worker.queue.put(async_item)
+        async_worker.start()
 
     def _get_complete_show_from_id(self, show_id, language):
         tvdb_show_episodes = self.thetvdb.get_show_and_episodes(show_id, language)
@@ -742,13 +743,12 @@ class SeriesManager(QtCore.QObject):
     def _get_complete_show_finished_cb(self, show, error):
         #self.emit(self.GET_FULL_SHOW_COMPLETE_SIGNAL, show, error)
         logging.debug('GET_FULL_SHOW_COMPLETE_SIGNAL') #TODO
-        self.async_worker = self.get_async_worker()
+        async_worker = AsyncWorker(True)
         async_item = AsyncItem(self._set_show_images,
                                (show,),
                                None,)
-        self.async_worker.queue.put(async_item)
-        if not self.async_worker.isAlive():
-            self.async_worker.start()
+        async_worker.queue.put(async_item)
+        async_worker.start()
 
     def get_show_by_id(self, show_id):
         for show in self.series_list:
@@ -784,11 +784,6 @@ class SeriesManager(QtCore.QObject):
         episode_obj.writer = thetvdb_episode.writer
         episode_obj.air_date = thetvdb_episode.first_aired or ''
         return episode_obj
-
-    def stop_request(self):
-        if self.async_worker:
-            self.async_worker.stop()
-            self.async_worker = None
 
     def add_show(self, show):
         if show.id == -1:
@@ -917,11 +912,6 @@ class SeriesManager(QtCore.QObject):
         self.showListChanged.emit()
         self.isLoading = False
         self.busyChanged.emit()
-
-    def get_async_worker(self):
-        if self.async_worker and self.async_worker.isAlive():
-            return self.async_worker
-        return AsyncWorker()
 
     def updated(self):
         self.changed = True
