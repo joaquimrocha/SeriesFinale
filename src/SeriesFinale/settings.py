@@ -38,6 +38,7 @@ class Settings(object):
     SCREEN_ROTATION = 'screen_rotation'
     ADD_SPECIAL_SEASONS = 'add_special_seasons'
     EPISODES_CHECK_POSITION = 'episodes_check_position'
+    SEARCH_LANGUAGE = 'search_language'
 
     LEFT = 0
     RIGHT = 1
@@ -47,13 +48,15 @@ class Settings(object):
              SHOWS_SORT: int,
              SCREEN_ROTATION: int,
              ADD_SPECIAL_SEASONS: bool,
-             EPISODES_CHECK_POSITION: int}
+             EPISODES_CHECK_POSITION: int,
+             SEARCH_LANGUAGE: str}
     DEFAULTS = {EPISODES_ORDER_CONF_NAME: DESCENDING_ORDER,
                 SEASONS_ORDER_CONF_NAME: ASCENDING_ORDER,
                 SHOWS_SORT: RECENT_EPISODE,
                 SCREEN_ROTATION: AUTOMATIC,
                 ADD_SPECIAL_SEASONS: True,
-                EPISODES_CHECK_POSITION: RIGHT}
+                EPISODES_CHECK_POSITION: RIGHT,
+                SEARCH_LANGUAGE: 'en'}
 
     conf = dict(DEFAULTS)
     changed = False

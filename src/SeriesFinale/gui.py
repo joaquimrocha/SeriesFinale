@@ -233,7 +233,7 @@ class MainWindow(hildon.StackableWindow):
         self._have_deleted = True
 
     def _launch_search_shows_dialog(self):
-        search_dialog = SearchShowsDialog(self, self.series_manager)
+        search_dialog = SearchShowsDialog(self, self.series_manager, self.settings)
         response = search_dialog.run()
         show = None
         if response == gtk.RESPONSE_ACCEPT:
@@ -1801,13 +1801,13 @@ class FoundShowListStore(gtk.ListStore):
 
 class SearchShowsDialog(gtk.Dialog):
 
-    def __init__(self, parent, series_manager):
+    def __init__(self, parent, series_manager, settings):
         super(SearchShowsDialog, self).__init__(parent = parent)
         self.set_title(_('Search shows'))
 
         self.series_manager = series_manager
         self.series_manager.connect('search-shows-complete', self._search_shows_complete_cb)
-
+        self.settings = settings
         self.connect('response', self._response_cb)
 
         self.chosen_show = None
@@ -1846,9 +1846,11 @@ class SearchShowsDialog(gtk.Dialog):
         self.lang_selector.set_column_selection_mode(hildon.TOUCH_SELECTOR_SELECTION_MODE_SINGLE)
         lang_button.set_selector(self.lang_selector)
         try:
-            self.lang_selector.set_active(0, self.series_manager.get_languages().keys().index(self.series_manager.get_default_language()))
+            self.lang_selector.set_active(0, self.series_manager.get_languages().keys().index(self.settings.getConf(Settings.SEARCH_LANGUAGE)))
         except ValueError:
             pass
+        lang_button.connect('value-changed',
+                            self._language_changed_cb)
 
         shows_area = hildon.PannableArea()
         shows_area.add(self.shows_view)
@@ -1862,6 +1864,10 @@ class SearchShowsDialog(gtk.Dialog):
 
         self.vbox.show_all()
         self.set_size_request(-1, 400)
+
+    def _language_changed_cb(self, button):
+        self.settings.setConf(Settings.SEARCH_LANGUAGE,
+                              self.lang_store[button.get_active()][0])
 
     def _search_entry_changed_cb(self, entry):
         enable = self.search_entry.get_text().strip()
