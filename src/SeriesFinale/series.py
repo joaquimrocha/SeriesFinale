@@ -24,7 +24,7 @@ from lib.util import image_downloader
 from lib.listmodel import *
 from xml.etree import ElementTree as ET
 from asyncworker import AsyncWorker, AsyncItem
-from lib.constants import TVDB_API_KEY, DATA_DIR, DEFAULT_LANGUAGES
+from lib.constants import TVDB_API_KEY, DATA_DIR, DEFAULT_LANGUAGES, SF_LANG_FILE
 from settings import Settings
 from datetime import datetime
 from datetime import timedelta
