@@ -62,7 +62,7 @@ Page {
 
         Flickable {
             id: flickableText
-            height: parent.height
+            height: parent.height - watched.height - 10
             width: parent.width
             contentHeight: text.height + overviewTitle.height + 10
             clip: true
