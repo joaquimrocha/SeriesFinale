@@ -139,6 +139,7 @@ Page {
                     markAllItem.text = show.is_completely_watched(model.data) ? 'Mark None' : 'Mark All'
                 }
                 onShowArtChanged: iconSource = show.get_season_image(model.data)
+                onEpisodesListUpdated: listView.model = show.get_seasons_model()
             }
 
             Component {

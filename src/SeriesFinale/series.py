@@ -40,6 +40,7 @@ class Show(QtCore.QObject):
 
     infoMarkupChanged = QtCore.Signal()
     showArtChanged = QtCore.Signal()
+    episodesListUpdated = QtCore.Signal()
     def __init__(self, name, genre = None, overview = None, network = None,
                  rating = None, actors = [], episode_list = ListModel(), image = None,
                  thetvdb_id = -1, season_images = {}, id = -1, language = None,
@@ -686,6 +687,7 @@ class SeriesManager(QtCore.QObject):
                             for tvdb_ep in tvdbcompleteshow[1]])
             show.update_episode_list(episode_list)
         self.updateShowEpisodesComplete.emit(show)
+        show.episodesListUpdated.emit()
         show.set_busy(False)
         if last_call:
             self.updateShowsCallComplete.emit(show)
