@@ -4,20 +4,24 @@ import com.nokia.extras 1.0
 
 Page {
     id: page
+
+    Header {
+       id: header;
+       text: "SeriesFinale"
+       busy: series_manager.busy
+       hasRefreshAction: !emptyText.visible
+       onRefreshActionActivated: series_manager.update_all_shows_episodes()
+    }
+
     ListView {
         id: listView
-        anchors.fill: parent
+        anchors.top: header.bottom
+        anchors.left: parent.left
+        anchors.right: parent.right
+        anchors.bottom: parent.bottom
         clip: true
         model: seriesList
         interactive: !emptyText.visible
-
-        header: Header {
-            id: header;
-            text: "SeriesFinale"
-            busy: series_manager.busy
-            hasRefreshAction: !emptyText.visible
-            onRefreshActionActivated: series_manager.update_all_shows_episodes()
-        }
 
         Text {
             id: emptyText
