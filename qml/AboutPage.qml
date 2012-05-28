@@ -40,7 +40,7 @@ Page {
             Text {
                 font.weight: Font.Bold
                 font.pixelSize: 24
-                text: 'SeriesFinale 0.6.8<br/>Harmattan Edition'
+                text: 'SeriesFinale ' + version + '<br/>Harmattan Edition'
                 color: 'white'
                 anchors.horizontalCenter: parent.horizontalCenter
             }

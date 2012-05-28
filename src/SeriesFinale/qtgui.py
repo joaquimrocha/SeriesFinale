@@ -75,6 +75,7 @@ class MainWindow(QDeclarativeView):
         self.setWindowTitle(constants.SF_NAME)
         settingsWrapper = SettingsWrapper(self)
         self.rootContext().setContextProperty("series_manager", self.series_manager)
+        self.rootContext().setContextProperty("version", constants.SF_VERSION)
         self.rootContext().setContextProperty("seriesList", self.series_manager.sorted_series_list)
         self.rootContext().setContextProperty("settings", settingsWrapper)
         settingsWrapper.showsSortChanged.connect(self.series_manager.sorted_series_list.resort)
