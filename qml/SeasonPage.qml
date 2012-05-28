@@ -7,18 +7,17 @@ Page {
     property string season: ''
     property variant show: undefined
 
-    Header {
+    ListView {
+        id: listView
+        anchors.fill: parent
+        clip: true
+
+header: Header {
         id: header
         text: show.showName + ' - ' + show.get_season_name(season)
     }
 
-    ListView {
-        id: listView
-        anchors.top: header.bottom
-        anchors.left: parent.left
-        anchors.right: parent.right
-        anchors.bottom: parent.bottom
-        clip: true
+
         model: show.get_sorted_episode_list_by_season(season)
         delegate: EpisodeListRowDelegate {
             episode: model.data
