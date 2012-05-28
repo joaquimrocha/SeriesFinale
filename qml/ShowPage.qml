@@ -37,7 +37,22 @@ Page {
                         font.pixelSize: 26
                         font.weight: Font.Bold
                         color: 'white'
+                        wrapMode: Text.WordWrap
+                        width: parent.width - closeIcon.width - 10
                     }
+
+                    Image {
+                        id: closeIcon
+                        source: "image://theme/icon-m-common-dialog-close"
+                        anchors.right: parent.right;
+                        anchors.verticalCenter: parent.verticalCenter
+
+                        MouseArea {
+                            anchors.fill: parent
+                            onClicked: showInfoDialog.close()
+                        }
+                    }
+
                     Rectangle {
                         anchors.top: parent.bottom
                         width: parent.width
