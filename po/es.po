@@ -7,10 +7,11 @@ msgid ""
 msgstr ""
 "Project-Id-Version: SeriesFinale\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2012-04-13 22:09+0000\n"
+"POT-Creation-Date: 2012-05-31 10:43+0200\n"
 "PO-Revision-Date: 2010-05-10 21:17+0100\n"
 "Last-Translator: Juan A. Suarez Romero <jasuarez@igalia.com>\n"
 "Language-Team: Spanish\n"
+"Language: \n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -40,7 +41,7 @@ msgstr "Borrar series"
 msgid "Update all"
 msgstr "Actualizar todo"
 
-#: ../src/SeriesFinale/gui.py:208 ../src/SeriesFinale/gui.py:2002
+#: ../src/SeriesFinale/gui.py:208 ../src/SeriesFinale/gui.py:2008
 msgid "Settings"
 msgstr "Ajustes"
 
@@ -53,11 +54,11 @@ msgid "Gathering show information. Please wait..."
 msgstr "Obteniendo información de la serie. Espere por favor..."
 
 #: ../src/SeriesFinale/gui.py:255 ../src/SeriesFinale/gui.py:373
-#: ../src/SeriesFinale/gui.py:832 ../src/SeriesFinale/gui.py:1893
+#: ../src/SeriesFinale/gui.py:832 ../src/SeriesFinale/gui.py:1899
 msgid "Please verify your internet connection is available"
 msgstr "Por favor verifique que su conexión a internet esté disponible"
 
-#: ../src/SeriesFinale/gui.py:258 ../src/SeriesFinale/gui.py:1895
+#: ../src/SeriesFinale/gui.py:258 ../src/SeriesFinale/gui.py:1901
 #, python-format
 msgid "An error occurred. %s"
 msgstr "Ocurrió un error. %s"
@@ -72,7 +73,8 @@ msgstr "Borrar series"
 msgid ""
 "Are you sure you want to delete the show:\n"
 " %(show_name)s"
-msgstr "¿Está seguro que quiere borrar la serie:\n"
+msgstr ""
+"¿Está seguro que quiere borrar la serie:\n"
 " %(show_name)s"
 
 #: ../src/SeriesFinale/gui.py:376
@@ -309,52 +311,52 @@ msgstr "Buscar"
 msgid "Language"
 msgstr "Idioma"
 
-#: ../src/SeriesFinale/gui.py:1943
+#: ../src/SeriesFinale/gui.py:1949
 msgid "Authors:"
 msgstr "Autores:"
 
-#: ../src/SeriesFinale/gui.py:1974
+#: ../src/SeriesFinale/gui.py:1980
 #, python-format
 msgid "About %s"
 msgstr "Acerca de %s"
 
-#: ../src/SeriesFinale/gui.py:1991
+#: ../src/SeriesFinale/gui.py:1997
 msgid "License:"
 msgstr "Licencia:"
 
-#: ../src/SeriesFinale/gui.py:2016
+#: ../src/SeriesFinale/gui.py:2022
 msgid "Done"
 msgstr "Hecho"
 
-#: ../src/SeriesFinale/gui.py:2018
+#: ../src/SeriesFinale/gui.py:2024
 msgid "Screen rotation:"
 msgstr "Girar pantalla:"
 
-#: ../src/SeriesFinale/gui.py:2019
+#: ../src/SeriesFinale/gui.py:2025
 msgid "Automatic"
 msgstr "Automático"
 
-#: ../src/SeriesFinale/gui.py:2019
+#: ../src/SeriesFinale/gui.py:2025
 msgid "Portrait"
 msgstr "Vertical"
 
-#: ../src/SeriesFinale/gui.py:2019
+#: ../src/SeriesFinale/gui.py:2025
 msgid "Landscape"
 msgstr "Apaisado"
 
-#: ../src/SeriesFinale/gui.py:2030
+#: ../src/SeriesFinale/gui.py:2036
 msgid "Add special seasons"
 msgstr "Añadir temporadas especiales"
 
-#: ../src/SeriesFinale/gui.py:2039
+#: ../src/SeriesFinale/gui.py:2045
 msgid "Episodes check position:"
 msgstr "Posición de la marca de Episodios"
 
-#: ../src/SeriesFinale/gui.py:2042
+#: ../src/SeriesFinale/gui.py:2048
 msgid "Left"
 msgstr "Izquierda"
 
-#: ../src/SeriesFinale/gui.py:2043
+#: ../src/SeriesFinale/gui.py:2049
 msgid "Right"
 msgstr "Derecha"
 
