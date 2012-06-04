@@ -1,3 +1,9 @@
+seriesfinale (0.6.10-1) unstable; urgency=low
+  * Sort seasons by numerical comparison
+  * Cache available languages
+  * Use interrumpible threads
+ -- Juan A. Suarez Romero <jasuarez@igalia.com>  Thu, 31 May 2012 10:47:18 +0200
+
 seriesfinale (0.6.9-1) unstable; urgency=low
   * Add context menus to the shows and seasons views
   * Change the looks of the live search's cancel button
