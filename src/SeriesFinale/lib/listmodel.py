@@ -90,6 +90,8 @@ class SortedSeriesList(QtGui.QSortFilterProxyModel):
     def lessThan(self, left, right):
         leftData = self.sourceModel().data(left)
         rightData = self.sourceModel().data(right)
+	if (self.sortOrder != self._settings.RECENT_EPISODE):
+            return str(leftData) < str(rightData)
         leftEpisodes = leftData.get_episodes_info()
         rightEpisodes = rightData.get_episodes_info()
         episode1 = leftEpisodes['next_episode']
