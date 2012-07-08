@@ -10,7 +10,7 @@ Page {
     Header {
         id: header
         text: "Add show"
-        busy: series_manager.isSearching
+        updating: series_manager.isSearching
     }
 
     TextField {

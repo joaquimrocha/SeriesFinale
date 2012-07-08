@@ -97,7 +97,7 @@ Page {
         Header {
             id: header
             text: show.showName
-            busy: show.busy
+            updating: show.updating
             hasRefreshAction: true
             onRefreshActionActivated: series_manager.update_show_episodes(show)
             textWidth: header.width - infoIcon.width * 2.5
