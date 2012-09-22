@@ -70,6 +70,7 @@ Page {
     tools: ToolBarLayout {
         ToolIcon {
             iconId: "toolbar-add"
+            visible: !series_manager.loading
             anchors.horizontalCenter: parent.horizontalCenter
             onClicked: { pageStack.push(addShowComponent.createObject(pageStack)) }
         }
