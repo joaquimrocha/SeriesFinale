@@ -10,7 +10,7 @@ Item {
 
     property alias text: label.text
     property bool hasRefreshAction: false
-    property bool busy: false
+    property bool updating: false
     property alias anchorPoint: refreshAction.left
     property alias textWidth: label.width
     signal refreshActionActivated()
@@ -35,27 +35,27 @@ Item {
         anchors.rightMargin: 10
         width: refreshIcon.width
         height: refreshIcon.height
-        visible: hasRefreshAction || busy
+        visible: hasRefreshAction || updating
 
         Image {
             id: refreshIcon
             source: 'icons/refresh-icon.png'
-            visible: !busy && hasRefreshAction
+            visible: !updating && hasRefreshAction
         }
 
         BusyIndicator {
             id: busyIndicator
             anchors.verticalCenter: parent.verticalCenter
             anchors.horizontalCenter: parent.horizontalCenter
-            visible: busy
-            running: busy
+            visible: updating
+            running: updating
             platformStyle: BusyIndicatorStyle {
                                 spinnerFrames: "image://theme/spinnerinverted"
                            }
         }
 
         MouseArea {
-            enabled: !busy && hasRefreshAction
+            enabled: !updating && hasRefreshAction
             anchors.fill: parent
             onClicked: { header.refreshActionActivated() }
         }

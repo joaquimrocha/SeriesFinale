@@ -8,8 +8,8 @@ Page {
     Header {
        id: header;
        text: "SeriesFinale"
-       busy: series_manager.busy
-       hasRefreshAction: !emptyText.visible
+       updating: series_manager.updating
+       hasRefreshAction: !emptyText.visible && !loadingIndicator.visible
        onRefreshActionActivated: series_manager.update_all_shows_episodes()
     }
 
@@ -23,11 +23,22 @@ Page {
         model: seriesList
         interactive: !emptyText.visible
 
+        BusyIndicator {
+            id: loadingIndicator
+            running: series_manager.loading
+            visible: series_manager.loading
+            anchors.verticalCenter: parent.verticalCenter
+            anchors.horizontalCenter: parent.horizontalCenter
+            platformStyle: BusyIndicatorStyle {
+                size: "large"
+            }
+        }
+
         Text {
             id: emptyText
             text: 'No shows were added so far'
             font.pixelSize: 32
-            visible: listView.count == 0
+            visible: listView.count == 0 && !series_manager.loading
             color: 'white'
             anchors.verticalCenter: parent.verticalCenter
             anchors.horizontalCenter: parent.horizontalCenter

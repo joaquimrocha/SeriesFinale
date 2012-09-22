@@ -60,14 +60,14 @@ class Show(QtCore.QObject):
         self.language = language
         self.downloading_show_image = False
         self.downloading_season_image = downloading_season_image
-        self._busy = False
+        self._updating = False
 
-    busyChanged = QtCore.Signal()
-    def get_busy(self): return self._busy
-    def set_busy(self, busy):
-        self._busy = busy
-        self.busyChanged.emit()
-    busy = QtCore.Property(bool,get_busy,notify=busyChanged)
+    updatingChanged = QtCore.Signal()
+    def get_updating(self): return self._updating
+    def set_updating(self, updating):
+        self._updating = updating
+        self.updatingChanged.emit()
+    updating = QtCore.Property(bool,get_updating,notify=updatingChanged)
 
     coverImageChanged = QtCore.Signal()
     def cover_image(self):
@@ -574,10 +574,15 @@ class SeriesManager(QtCore.QObject):
             self.isUpdating = False
             self.isLoading = False
 
-    busyChanged = QtCore.Signal()
-    def get_busy(self):
-        return self.isUpdating or self.isLoading
-    busy = QtCore.Property(bool,get_busy,notify=busyChanged)
+    loadingChanged = QtCore.Signal()
+    def get_loading(self):
+        return self.isLoading
+    loading = QtCore.Property(bool,get_loading,notify=loadingChanged)
+
+    updatingChanged = QtCore.Signal()
+    def get_updating(self):
+        return self.isUpdating
+    updating = QtCore.Property(bool,get_updating,notify=updatingChanged)
 
     def update_languages(self):
         self.languages = self.thetvdb.get_available_languages()
@@ -660,7 +665,7 @@ class SeriesManager(QtCore.QObject):
     @QtCore.Slot()
     def update_all_shows_episodes(self, show_list = []):
         self.isUpdating = True
-        self.busyChanged.emit()
+        self.updatingChanged.emit()
         show_list = show_list or self.series_list
         async_worker = AsyncWorker(False)
         update_images_worker = AsyncWorker(True)
@@ -668,7 +673,7 @@ class SeriesManager(QtCore.QObject):
         n_shows = len(show_list)
         for i in range(n_shows):
             show = show_list[i]
-            show.set_busy(True)
+            show.set_updating(True)
             async_item = AsyncItem(self.thetvdb.get_show_and_episodes,
                                    (show.thetvdb_id, show.language,),
                                    self._set_show_episodes_complete_cb,
@@ -688,11 +693,11 @@ class SeriesManager(QtCore.QObject):
             show.update_episode_list(episode_list)
         self.updateShowEpisodesComplete.emit(show)
         show.episodesListUpdated.emit()
-        show.set_busy(False)
+        show.set_updating(False)
         if last_call:
             self.updateShowsCallComplete.emit(show)
             self.isUpdating = False
-            self.busyChanged.emit()
+            self.updatingChanged.emit()
             images_worker.start()
 
     def _search_show_to_update_callback(self, tvdbshows):
@@ -705,7 +710,7 @@ class SeriesManager(QtCore.QObject):
     @QtCore.Slot(unicode)
     def get_complete_show(self, show_name, language = "en"):
         self.isUpdating = True
-        self.busyChanged.emit()
+        self.updatingChanged.emit()
         show_id = self._cached_tvdb_shows.get(show_name, None)
         for show_id, show_title in self._cached_tvdb_shows.items():
             if show_title == show_name:
@@ -737,7 +742,7 @@ class SeriesManager(QtCore.QObject):
         self.series_list.append(show)
         self.changed = True
         self.isUpdating = False
-        self.busyChanged.emit()
+        self.updatingChanged.emit()
         return show
 
     def _get_complete_show_finished_cb(self, show, error):
@@ -905,13 +910,13 @@ class SeriesManager(QtCore.QObject):
         if not os.path.exists(file_path):
             return
         self.isLoading = True
-        self.busyChanged.emit()
+        self.loadingChanged.emit()
         for serie in serializer.deserialize(file_path):
             self.series_list.append(serie)
         self.changed = False
         self.showListChanged.emit()
         self.isLoading = False
-        self.busyChanged.emit()
+        self.loadingChanged.emit()
 
     def updated(self):
         self.changed = True
