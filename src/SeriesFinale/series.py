@@ -287,17 +287,17 @@ class Show(QtCore.QObject):
         episodes_to_watch = info['episodes_to_watch']
         next_episode = info['next_episode']
         season_info = ''
-        if not episodes_to_watch:
-            if next_episode:
-                season_info = _('No episodes to watch')
-            elif episodes:
-                season_info = _('Completely watched')
+        if self.is_completely_watched(season):
+            season_info = _('Completely watched')
         else:
-            number_episodes_to_watch = len(episodes_to_watch)
-            season_info = gettext.ngettext('%s episode not watched',
+            if episodes_to_watch:
+                n_episodes_to_watch = len(episodes_to_watch)
+                season_info = gettext.ngettext('%s episode not watched',
                                            '%s episodes not watched',
-                                           number_episodes_to_watch) \
-                                           % number_episodes_to_watch
+                                           n_episodes_to_watch) \
+                                           % n_episodes_to_watch
+            else:
+                season_info = _('No episodes to watch')
             if next_episode:
                 next_air_date = next_episode.air_date
                 if next_air_date:
