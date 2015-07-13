@@ -1,15 +1,20 @@
 seriesfinale (0.6.10-1) unstable; urgency=low
+
   * Sort seasons by numerical comparison
   * Cache available languages
   * Use interrumpible threads
+
  -- Juan A. Suarez Romero <jasuarez@igalia.com>  Thu, 31 May 2012 10:47:18 +0200
 
 seriesfinale (0.6.9-1) unstable; urgency=low
+
   * Add context menus to the shows and seasons views
   * Change the looks of the live search's cancel button
+
  -- Joaquim Rocha <jrocha@igalia.com>  Thu, 13 Oct 2011 20:30:48 +0100
 
 seriesfinale (0.6.8-1) unstable; urgency=low
+
   * Fix image retrieval
   * Fix deleting seasons (mb#11713)
   * Add sorting options to the seasons view (mb#11771)
@@ -22,17 +27,23 @@ seriesfinale (0.6.8-1) unstable; urgency=low
   * Prevent starting a thread when it is already running
   * Don't save information about the download of images
   * Adapt the "next episode to watch" text to support also humanized dates
+
  -- Joaquim Rocha <jrocha@igalia.com>  Thu, 21 Jul 2011 20:30:48 +0100
 
 seriesfinale (0.6.7-3) unstable; urgency=low
+
   * New build because the previous one failed
+
  -- Joaquim Rocha <jrocha@igalia.com>  Wed, 14 Apr 2011 10:05:48 +0100
 
 seriesfinale (0.6.7-2) unstable; urgency=low
+
   * Add missing python-conic dependency to Debian control
+
  -- Joaquim Rocha <jrocha@igalia.com>  Wed, 14 Apr 2011 08:05:48 +0100
 
 seriesfinale (0.6.7-1) unstable; urgency=low
+
   * Fix getting the show when live search was used
   * Update search column when shows are updated
   * Remove covers only if package is removed.
@@ -42,18 +53,22 @@ seriesfinale (0.6.7-1) unstable; urgency=low
   * Check if SeriesFinale is already running
   * Hide/show buttons when offline/online
   * Mark episode as watched from episode's view
+
  -- Joaquim Rocha <jrocha@igalia.com>  Tue, 12 Apr 2011 18:05:48 +0100
 
 seriesfinale (0.6.6-1) unstable; urgency=low
+
   * Add live search support for filtering shows
   * Save database and settings only if there were changes
   * Add quick access to previous/next episodes when viewing an episode
   * Add an option to set the check-boxes position
   * Use sentence case in the UI
   * Updated Spanish translation
+
  -- Joaquim Rocha <jrocha@igalia.com>  Mon, 21 Feb 2011 18:05:48 +0100
 
 seriesfinale (0.6.5-1) unstable; urgency=low
+
   * Add sorting shows by most recent episode or name
   * Add auto-rotation support
   * Add settings dialog
@@ -63,9 +78,11 @@ seriesfinale (0.6.5-1) unstable; urgency=low
   * Add special seasons addition preferences
   * Make returning to the shows view faster
   * Add delete seasons view
+
  -- Joaquim Rocha <jrocha@igalia.com>  Fri, 08 Oct 2010 18:05:48 +0100
 
 seriesfinale (0.6.1-1) unstable; urgency=low
+
   * Fix showing next episode
   * Use only one AsyncWorker at a time for shows' tasks
   * Fix updating shows
@@ -74,6 +91,7 @@ seriesfinale (0.6.1-1) unstable; urgency=low
   * Add TheTVDB credits
   * Prevent problems when downloading and using images
   * Use a priority queue for updating the shows info and images
+
  -- Joaquim Rocha <jrocha@igalia.com>  Fri, 16 Jul 2010 10:20:48 +0100
 
 seriesfinale (0.6-1) unstable; urgency=low
