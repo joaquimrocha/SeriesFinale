@@ -7,8 +7,13 @@ Standards-Version: 3.7.2
 
 Package: seriesfinale
 Architecture: all
-Depends: ${python:Depends}, ${misc:Depends}, python (>= 2.5), python-pyside.qtcore, python-pyside.qtgui,
-         python-pyside.qtdeclarative, python-conic
+Depends: python (>= 2.5),
+         python-conic,
+         python-pyside.qtcore,
+         python-pyside.qtdeclarative,
+         python-pyside.qtgui,
+         ${misc:Depends},
+         ${python:Depends}
 XB-Maemo-Display-Name: SeriesFinale
 Description: SeriesFinale is a TV series browser and tracker application
  Its goal is to help you manage the TV shows you watch regularly and
