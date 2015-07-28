@@ -1,3 +1,9 @@
+seriesfinale (0.6.11-1) unstable; urgency=medium
+
+  * Add missing dependency on python-osso (mb#12483)
+
+ -- Graham Inggs <graham@nerve.org.za>  Tue, 28 Jul 2015 12:50:09 +0200
+
 seriesfinale (0.6.10-1) unstable; urgency=low
 
   * Sort seasons by numerical comparison
