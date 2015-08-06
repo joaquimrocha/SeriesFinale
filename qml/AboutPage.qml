@@ -48,7 +48,7 @@ Page {
             Text {
                 font.weight: Font.Bold
                 font.pixelSize: 20
-                text: 'Copyright © 2011 Joaquim Rocha'
+                text: 'Copyright © 2011-2015 Joaquim Rocha'
                 color: 'white'
                 anchors.horizontalCenter: parent.horizontalCenter
             }
